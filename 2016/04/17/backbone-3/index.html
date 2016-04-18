@@ -64,8 +64,9 @@
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/backbone-all.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Event.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Model.png-halt">
+<meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/console1.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Collection.png-halt">
-<meta property="og:updated_time" content="2016-04-17T15:29:57.000Z">
+<meta property="og:updated_time" content="2016-04-18T15:40:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="backbone初探(三)">
 <meta name="twitter:description" content="这篇文章我打算整理下整体的架构，在第一篇里面整理api时候其实有过猜测的，这里再带着疑问来看看事实是怎样的。还是那句话，确认宏观以后再回过来看微观。">
@@ -255,7 +256,29 @@
       
         <h1 id="Structure"><a href="#Structure" class="headerlink" title="Structure"></a>Structure</h1><h2 id="Backbone的整体Structure"><a href="#Backbone的整体Structure" class="headerlink" title="Backbone的整体Structure"></a>Backbone的整体Structure</h2><p>webStorm的Structure是个很不错的功能。只是很多源码确实不是仅仅看这个就可以有相对清晰的脉络。但是这里似乎并不包括Backbone。<br><img style="width:40%" src="http://7xpovu.com1.z0.glb.clouddn.com/backbone-all.png-halt" alt=""><br>很清晰的结构，而且最重要的几个工具函数在上一篇已经有了相对深入的解读。<br>所以接下来我们对Backbone的若干个构造器来个相对粗略的了解。</p>
 <h2 id="Event结构"><a href="#Event结构" class="headerlink" title="Event结构"></a>Event结构</h2><p><img src="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Event.png-halt" alt=""></p>
+<p>Event是个很重要的部分,不管是Model，Collection还是View，均在原型上继承了它的各种方法。<br>但是Event如果不论细节，它的实现原理还是非常简单的。<br>如果上图所示，Event有两个基础方法：evnetApi和trigerApi，其中eventApi在AOP编程思想基础上，构建了4个方法，internalOn,onApi,offApi和onceApi，这里internalOn是队opApi的进一步封装用于设置_listeners和_event以便进行跟踪,本篇主要侧重于结构分析，细节将下一篇开始分解。然后在看trigerApi，在它基础上还有一个triggerEvents。</p>
+<p>在这两个基础方法基础上，Event封装如果暴露出来的方法。<br>eventApi:</p>
+<ul>
+<li>on</li>
+<li>off</li>
+<li>once</li>
+<li>listenToOnce</li>
+<li>stopListening</li>
+<li>ListenTo</li>
+</ul>
+<p>onceApi</p>
+<ul>
+<li>trigger</li>
+</ul>
 <h2 id="Model结构"><a href="#Model结构" class="headerlink" title="Model结构"></a>Model结构</h2><p><img src="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Model.png-halt" alt=""></p>
+<p>首先要声明一点，Backbone.Model.extend()返回的是一个构造器。extend整个细节在上一篇已经深入讲过了。child.prototype.constructor被更改返回child以后，整个新的构造器已经被切断了和Backbone.Model的关联。Backbone.Model其实已经可以视为一个生产构造器工厂。</p>
+<p>不独是Model，其他的View、Collection其实也是一样。extend使用了闭包将内部变量返回，当Backbone.Model.extend()执行完毕之后，返回值其实同Backbone.Model没有任何关联(除了特别设置的__super__)</p>
+<p>这里看看Model生成新的构造器时候干了什么</p>
+<p>回顾extend一段代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">child = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> parent.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>); &#125;;</span><br></pre></td></tr></table></figure></p>
+<p>这里this指向的是Model，Collection和View之类，以Model为例，它实质上将构造函数copy一个赋值给child了而已。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">var Todo = Backbone.Model.extend(&#123;</span><br><span class="line">  // Default attributes for the todo item.</span><br><span class="line">  defaults: function() &#123;</span><br><span class="line">    return &#123;</span><br><span class="line">      title: &quot;empty todo...&quot;,</span><br><span class="line">      done: false</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  // Toggle the `done` state of this todo item.</span><br><span class="line">  toggle: function() &#123;</span><br><span class="line">    this.save(&#123;done: !this.get(&quot;done&quot;)&#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;);</span><br><span class="line">var test = new Todo();</span><br></pre></td></tr></table></figure>
+<p>console.log(test)的结果是：<br><img src="http://7xpovu.com1.z0.glb.clouddn.com/console1.png-halt" alt=""><br>这里attributes是存放数据的对象，代表的是，一个实例的数据。但是，toggle在原型上了，似乎忽略了一些细节。<br>回看extend代码，是这里运行导致的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">child.prototype = _.create(parent.prototype, protoProps);</span><br></pre></td></tr></table></figure>
 <h2 id="Collection结构"><a href="#Collection结构" class="headerlink" title="Collection结构"></a>Collection结构</h2><p><img src="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Collection.png-halt" alt=""></p>
 
       
