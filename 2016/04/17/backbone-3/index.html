@@ -66,7 +66,7 @@
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Model.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/console1.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/Backbone-Collection.png-halt">
-<meta property="og:updated_time" content="2016-04-20T18:04:34.000Z">
+<meta property="og:updated_time" content="2016-04-20T18:22:07.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="backbone初探(三)">
 <meta name="twitter:description" content="这篇文章我打算整理下整体的架构，在第一篇里面整理api时候其实有过猜测的，这里再带着疑问来看看事实是怎样的。还是那句话，确认宏观以后再回过来看微观。">
@@ -314,7 +314,7 @@
 </ol>
 <p>这样就够了。里面更多细节我认为已经不需要去深究了。阅读代码更多是在读架构。这里如果没有以后发现有补充必要，暂时先跳过了。实际上注释已经加的不少了。</p>
 <h2 id="View"><a href="#View" class="headerlink" title="View"></a>View</h2><p>view的结构和上面都一样，但是相比上列，它的构造函数实在简洁的不行。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> View = Backbone.View = <span class="function"><span class="keyword">function</span>(<span class="params">options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.cid = _.uniqueId(<span class="string">'view'</span>);</span><br><span class="line">  _.extend(<span class="keyword">this</span>, _.pick(options, viewOptions));</span><br><span class="line">  <span class="keyword">this</span>._ensureElement();</span><br><span class="line">  <span class="keyword">this</span>.initialize.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>加起来一共也就4行,第一行设置cid；第二行从options中过滤出[‘model’, ‘collection’, ‘el’, ‘id’, ‘attributes’, ‘className’, ‘tagName’, ‘events’]数组中的属性；第三行用到了_ensureElement方法，用来确保获取dom(class,id或者选择器字符串)；第四行用来初始化，默认是个空函数，可以自定义。</p>
+<p>加起来一共也就4行,第一行设置cid；第二行从options中过滤出[‘model’, ‘collectgition’, ‘el’, ‘id’, ‘attributes’, ‘className’, ‘tagName’, ‘events’]数组中的属性；第三行用到了_ensureElement方法，用来确保获取dom(class,id或者选择器字符串),同时这个函数里面还对事件进行了绑定；第四行用来初始化，默认是个空函数，可以自定义。</p>
 
       
     </div>
