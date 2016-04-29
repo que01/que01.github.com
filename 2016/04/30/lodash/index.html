@@ -1,0 +1,723 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="开始看看Lodash的源码了。Backbone的源码100%是没有彻底了解，但是感觉继续深究收获也不太大了。随着职业生涯慢慢增长，各种业务逻辑的经历，心里算是有一种很特别的紧迫感。Lodash是Node的包里面引用的最多的package之一，和underscore——backbone的依赖库有千丝万缕的关系。阅读Lodash的动机有两个,一是看看那些被精炼的辅助函数有哪些是怎么写，而是lodash">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Lodash源码阅读笔记(一)">
+<meta property="og:url" content="http://yoursite.com/2016/04/30/lodash/index.html">
+<meta property="og:site_name" content="Que's Blog">
+<meta property="og:description" content="开始看看Lodash的源码了。Backbone的源码100%是没有彻底了解，但是感觉继续深究收获也不太大了。随着职业生涯慢慢增长，各种业务逻辑的经历，心里算是有一种很特别的紧迫感。Lodash是Node的包里面引用的最多的package之一，和underscore——backbone的依赖库有千丝万缕的关系。阅读Lodash的动机有两个,一是看看那些被精炼的辅助函数有哪些是怎么写，而是lodash">
+<meta property="og:updated_time" content="2016-04-29T19:12:29.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Lodash源码阅读笔记(一)">
+<meta name="twitter:description" content="开始看看Lodash的源码了。Backbone的源码100%是没有彻底了解，但是感觉继续深究收获也不太大了。随着职业生涯慢慢增长，各种业务逻辑的经历，心里算是有一种很特别的紧迫感。Lodash是Node的包里面引用的最多的package之一，和underscore——backbone的依赖库有千丝万缕的关系。阅读Lodash的动机有两个,一是看看那些被精炼的辅助函数有哪些是怎么写，而是lodash">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Lodash源码阅读笔记(一) | Que's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?c34d46bb312efb9536996b40f3658645";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Que's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">WebFrontEnd Development</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Lodash源码阅读笔记(一)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-04-30T00:00:00+08:00" content="2016-04-30">
+              2016-04-30
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/04/30/lodash/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/04/30/lodash/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="What"><a href="#What" class="headerlink" title="What"></a>What</h1><ol>
+<li>Lodash是一个著名的javascript原生库，不需要引入其他第三方依赖。是一个意在提高开发者效率,提高JS原生方法性能的JS库。</li>
+<li>Lodash是underscore的下一代产物，最初它是underscore的一个fork。</li>
+<li>underscore初衷是提供夸浏览器的api，lodash则意在提供性能卓越的工具。</li>
+<li>lodash是npm上被依赖的最多的包。——27,552,131 downloads in the last month(上月被下载两千七百五十万)</li>
+</ol>
+<h1 id="Why"><a href="#Why" class="headerlink" title="Why"></a>Why</h1><p>提高下自己的相关能力。</p>
+<h1 id="How"><a href="#How" class="headerlink" title="How"></a>How</h1><p>源码到底不是用来阅读的。上一次阅读backbone就有了体会了，但是lodash作为一个工具库，没有太复杂的逻辑，那么我就一边看api，然后自己实现一次(或者直接给出思路)，然后看lodash怎么实现。就这样了。</p>
+<h1 id="Array"><a href="#Array" class="headerlink" title="Array"></a>Array</h1><h2 id="chunk"><a href="#chunk" class="headerlink" title="chunk"></a>chunk</h2><p>语法:_.chunk(array, [size=0])<br>用途:将数组拆分成多个size长度的块，并组成一个新数组。如果数组无法被分割成全部等长的块，那么最后剩余的元素将组成一个块。</p>
+<p>个人实现思路思考：</p>
+<ul>
+<li>计算数组长度为N,计算每段开始的index值，然后使用slice实现切割返回组成的数组</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">_.chunk = <span class="function"><span class="keyword">function</span>(<span class="params">array,size</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(size===<span class="number">0</span>||size===<span class="number">1</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> array.map(<span class="function"><span class="keyword">function</span>(<span class="params">v,i</span>)</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> [v]</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> index = <span class="number">0</span>,len=array.length,target=[];</span><br><span class="line">    <span class="keyword">while</span>(index &lt; len)&#123;</span><br><span class="line">        target.push(array.slice(index,index+size));</span><br><span class="line">        index=index+size;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>将数组拼接成字符串，然后切割字符串还原为数组，这个性能似乎并不会比第一个高。就不折腾代码了。</li>
+</ul>
+<p>暂时就这两个思路，看看lodash的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">chunk</span>(<span class="params">array, size, guard</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((guard ? isIterateeCall(array, size, guard) : size === <span class="literal">undefined</span>)) &#123;</span><br><span class="line">    size = <span class="number">1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    size = nativeMax(toInteger(size), <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> length = array ? array.length : <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> (!length || size &lt; <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> index = <span class="number">0</span>,</span><br><span class="line">      resIndex = <span class="number">0</span>,</span><br><span class="line">      result = <span class="built_in">Array</span>(nativeCeil(length / size));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (index &lt; length) &#123;</span><br><span class="line">    result[resIndex++] = baseSlice(array, index, (index += size));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很幸运的，和lodash实现的思路基本一致，只是lodash用了很多辅助函数，但是思路一致。</p>
+<h2 id="compact"><a href="#compact" class="headerlink" title="compact"></a>compact</h2><p>语法:_.compact(array)<br>用途:创建一个移除了所有假值的数组。例如：false、null、 0、””、undefined， 以及NaN 都是 “假值”.</p>
+<p>自己的想法是使用filter过滤即可。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">compact</span>(<span class="params">array</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> array.filter(<span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> e != <span class="literal">undefined</span></span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这是lodash的:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">compact</span>(<span class="params">array</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> index = <span class="number">-1</span>,</span><br><span class="line">      length = array ? array.length : <span class="number">0</span>,</span><br><span class="line">      resIndex = <span class="number">0</span>,</span><br><span class="line">      result = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    <span class="keyword">var</span> value = array[index];</span><br><span class="line">    <span class="keyword">if</span> (value) &#123;</span><br><span class="line">      result[resIndex++] = value;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>使用了while循环，value作为if条件时候会自动转换为boolean值。filter存在旧浏览器兼容问题。</p>
+<h2 id="concat"><a href="#concat" class="headerlink" title="concat"></a>concat</h2><p>语法:_.concat(array, [values])<br>用途:创建一个用任何数组 或 值连接的新数组。</p>
+<p>个人看法:concat数组里面有原生支持，但是lodash进行了进一步封装:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> array = [<span class="number">1</span>];</span><br><span class="line"><span class="keyword">var</span> other = _.concat(array, <span class="number">2</span>, [<span class="number">3</span>], [[<span class="number">4</span>]]);</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(other);</span><br><span class="line"><span class="comment">// =&gt; [1, 2, 3, [4]]</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(array);</span><br><span class="line"><span class="comment">// =&gt; [1]</span></span><br></pre></td></tr></table></figure></p>
+<p>个人思路是直接将数据遍历调用concat即可<br>个人实现:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_.concat = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> slice = <span class="built_in">Array</span>.prototype.slice;</span><br><span class="line">    <span class="keyword">var</span> args = slice.call(<span class="built_in">arguments</span>);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">var</span> a= <span class="number">1</span>,len=args[<span class="number">0</span>].length;a &lt; len;a++)&#123;</span><br><span class="line">        arr = arr.concat(args[a]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>lodash的代码：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">concat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> length = <span class="built_in">arguments</span>.length,</span><br><span class="line">      args = <span class="built_in">Array</span>(length ? length - <span class="number">1</span> : <span class="number">0</span>),</span><br><span class="line">      array = <span class="built_in">arguments</span>[<span class="number">0</span>],</span><br><span class="line">      index = length;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (index--) &#123;</span><br><span class="line">    args[index - <span class="number">1</span>] = <span class="built_in">arguments</span>[index];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> length</span><br><span class="line">    ? arrayPush(isArray(array) ? copyArray(array) : [array], baseFlatten(args, <span class="number">1</span>))</span><br><span class="line">    : [];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>while的性能比for循环更高吗？这点先mark待我找下资料看看。<br>concat在lodash里面的实现考虑了更多的东西,比如lenght=0返回空数组，否则使用arrayPush添加数组。另外还会根据数据类型来将数组统一转换为数组传入arrayPush，思路上倒是没差。</p>
+<h2 id="diffence相关"><a href="#diffence相关" class="headerlink" title="diffence相关"></a>diffence相关</h2><h3 id="diffence"><a href="#diffence" class="headerlink" title="diffence"></a>diffence</h3><p>语法:_.difference(array, [values])<br>用途：删除array中的[values]</p>
+<p>这个个人感觉还是直接遍历一次[values]从array里面进行splice删除即可。<br>个人的实现:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">_.difference = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> slice, args, arr;</span><br><span class="line">    slice = <span class="built_in">Array</span>.prototype.slice;</span><br><span class="line">    args = slice.call(<span class="built_in">arguments</span>);</span><br><span class="line">    arr = args[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">var</span> a= <span class="number">0</span>,len=args[<span class="number">1</span>].length;a&lt;len;a++)&#123;</span><br><span class="line">        <span class="comment">//如果存在那就用splice把它从数组里面干掉</span></span><br><span class="line">        arr.indexOf(args[<span class="number">1</span>][a])&gt;<span class="number">-1</span>?arr.splice(arr.indexOf(args[<span class="number">1</span>][a]),<span class="number">1</span>):<span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="differenceBy"><a href="#differenceBy" class="headerlink" title="differenceBy"></a>differenceBy</h3><p>语法:_.differenceBy(array, [values], [iteratee=_.identity])<br>用途：这个方法类似 _.difference，除了它接受一个 iteratee 调用每一个数组和值。iteratee 会传入一个参数：(value)。</p>
+<p>个人想法是和difference几乎一样，只是每次都将array和[values]里面的值进行了换算后再执行difference，个人实现思路是建立一个两个数组映射,使用一个对象保存前后值类似这样：<br>{“变化后值”:”变化前值”},然后使用difference计算，算完后使用这个对象还原变化前数据即可<br>个人代码:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">_.differenceBy = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> arr1,arr2,fun,mapObj=&#123;&#125;;</span><br><span class="line">        arr1 = <span class="built_in">arguments</span>[<span class="number">0</span>];</span><br><span class="line">        arr2 = <span class="built_in">arguments</span>[<span class="number">1</span>];</span><br><span class="line">        fun  = <span class="built_in">arguments</span>[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//map映射</span></span><br><span class="line">    arr1.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">v,i</span>) </span>&#123;</span><br><span class="line">        mapObj[fun(arr1[i])] = arr1[i];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    arr1 = arr1.map(<span class="function"><span class="keyword">function</span>(<span class="params">v</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> fun(v);</span><br><span class="line">    &#125;);</span><br><span class="line">    arr2 = arr2.map(<span class="function"><span class="keyword">function</span>(<span class="params">v</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> fun(v);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">var</span> beforeMap = _.difference(arr1,arr2);</span><br><span class="line">    <span class="keyword">return</span> beforeMap.map(<span class="function"><span class="keyword">function</span>(<span class="params">v</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> mapObj[v];</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>算起来的话，differenceBy一共实现了5次遍历。效率不太高。</p>
+<h3 id="differenceWith"><a href="#differenceWith" class="headerlink" title="differenceWith"></a>differenceWith</h3><p>语法:<em>.differenceWith(array, [values], [comparator])<br>用途:这个方法类似 </em>.difference，除了它接受一个 comparator 调用每一个数组元素的值。 comparator 会传入2个参数：(arrVal, othVal)。</p>
+<p>想了想和differenceBy的区别，应该是酱紫的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">_.differenceWith= <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> arr1,arr2,fun,target=[];</span><br><span class="line">    arr1 = <span class="built_in">arguments</span>[<span class="number">0</span>];</span><br><span class="line">    arr2 = <span class="built_in">arguments</span>[<span class="number">1</span>];</span><br><span class="line">    fun  = <span class="built_in">arguments</span>[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">    arr1.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">v,i</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>( !fun(arr1[i],arr2[i]) )&#123;</span><br><span class="line">            target.push(arr1[i])</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>differenceBy的迭代器是用来各自计算对比用的，而differenceWith呢，是用来直接把两个值传入，整个对比细节它给包圆了。。。。</p>
+<p>三个东西自己各自实现了一把，看lodash怎么实现的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> difference = rest(<span class="function"><span class="keyword">function</span>(<span class="params">array, values</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> isArrayLikeObject(array)</span><br><span class="line">    ? baseDifference(array, baseFlatten(values, <span class="number">1</span>, isArrayLikeObject, <span class="literal">true</span>))</span><br><span class="line">    : [];</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> differenceBy = rest(<span class="function"><span class="keyword">function</span>(<span class="params">array, values</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> iteratee = last(values);</span><br><span class="line">  <span class="keyword">if</span> (isArrayLikeObject(iteratee)) &#123;</span><br><span class="line">    iteratee = <span class="literal">undefined</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> isArrayLikeObject(array)</span><br><span class="line">    ? baseDifference(array, baseFlatten(values, <span class="number">1</span>, isArrayLikeObject, <span class="literal">true</span>), getIteratee(iteratee))</span><br><span class="line">    : [];</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">var</span> differenceWith = rest(<span class="function"><span class="keyword">function</span>(<span class="params">array, values</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> comparator = last(values);</span><br><span class="line">  <span class="keyword">if</span> (isArrayLikeObject(comparator)) &#123;</span><br><span class="line">    comparator = <span class="literal">undefined</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> isArrayLikeObject(array)</span><br><span class="line">    ? baseDifference(array, baseFlatten(values, <span class="number">1</span>, isArrayLikeObject, <span class="literal">true</span>), <span class="literal">undefined</span>, comparator)</span><br><span class="line">    : [];</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>公共方法有些多的样子，无所谓了，一个个给翻出来好了</p>
+<h3 id="rest的："><a href="#rest的：" class="headerlink" title="rest的："></a>rest的：</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> apply = <span class="built_in">require</span>(<span class="string">'./_apply'</span>),</span><br><span class="line">    toInteger = <span class="built_in">require</span>(<span class="string">'./toInteger'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> FUNC_ERROR_TEXT = <span class="string">'Expected a function'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> nativeMax = <span class="built_in">Math</span>.max;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rest</span>(<span class="params">func, start</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> func != <span class="string">'function'</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(FUNC_ERROR_TEXT);</span><br><span class="line">  &#125;</span><br><span class="line">  start = nativeMax(start === <span class="literal">undefined</span> ? (func.length - <span class="number">1</span>) : toInteger(start), <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> args = <span class="built_in">arguments</span>,</span><br><span class="line">        index = <span class="number">-1</span>,</span><br><span class="line">        length = nativeMax(args.length - start, <span class="number">0</span>),</span><br><span class="line">        array = <span class="built_in">Array</span>(length);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">      array[index] = args[start + index];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">switch</span> (start) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> func.call(<span class="keyword">this</span>, array);</span><br><span class="line">      <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> func.call(<span class="keyword">this</span>, args[<span class="number">0</span>], array);</span><br><span class="line">      <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> func.call(<span class="keyword">this</span>, args[<span class="number">0</span>], args[<span class="number">1</span>], array);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> otherArgs = <span class="built_in">Array</span>(start + <span class="number">1</span>);</span><br><span class="line">    index = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span> (++index &lt; start) &#123;</span><br><span class="line">      otherArgs[index] = args[index];</span><br><span class="line">    &#125;</span><br><span class="line">    otherArgs[start] = array;</span><br><span class="line">    <span class="keyword">return</span> apply(func, <span class="keyword">this</span>, otherArgs);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = rest;</span><br></pre></td></tr></table></figure>
+<p>当然，现在不深究内部，搞明白函数干嘛用的即可，保持问题聚焦~~~<br>rest这个函数注释里面说了是参考 <a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/rest_parameters" target="_blank" rel="external">这个链接</a> 可以看看，总之，这个函数是用来处理剩余参数的，网站上有句话说的很透彻:</p>
+<p><b>剩余参数只包含那些没有对应形参的实参,而 arguments 对象包含了传给函数的所有实参</b></p>
+<p>别的暂时不深究。</p>
+<p>一句话来说，rest就是处理剩余函数的，免得像我那样老是写arguments[0]，arguments[1]，arguments[2]。</p>
+<h3 id="isArrayLikeObject"><a href="#isArrayLikeObject" class="headerlink" title="isArrayLikeObject"></a>isArrayLikeObject</h3><p>为了简洁不贴代码了，验证是否isObjectLike(value) &amp;&amp; isArrayLike(value);</p>
+<h3 id="baseDifference"><a href="#baseDifference" class="headerlink" title="baseDifference"></a>baseDifference</h3><p>baseDifference是这里的重点。。。被高度复用了。。。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseDifference</span>(<span class="params">array, values, iteratee, comparator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> index = <span class="number">-1</span>,</span><br><span class="line">      includes = arrayIncludes,</span><br><span class="line">      isCommon = <span class="literal">true</span>,</span><br><span class="line">      length = array.length,</span><br><span class="line">      result = [],</span><br><span class="line">      valuesLength = values.length;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!length) &#123;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (iteratee) &#123;</span><br><span class="line">    values = arrayMap(values, baseUnary(iteratee));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (comparator) &#123;</span><br><span class="line">    includes = arrayIncludesWith;</span><br><span class="line">    isCommon = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (values.length &gt;= LARGE_ARRAY_SIZE) &#123;</span><br><span class="line">    includes = cacheHas;</span><br><span class="line">    isCommon = <span class="literal">false</span>;</span><br><span class="line">    values = <span class="keyword">new</span> SetCache(values);</span><br><span class="line">  &#125;</span><br><span class="line">  outer:</span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    <span class="keyword">var</span> value = array[index],</span><br><span class="line">        computed = iteratee ? iteratee(value) : value;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isCommon &amp;&amp; computed === computed) &#123;</span><br><span class="line">      <span class="keyword">var</span> valuesIndex = valuesLength;</span><br><span class="line">      <span class="keyword">while</span> (valuesIndex--) &#123;</span><br><span class="line">        <span class="keyword">if</span> (values[valuesIndex] === computed) &#123;</span><br><span class="line">          <span class="keyword">continue</span> outer;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      result.push(value);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!includes(values, computed, comparator)) &#123;</span><br><span class="line">      result.push(value);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/28/gulp/" rel="next" title="Gulp相关汇总">
+                <i class="fa fa-chevron-left"></i> Gulp相关汇总
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/04/30/lodash/"
+           data-title="Lodash源码阅读笔记(一)" data-url="http://yoursite.com/2016/04/30/lodash/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/default_avatar.jpg"
+               alt="que01" />
+          <p class="site-author-name" itemprop="name">que01</p>
+          <p class="site-description motion-element" itemprop="description">自己的学习记录</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">29</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#What"><span class="nav-number">1.</span> <span class="nav-text">What</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Why"><span class="nav-number">2.</span> <span class="nav-text">Why</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#How"><span class="nav-number">3.</span> <span class="nav-text">How</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Array"><span class="nav-number">4.</span> <span class="nav-text">Array</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#chunk"><span class="nav-number">4.1.</span> <span class="nav-text">chunk</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compact"><span class="nav-number">4.2.</span> <span class="nav-text">compact</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#concat"><span class="nav-number">4.3.</span> <span class="nav-text">concat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#diffence相关"><span class="nav-number">4.4.</span> <span class="nav-text">diffence相关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#diffence"><span class="nav-number">4.4.1.</span> <span class="nav-text">diffence</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#differenceBy"><span class="nav-number">4.4.2.</span> <span class="nav-text">differenceBy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#differenceWith"><span class="nav-number">4.4.3.</span> <span class="nav-text">differenceWith</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rest的："><span class="nav-number">4.4.4.</span> <span class="nav-text">rest的：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#isArrayLikeObject"><span class="nav-number">4.4.5.</span> <span class="nav-text">isArrayLikeObject</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#baseDifference"><span class="nav-number">4.4.6.</span> <span class="nav-text">baseDifference</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  
+
+
+  
+
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"que01"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+
+  
+  
+
+
+</body>
+</html>
