@@ -64,7 +64,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="javascript,双向绑定原理," />
 
 
 
@@ -80,16 +80,16 @@
 
 
 
-<meta name="description" content="这是很典型的错误处理片段,可以在javascript出现错误时候通知用户,通过ErrerHandler不仅可以自行处理可能出现错误,也可以通过Ajax发送请求告知开发者错误发生">
+<meta name="description" content="AngularJS在一年前几乎是火的没边，但是入了16年好像就被React整个儿盖下去了。在AngularJS尚在热火的那会儿VueJS也出来了，但是各人也没有太在意，如今VueJS发展也见见好起来。当然，本文只是想找个由头说说MVVM的双向绑定，研究一下双向绑定的技术。算是上一篇模板技术的补充。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="错误处理片段">
-<meta property="og:url" content="http://yoursite.com/2014/03/25/throw_a_errors/index.html">
+<meta property="og:title" content="MVVM基础之双向绑定原理">
+<meta property="og:url" content="http://yoursite.com/2016/05/03/two-way-bind/index.html">
 <meta property="og:site_name" content="Que's Blog">
-<meta property="og:description" content="这是很典型的错误处理片段,可以在javascript出现错误时候通知用户,通过ErrerHandler不仅可以自行处理可能出现错误,也可以通过Ajax发送请求告知开发者错误发生">
-<meta property="og:updated_time" content="2016-03-25T14:57:36.000Z">
+<meta property="og:description" content="AngularJS在一年前几乎是火的没边，但是入了16年好像就被React整个儿盖下去了。在AngularJS尚在热火的那会儿VueJS也出来了，但是各人也没有太在意，如今VueJS发展也见见好起来。当然，本文只是想找个由头说说MVVM的双向绑定，研究一下双向绑定的技术。算是上一篇模板技术的补充。">
+<meta property="og:updated_time" content="2016-05-06T15:32:10.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="错误处理片段">
-<meta name="twitter:description" content="这是很典型的错误处理片段,可以在javascript出现错误时候通知用户,通过ErrerHandler不仅可以自行处理可能出现错误,也可以通过Ajax发送请求告知开发者错误发生">
+<meta name="twitter:title" content="MVVM基础之双向绑定原理">
+<meta name="twitter:description" content="AngularJS在一年前几乎是火的没边，但是入了16年好像就被React整个儿盖下去了。在AngularJS尚在热火的那会儿VueJS也出来了，但是各人也没有太在意，如今VueJS发展也见见好起来。当然，本文只是想找个由头说说MVVM的双向绑定，研究一下双向绑定的技术。算是上一篇模板技术的补充。">
 
 
 
@@ -107,7 +107,7 @@
   };
 </script>
 
-  <title> 错误处理片段 | Que's Blog </title>
+  <title> MVVM基础之双向绑定原理 | Que's Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -237,7 +237,7 @@
             
             
               
-                错误处理片段
+                MVVM基础之双向绑定原理
               
             
           </h1>
@@ -249,8 +249,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2014-03-25T00:00:00+08:00" content="2014-03-25">
-              2014-03-25
+            <time itemprop="dateCreated" datetime="2016-05-03T21:58:38+08:00" content="2016-05-03">
+              2016-05-03
             </time>
           </span>
 
@@ -260,8 +260,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2014/03/25/throw_a_errors/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2014/03/25/throw_a_errors/" itemprop="commentsCount"></span>
+                <a href="/2016/05/03/two-way-bind/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/03/two-way-bind/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -271,7 +271,7 @@
 
           
           
-             <span id="/2014/03/25/throw_a_errors/" class="leancloud_visitors" data-flag-title="错误处理片段">
+             <span id="/2016/05/03/two-way-bind/" class="leancloud_visitors" data-flag-title="MVVM基础之双向绑定原理">
                &nbsp; | &nbsp;
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -293,21 +293,66 @@
       
 
       
-        <h2 id="just-a-code-snipt…"><a href="#just-a-code-snipt…" class="headerlink" title="just a code snipt…"></a>just a code snipt…</h2><pre><code>try{
-    //如果发生意外,抛出一个错误
-    throw{
-        name:&quot;ErrerType&quot;,//自定义错误类型
-        message:&quot;oops&quot;,
-        extra:&quot;this was ratherembarrassing&quot;,
-        remedy:ErrerHandler //指定错误处理函数
-    }
-}catch(e){
-    //通知用户
-    alert(e.message); //print &quot;opps&quot;
-    //处理错误
-    e.remedy();//调用ErrerHandler
-}
-</code></pre>
+        <h1 id="双向绑定的实现原理"><a href="#双向绑定的实现原理" class="headerlink" title="双向绑定的实现原理"></a>双向绑定的实现原理</h1><p>到处找了下数据双向绑定的资料。这里跑回来总结一下双向绑定实现的方式:</p>
+<ol>
+<li>依赖ES5的Object.defineProperty方法构成的观察者模式(订阅发布模式|Pub/Sub)</li>
+<li>类似AngularJS的脏值检查模式</li>
+</ol>
+<h2 id="观察者模式"><a href="#观察者模式" class="headerlink" title="观察者模式"></a>观察者模式</h2><blockquote>
+<p>有关观察者模式这里基本引用来自<a href="http://www.cnblogs.com/TomXu/archive/2012/03/02/2355128.html" target="_blank" rel="external">汤姆大叔的博客</a>,需要了解更多可以前往观摩</p>
+</blockquote>
+<p>观察者模式又叫发布订阅模式（Publish/Subscribe），它定义了一种一对多的关系，让多个观察者对象同时监听某一个主题对象，这个主题对象的状态发生变化时就会通知所有的观察者对象，使得它们能够自动更新自己。</p>
+<p>观察者模式的优点(更多详情可以看:</p>
+<ul>
+<li>支持简单的广播通信，自动通知所有已经订阅过的对象。</li>
+<li>页面载入后目标对象很容易与观察者存在一种动态关联，增加了灵活性。</li>
+<li>目标对象与观察者之间的抽象耦合关系能够单独扩展以及重用。</li>
+</ul>
+<p>在javascript开发过程中，因为javascript的特殊性，在JavaScript开发中,我们一般用事件模型来替代传统的发布—订阅模式。</p>
+<p>在MVVM这里，这个订阅发布路径基本是这样的：</p>
+<ol>
+<li><p>Data to View(UpdateView订阅了Model的change事件)<br> a. 首先设置一个UpdateView函数，传入Data就更新View<br> b. Object.defineProperty拦截对象的get和set参数，当发生属性变化时候额外触发UpdateView更新View</p>
+</li>
+<li><p>View to Data(UpdateModel订阅了元素的press、change之类事件)<br> a. 绑定事件 触发时候修改Model,设这个动作叫做UpdateModel<br> b. 触发后进行数据更改</p>
+</li>
+</ol>
+<p>换个通俗的说法就是：Data在改变触发回调时候更新View，而View改动后触发回调更新Data。这里使用观察者模式有两个目的:</p>
+<ol>
+<li>解耦:目标对象与观察者之间的抽象耦合关系能够单独扩展以及重用</li>
+<li>1对多:一个数据可能在一个View里面多处使用。</li>
+</ol>
+<p>观察者模式其实就这么点了。View2Data随便干过点js开发的人都会理解这个事件触发机制。整个MVVM双向绑定思路里面相对麻烦的其实是Data2View。</p>
+<p>当Dom修改时候会有click，change，pressdown等事件可以响应、捕捉。</p>
+<p>但是Data数据修改时候却没有什么时机可以用来捕捉以触发一个回调。</p>
+<p>这个时候Object.defineProperty就成了唯一的救命稻草——我们在通过这个方法劫持get和set，对它进行了『覆写』，并在这些个覆写的函数里面手动调用相应的回调——事实上它的机制就是那么笨拙，只是把它写到set、get里面自动调用不需要你手动调用了而已，并且模拟了一个change事件。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 拦截 object 的 prop 属性的 get 和 set 方法</span></span><br><span class="line"><span class="built_in">Object</span>.defineProperty(object, prop, &#123;</span><br><span class="line">    get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getValue(object, prop);</span><br><span class="line">    &#125;,</span><br><span class="line"></span><br><span class="line">    set: <span class="function"><span class="keyword">function</span>(<span class="params">newValue</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> oldValue = <span class="keyword">this</span>.getValue(object, prop);</span><br><span class="line">        <span class="keyword">if</span> (newValue !== oldValue) &#123;</span><br><span class="line">            <span class="keyword">this</span>.setValue(object, newValue, prop);</span><br><span class="line">            <span class="comment">// 触发变化回调</span></span><br><span class="line">            <span class="keyword">this</span>.triggerChange(prop, newValue, oldValue);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="脏值检查模式"><a href="#脏值检查模式" class="headerlink" title="脏值检查模式"></a>脏值检查模式</h2><blockquote>
+<p>脏检查即一种不关心你如何以及何时改变的数据，只关心在特定的检查阶段数据是否改变的数据监听技术。</p>
+</blockquote>
+<p>首先说下脏检查模式和观察者模式最大的区别:<br>就像之前已经说过了，如果不使用Object.defineProperty那么就无法在值发生改变时候触发动作。观察者模式使用Object.defineProperty对get和set进行了覆写，但是脏检查模式没有这样做。这意味它的操作不是被动调用，而是“主动”进入。</p>
+<p>这个被动与主动，就是观察者模式，和脏检查模式最根源的区别。</p>
+<p>脏检查如何进行观察对象的对比和更新，这是一个处理细节，在原理阶段可以不深究。</p>
+<p>更加关心的是，这个主动进入，是遵循怎样的方式。这里细节相对多，以angularJS为例：</p>
+<ol>
+<li>DOM事件，譬如用户输入文本，点击按钮等。(ng-click)</li>
+<li>XHR响应事件 ($http)</li>
+<li>浏览器Location变更事件 ($location)</li>
+<li>Timer事件($timeout, $interval)</li>
+<li>执行$digest()或$apply()</li>
+</ol>
+<p>这里有写地方需要重点突出:</p>
+<ol>
+<li>脏检测不是心跳检测。它不会轮询检查数据</li>
+<li>数据变化时候默认不会有回调被调用——如果你用过$apply()就知道。它是基于上诉时机触发的。</li>
+<li>数据数组的splice等操作会触发Data2View，这是因为数组的方法被重写了。这点同之前一样。</li>
+</ol>
+<p>当然，脏检测同观察者模式相比也是有优点的:</p>
+<blockquote>
+<p>1.脏检查完全不关心你改变数据的方式，而常规的set, get的方式则会强加许多限制<br>2.脏检查可以实现批处理完数据之后，再去统一更新view.<br>3.脏检查其实比 GET/SET 更容易实现。脏检查是个单向的检查流程(请不要和双向绑定发生混淆)，可以实现_任意复杂度的表达式支持。而get/set的方式则需要处理复杂依赖链，基本上表达式支持都是阉割的(使用时就像踩雷).<br>——摘自<a href="https://regularjs.github.io/guide/zh/advanced/dirty.html" target="_blank" rel="external">&lt;&lt;脏检查: 数据绑定的秘密&gt;&gt;</a></p>
+</blockquote>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>暂时收尾一下，MVVM必然是个大话题，但是这里首先主要总结原理，指明下一步研究方向。到此数据绑定的原理基本梳理了一遍。此文暂且收结。</p>
+<h1 id="参考文章："><a href="#参考文章：" class="headerlink" title="参考文章："></a>参考文章：</h1><p><a href="http://www.cnblogs.com/TomXu/archive/2012/03/02/2355128.html" target="_blank" rel="external">深入理解JavaScript系列（32）：设计模式之观察者模式</a><br><a href="https://segmentfault.com/a/1190000004847657" target="_blank" rel="external">利用 JavaScript 数据绑定实现一个简单的 MVVM 库</a><br><a href="https://regularjs.github.io/guide/zh/advanced/dirty.html" target="_blank" rel="external">脏检查: 数据绑定的秘密</a></p>
+
       
     </div>
     
@@ -325,22 +370,26 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag">#javascript</a>
+          
+            <a href="/tags/双向绑定原理/" rel="tag">#双向绑定原理</a>
+          
+        </div>
+      
 
       
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2014/03/22/github_learn/" rel="next" title="github学习笔记">
-                <i class="fa fa-chevron-left"></i> github学习笔记
+              <a href="/2016/04/30/template/" rel="next" title="template 模板技术">
+                <i class="fa fa-chevron-left"></i> template 模板技术
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2014/03/31/animate/" rel="prev" title="Javascript的元素运动(一)">
-                Javascript的元素运动(一) <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -366,8 +415,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2014/03/25/throw_a_errors/"
-           data-title="错误处理片段" data-url="http://yoursite.com/2014/03/25/throw_a_errors/">
+      <div class="ds-thread" data-thread-key="2016/05/03/two-way-bind/"
+           data-title="MVVM基础之双向绑定原理" data-url="http://yoursite.com/2016/05/03/two-way-bind/">
       </div>
     
   </div>
@@ -451,7 +500,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#just-a-code-snipt…"><span class="nav-number">1.</span> <span class="nav-text">just a code snipt…</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#双向绑定的实现原理"><span class="nav-number">1.</span> <span class="nav-text">双向绑定的实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#观察者模式"><span class="nav-number">1.1.</span> <span class="nav-text">观察者模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#脏值检查模式"><span class="nav-number">1.2.</span> <span class="nav-text">脏值检查模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章："><span class="nav-number">3.</span> <span class="nav-text">参考文章：</span></a></li></ol></div>
             
           </div>
         </section>
