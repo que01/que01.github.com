@@ -80,16 +80,16 @@
 
 
 
-<meta name="description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深链接，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
+<meta name="description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深理解，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="React全家桶:react-starter-kit">
+<meta property="og:title" content="React全家桶:react-starter-kit之一">
 <meta property="og:url" content="http://www.que01.top/2016/06/08/react-starter-kit-1/index.html">
 <meta property="og:site_name" content="Que's Blog">
-<meta property="og:description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深链接，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
-<meta property="og:updated_time" content="2016-06-10T08:08:22.000Z">
+<meta property="og:description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深理解，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
+<meta property="og:updated_time" content="2016-06-21T15:31:43.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="React全家桶:react-starter-kit">
-<meta name="twitter:description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深链接，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
+<meta name="twitter:title" content="React全家桶:react-starter-kit之一">
+<meta name="twitter:description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深理解，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
 
 
 
@@ -107,7 +107,7 @@
   };
 </script>
 
-  <title> React全家桶:react-starter-kit | Que's Blog </title>
+  <title> React全家桶:react-starter-kit之一 | Que's Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -237,7 +237,7 @@
             
             
               
-                React全家桶:react-starter-kit
+                React全家桶:react-starter-kit之一
               
             
           </h1>
@@ -271,7 +271,7 @@
 
           
           
-             <span id="/2016/06/08/react-starter-kit-1/" class="leancloud_visitors" data-flag-title="React全家桶:react-starter-kit">
+             <span id="/2016/06/08/react-starter-kit-1/" class="leancloud_visitors" data-flag-title="React全家桶:react-starter-kit之一">
                &nbsp; | &nbsp;
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -319,7 +319,7 @@
 <ol>
 <li>安装tmodjs-loader: <code>npm i tmodjs-loader –save-dev</code></li>
 <li>转换jade2html: <a href="http://html2jade.org/" target="_blank" rel="external">html2jade</a>,将jade贴到右边左边会有编译的HTML，补充好变量位置即可。</li>
-<li>设置webpack的loader<br>在 <code>tools/webpack.config.js</code> line127左右的位置插入y以下代码，为模板设置正确的loader<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  test: /\.html$/,</span><br><span class="line">  loader: &quot;tmodjs&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<li>设置webpack的loader<br>在 <code>tools/webpack.config.js</code> line127左右的位置插入以下代码，为模板设置正确的loader<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  test: /\.html$/,</span><br><span class="line">  loader: &quot;tmodjs&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
 <p>关键上下文代码之一：<br>除此以外，在src/content目录下有若干的jade文件，这个是Content Component的jade文件，为了去除jade，我们将它转换为markdown文件即可。Content Component逻辑中已经配置好markdown文章的逻辑。不需要操作更多。</p>
@@ -371,7 +371,7 @@
 <p>下面是具体code：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">//file:Tags.js</span><br><span class="line">import React, &#123; PropTypes &#125; from &apos;react&apos;;</span><br><span class="line">import withStyles from &apos;isomorphic-style-loader/lib/withStyles&apos;;</span><br><span class="line">import s from &apos;./Tags.css&apos;;</span><br><span class="line"></span><br><span class="line">const title = &apos;热门标签&apos;;</span><br><span class="line"></span><br><span class="line">function Tags(props, context) &#123;</span><br><span class="line">  context.setTitle(title);</span><br><span class="line">  return (</span><br><span class="line">    &lt;div className=&#123;s.root&#125;&gt;</span><br><span class="line">      &lt;div className=&#123;s.container&#125;&gt;</span><br><span class="line">        &lt;h1&gt;&#123;title&#125;&lt;/h1&gt;</span><br><span class="line">        &lt;div&gt;</span><br><span class="line">          &#123;props.tags.map((item, index) =&gt; (</span><br><span class="line">            &lt;span className=&#123;s.tags&#125; key=&#123;index&#125;&gt;&#123;item.name&#125;&lt;/span&gt;</span><br><span class="line">          ))&#125;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Tags.contextTypes = &#123; setTitle: PropTypes.func.isRequired &#125;;</span><br><span class="line"></span><br><span class="line">export default withStyles(s)(Tags);</span><br><span class="line"></span><br><span class="line">//file:index.js</span><br><span class="line">import React from &apos;react&apos;;</span><br><span class="line">import Tags from &apos;./Tags&apos;;</span><br><span class="line">import fetch from &apos;../../core/fetch&apos;;</span><br><span class="line"></span><br><span class="line">export default &#123;</span><br><span class="line"></span><br><span class="line">  path: &apos;/tags&apos;,</span><br><span class="line"></span><br><span class="line">  async action() &#123;</span><br><span class="line">    const resp = await fetch(&apos;/graphql&apos;, &#123;</span><br><span class="line">      method: &apos;post&apos;,</span><br><span class="line">      headers: &#123;</span><br><span class="line">        Accept: &apos;application/json&apos;,</span><br><span class="line">        &apos;Content-Type&apos;: &apos;application/json&apos;,</span><br><span class="line">      &#125;,</span><br><span class="line">      body: JSON.stringify(&#123;</span><br><span class="line">        query: &apos;&#123;tags&#123;name&#125;&#125;&apos;,</span><br><span class="line">      &#125;),</span><br><span class="line">      credentials: &apos;include&apos;,</span><br><span class="line">    &#125;);</span><br><span class="line">    const &#123; data &#125; = await resp.json();</span><br><span class="line"></span><br><span class="line">    return &lt;Tags tags=&#123;data.tags&#125; /&gt;;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 <p>css代码就不贴了，虽然它是组件的重要组成部分，但是就逻辑来说，它无关紧要，不是吗？这里简单说下这两个文件，如果说Tags.js是组件的结构逻辑，那么index.js就是数据获取并渲染Tags.js组件的文件。</p>
 <p>做好以上步骤以后，我们需要做最后一步，将其添加到路由内部，是我们访问 <code>/tags</code>时候可以访问到。<br>一下是关键代码，文件位置是 <code>/src/routes/index.js</code></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tags <span class="keyword">from</span> <span class="string">'./tags'</span>;</span><br><span class="line">	...</span><br><span class="line">export <span class="keyword">default</span> &#123;</span><br><span class="line">  path: <span class="string">'/'</span>,</span><br><span class="line">  children: [</span><br><span class="line">    home,</span><br><span class="line">    contact,</span><br><span class="line">    login,</span><br><span class="line">    registerSuccess,</span><br><span class="line">    tags,</span><br><span class="line">    register,</span><br><span class="line">    content,</span><br><span class="line">    error,</span><br><span class="line">  ],</span><br><span class="line">  <span class="keyword">async</span> action(&#123; next, render, context &#125;) &#123;</span><br><span class="line">    <span class="keyword">const</span> component = <span class="keyword">await</span> next();</span><br><span class="line">    <span class="keyword">if</span> (component === <span class="literal">undefined</span>) <span class="keyword">return</span> component;</span><br><span class="line">    <span class="keyword">return</span> render(</span><br><span class="line">      <span class="xml"><span class="tag">&lt;<span class="name">App</span> <span class="attr">context</span>=<span class="string">&#123;context&#125;</span>&gt;</span>&#123;component&#125;<span class="tag">&lt;/<span class="name">App</span>&gt;</span></span></span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tags <span class="keyword">from</span> <span class="string">'./tags'</span>;</span><br><span class="line">	...</span><br><span class="line">export <span class="keyword">default</span> &#123;</span><br><span class="line">  path: <span class="string">'/'</span>,</span><br><span class="line">  children: [</span><br><span class="line">    home,</span><br><span class="line">    contact,</span><br><span class="line">    login,</span><br><span class="line">    registerSuccess,</span><br><span class="line">    tags,</span><br><span class="line">    register,</span><br><span class="line">    content,</span><br><span class="line">    error,</span><br><span class="line">  ],</span><br><span class="line">  <span class="keyword">async</span> action(&#123; next, render, context &#125;) &#123;</span><br><span class="line">    <span class="keyword">const</span> component = <span class="keyword">await</span> next();</span><br><span class="line">    <span class="keyword">if</span> (component === <span class="literal">undefined</span>) <span class="keyword">return</span> component;</span><br><span class="line">    <span class="keyword">return</span> render(</span><br><span class="line">      &lt;App context=&#123;context&#125;&gt;&#123;component&#125;&lt;/App&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>关键点在于import和children中的tags。这里有个非常重要的事情是，自定义组件，请放在content上面(<b>重要的事情说三遍:</b>请放在content上面!请放在content上面!请放在content上面!),如果你不这样做，就无法保证自己路由优先基本，实质上代码逻辑中，经个人调试，会有一个『*』的路由，如果你不放到上面，它就被『*』匹配了,这样就没你的页面什么事情了，因为根本不会往下走了！</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文虽然不是深度性的文章，但是确实是一个大纲性质和入门的文章。不管是mongoose、API、GraphQL还是React，他们几乎每个都能写本书。<br>所以说，文章虽然浅显，但是真想用好react-starter-kit，还是需要相对巨量的知识储备。</p>
 <p>react-starter-kit，个人认为，虽然是for starter，但是是相对于react-starter-kit的受众starter来说，它实在不是相对于前端初学者。</p>
@@ -422,6 +422,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2016/06/16/react-starter-kit-2/" rel="prev" title="React全家桶:react-starter-kit之二">
+                React全家桶:react-starter-kit之二 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -447,7 +451,7 @@
   <div class="comments" id="comments">
     
       <div class="ds-thread" data-thread-key="2016/06/08/react-starter-kit-1/"
-           data-title="React全家桶:react-starter-kit" data-url="http://www.que01.top/2016/06/08/react-starter-kit-1/">
+           data-title="React全家桶:react-starter-kit之一" data-url="http://www.que01.top/2016/06/08/react-starter-kit-1/">
       </div>
     
   </div>
@@ -492,7 +496,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">32</span>
+              <span class="site-state-item-count">33</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
