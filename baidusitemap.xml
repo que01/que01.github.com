@@ -368,12 +368,12 @@
 
     
   <url>
-    <loc>http://www.que01.top/2015/02/02/mocha_test_2/</loc>
+    <loc>http://www.que01.top/2015/01/11/read_plan/</loc>
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     <data>
         <display>
-        <title>Mocha测试框架笔记(二)</title>
-        <pubTime>2015-02-01T16:00:00.000Z</pubTime>
+        <title>2015年阅读计划</title>
+        <pubTime>2015-01-10T16:00:00.000Z</pubTime>
         
          
            
@@ -398,12 +398,12 @@
 
     
   <url>
-    <loc>http://www.que01.top/2015/11/30/closure2/</loc>
+    <loc>http://www.que01.top/2015/11/01/array2/</loc>
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     <data>
         <display>
-        <title>Javascript闭包“浅”析</title>
-        <pubTime>2015-11-29T16:00:00.000Z</pubTime>
+        <title>Array整理二</title>
+        <pubTime>2015-10-31T16:00:00.000Z</pubTime>
         
          
            
@@ -428,36 +428,6 @@
 
     
   <url>
-    <loc>http://www.que01.top/2015/02/01/mocha_test_1/</loc>
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    <data>
-        <display>
-        <title>Mocha测试框架笔记(一)</title>
-        <pubTime>2015-01-31T16:00:00.000Z</pubTime>
-        
-         
-           
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://www.que01.top/2015/01/11/read_plan/</loc>
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    <data>
-        <display>
-        <title>2015年阅读计划</title>
-        <pubTime>2015-01-10T16:00:00.000Z</pubTime>
-        
-         
-           
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://www.que01.top/2015/03/30/closure/</loc>
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     <data>
@@ -473,12 +443,42 @@
 
     
   <url>
-    <loc>http://www.que01.top/2015/11/01/array2/</loc>
+    <loc>http://www.que01.top/2015/02/01/mocha_test_1/</loc>
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     <data>
         <display>
-        <title>Array整理二</title>
-        <pubTime>2015-10-31T16:00:00.000Z</pubTime>
+        <title>Mocha测试框架笔记(一)</title>
+        <pubTime>2015-01-31T16:00:00.000Z</pubTime>
+        
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.que01.top/2015/02/02/mocha_test_2/</loc>
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    <data>
+        <display>
+        <title>Mocha测试框架笔记(二)</title>
+        <pubTime>2015-02-01T16:00:00.000Z</pubTime>
+        
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://www.que01.top/2015/11/30/closure2/</loc>
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    <data>
+        <display>
+        <title>Javascript闭包“浅”析</title>
+        <pubTime>2015-11-29T16:00:00.000Z</pubTime>
         
          
            
