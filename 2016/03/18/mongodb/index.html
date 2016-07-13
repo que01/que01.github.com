@@ -298,11 +298,11 @@
 
       
         <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>mongodb在linux下安装不太复杂,这里仅仅说非常常见的ubuntu安装。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install mongodb</span><br></pre></td></tr></table></figure>
-<p>如果是OSX，那么使用brew：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install mongodb</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sudo apt-get install mongodb</div></pre></td></tr></table></figure>
+<p>如果是OSX，那么使用brew：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew install mongodb</div></pre></td></tr></table></figure></p>
 <h1 id="运行服务端"><a href="#运行服务端" class="headerlink" title="运行服务端"></a>运行服务端</h1><p>运行命令 <code>mongod</code>即可将mongod服务端运行起来。这里有两个非常有用的参数需要注意：</p>
 <p>1.认证参数： –auth<br>2.数据库参数：–dbpath</p>
-<p>先来看看加上这两个参数后的命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mongod --auth --dbpath ~/workStation/mongodb/learnNode</span><br></pre></td></tr></table></figure></p>
+<p>先来看看加上这两个参数后的命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mongod --auth --dbpath ~/workStation/mongodb/learnNode</div></pre></td></tr></table></figure></p>
 <p>这里要说明两点：</p>
 <ul>
 <li><p>如果没有 <code>–auth</code>,那么数据库是不会认证用户，也就是说可以直接登录CURD而不验证操作者身份。通常本地开发会这样使用，但是个人建议，即使本地开发，最好也不要省略这个步骤，毕竟个人认为，贪图这点方便没有必要。</p>
@@ -310,23 +310,23 @@
 <li><p>如果没有 <code>–dbpath</code>这个属性，那么mongoDB会使用默认的路径：<code>/data/db</code>。新安装的mongoDB第一次报错往往就是没有加上 <code>–dbpath</code>这个参数，导致在/data/db不存在和没有读写权限时候就会导致报错。</p>
 </li>
 </ul>
-<p>如果确实不想指定数据库路径，那么解决办法是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /data/db </span><br><span class="line">chown &lt;youname&gt; /data/db</span><br></pre></td></tr></table></figure></p>
-<h1 id="客户端连接"><a href="#客户端连接" class="headerlink" title="客户端连接"></a>客户端连接</h1><p>如果是本地直接通过 <code>mongod</code>跑起来的服务端，那么只需要运行 <code>mongo</code>即可连上数据库。<br>但是如果是需要认证的服务器，那么需要使用如下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mongo &lt;dbhost&gt;:&lt;port&gt;/&lt;dbname&gt; -u &lt;username&gt; -p &lt;pwd&gt;</span><br></pre></td></tr></table></figure></p>
+<p>如果确实不想指定数据库路径，那么解决办法是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mkdir -p /data/db </div><div class="line">chown &lt;youname&gt; /data/db</div></pre></td></tr></table></figure></p>
+<h1 id="客户端连接"><a href="#客户端连接" class="headerlink" title="客户端连接"></a>客户端连接</h1><p>如果是本地直接通过 <code>mongod</code>跑起来的服务端，那么只需要运行 <code>mongo</code>即可连上数据库。<br>但是如果是需要认证的服务器，那么需要使用如下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mongo &lt;dbhost&gt;:&lt;port&gt;/&lt;dbname&gt; -u &lt;username&gt; -p &lt;pwd&gt;</div></pre></td></tr></table></figure></p>
 <p>这里需要注意的是 尖括号加字符代表是变量，使用时尖括号都是没有的</p>
 <h1 id="Collection中数据的CURD"><a href="#Collection中数据的CURD" class="headerlink" title="Collection中数据的CURD"></a>Collection中数据的CURD</h1><p>这里应该是最重要的一部分了。CURD是最基础也是数据库操作最重要的一部分。</p>
 <p>为了演示如何CURD，熟悉mysql等关系数据库的，你默认这里有一个user的表好了，其实它就是mongoDB里面的collection。同时这里默认你已经在mongoDB的shell里面了。</p>
-<h2 id="C-Create-创建"><a href="#C-Create-创建" class="headerlink" title="C-Create 创建"></a>C-Create 创建</h2><p>先把万年龙套张三弄进来：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zhangsan = &#123;name:&quot;张三&quot;,age:24&#125;;</span><br><span class="line">db.user.insert(zhangsan);</span><br></pre></td></tr></table></figure></p>
+<h2 id="C-Create-创建"><a href="#C-Create-创建" class="headerlink" title="C-Create 创建"></a>C-Create 创建</h2><p>先把万年龙套张三弄进来：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">zhangsan = &#123;name:&quot;张三&quot;,age:24&#125;;</div><div class="line">db.user.insert(zhangsan);</div></pre></td></tr></table></figure></p>
 <p><img src="http://7xpovu.com1.z0.glb.clouddn.com/mongoInsert.png" alt="insert"></p>
-<h2 id="R-read-查询插入结果"><a href="#R-read-查询插入结果" class="headerlink" title="R-read 查询插入结果"></a>R-read 查询插入结果</h2><p>现在看看插入成功没有：<br>运行查询命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.user.find(&#123;name:&quot;张三&quot;&#125;&#125;);</span><br></pre></td></tr></table></figure></p>
+<h2 id="R-read-查询插入结果"><a href="#R-read-查询插入结果" class="headerlink" title="R-read 查询插入结果"></a>R-read 查询插入结果</h2><p>现在看看插入成功没有：<br>运行查询命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">db.user.find(&#123;name:&quot;张三&quot;&#125;&#125;);</div></pre></td></tr></table></figure></p>
 <p><img src="http://7xpovu.com1.z0.glb.clouddn.com/mongoFind.png" alt="find"></p>
-<h2 id="U-update-更新"><a href="#U-update-更新" class="headerlink" title="U-update 更新"></a>U-update 更新</h2><p>为了演示这个，那么我就假装写错了张三名字，改成18吧…<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zhangsan = &#123;name:&quot;张三&quot;,age:18&#125;;</span><br><span class="line">db.user.update(&#123;name:&quot;张三&quot;&#125;，zhangsan);</span><br></pre></td></tr></table></figure></p>
+<h2 id="U-update-更新"><a href="#U-update-更新" class="headerlink" title="U-update 更新"></a>U-update 更新</h2><p>为了演示这个，那么我就假装写错了张三名字，改成18吧…<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">zhangsan = &#123;name:&quot;张三&quot;,age:18&#125;;</div><div class="line">db.user.update(&#123;name:&quot;张三&quot;&#125;，zhangsan);</div></pre></td></tr></table></figure></p>
 <p><img src="http://7xpovu.com1.z0.glb.clouddn.com/mongoUpdate.png" alt="update"><br>恩，请忽略我打错逗号的报错。。。</p>
-<h2 id="D-delete-删除"><a href="#D-delete-删除" class="headerlink" title="D-delete 删除"></a>D-delete 删除</h2><p>删除和插入类似，这里就不截图了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.user.remove(&#123;name:&quot;张三&quot;,age:24&#125;);</span><br></pre></td></tr></table></figure></p>
+<h2 id="D-delete-删除"><a href="#D-delete-删除" class="headerlink" title="D-delete 删除"></a>D-delete 删除</h2><p>删除和插入类似，这里就不截图了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">db.user.remove(&#123;name:&quot;张三&quot;,age:24&#125;);</div></pre></td></tr></table></figure></p>
 <h1 id="管理数据库中Collection-CURD"><a href="#管理数据库中Collection-CURD" class="headerlink" title="管理数据库中Collection(CURD)"></a>管理数据库中Collection(CURD)</h1><p>每个Collection都类似SQL数据库中的一张表，所以除了表中的数据CURD，表本身的操作也非常重要。</p>
-<h2 id="删除Collection-D"><a href="#删除Collection-D" class="headerlink" title="删除Collection(D)"></a>删除Collection(D)</h2><p>这里删除user<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.user.remove();	//删除user内部记录</span><br><span class="line">db.user.drop();		//这是删除collections 在内部数据很多时候 删除collection速度远远比删除文档速度快</span><br></pre></td></tr></table></figure></p>
-<h2 id="新建Collection-C"><a href="#新建Collection-C" class="headerlink" title="新建Collection(C)"></a>新建Collection(C)</h2><p>新建一个，把删掉的重新建立回来…<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.createCollection(&quot;user&quot;)</span><br></pre></td></tr></table></figure></p>
-<h2 id="查看Collection列表-R"><a href="#查看Collection列表-R" class="headerlink" title="查看Collection列表(R)"></a>查看Collection列表(R)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show collections;</span><br></pre></td></tr></table></figure>
-<h2 id="修改Collection-U"><a href="#修改Collection-U" class="headerlink" title="修改Collection(U)"></a>修改Collection(U)</h2><p>把user改成复数形式好了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.user.renameCollection(&quot;users&quot;)</span><br></pre></td></tr></table></figure></p>
+<h2 id="删除Collection-D"><a href="#删除Collection-D" class="headerlink" title="删除Collection(D)"></a>删除Collection(D)</h2><p>这里删除user<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">db.user.remove();	//删除user内部记录</div><div class="line">db.user.drop();		//这是删除collections 在内部数据很多时候 删除collection速度远远比删除文档速度快</div></pre></td></tr></table></figure></p>
+<h2 id="新建Collection-C"><a href="#新建Collection-C" class="headerlink" title="新建Collection(C)"></a>新建Collection(C)</h2><p>新建一个，把删掉的重新建立回来…<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">db.createCollection(&quot;user&quot;)</div></pre></td></tr></table></figure></p>
+<h2 id="查看Collection列表-R"><a href="#查看Collection列表-R" class="headerlink" title="查看Collection列表(R)"></a>查看Collection列表(R)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">show collections;</div></pre></td></tr></table></figure>
+<h2 id="修改Collection-U"><a href="#修改Collection-U" class="headerlink" title="修改Collection(U)"></a>修改Collection(U)</h2><p>把user改成复数形式好了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">db.user.renameCollection(&quot;users&quot;)</div></pre></td></tr></table></figure></p>
 <p>这里需要说明的是，在mySQL里面的修改表还涉及到修改表结构这个修改，但是NoSQL数据库不存在这个说法，因为『NoSQL』;</p>
 
       
@@ -433,7 +433,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">35</span>
+              <span class="site-state-item-count">36</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
