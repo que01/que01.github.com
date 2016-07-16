@@ -80,17 +80,17 @@
 
 
 
-<meta name="description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以记录一下了。">
+<meta name="description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="web性能优化">
 <meta property="og:url" content="http://www.que01.top/2016/07/17/web-performance/index.html">
 <meta property="og:site_name" content="Que's Blog">
-<meta property="og:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以记录一下了。">
+<meta property="og:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/domainNum.png-halt">
-<meta property="og:updated_time" content="2016-07-16T21:16:54.000Z">
+<meta property="og:updated_time" content="2016-07-16T21:30:06.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="web性能优化">
-<meta name="twitter:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以记录一下了。">
+<meta name="twitter:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
 <meta name="twitter:image" content="http://7xpovu.com1.z0.glb.clouddn.com/domainNum.png-halt">
 
 
@@ -329,7 +329,7 @@
 </ul>
 </li>
 <li><strong>Ajax通过GET发出:</strong> Use GET for AJAX requests同样是是YSlow一个检测项目。<ul>
-<li>POST发Ajax请求需要两部：1.发送http头文件 2.发送数据</li>
+<li>POST发Ajax请求需要两步：1.发送http头文件 2.发送数据</li>
 <li>GET发Ajax仅有一步，但是会带上cookie。YSlow说IE的url长度最大2kb，这时注意不能用GET——不过通过浏览器地址栏输入地址那就做Ajax吗？这点我有时间测试一下(<b style="color:red">TODO</b>)。</li>
 </ul>
 </li>
@@ -349,7 +349,7 @@
 <li><strong>压缩:</strong> 这个不用说吧？</li>
 <li><strong>合并</strong> 雪碧图，不要问我雪碧图是啥</li>
 <li><strong>合适的尺寸:</strong> 不要用100*100的图缩放成10*10的</li>
-<li><strong>多域名:</strong> 浏览器对单个域名下的请求并发数是有限制的(参考TCP下的图表,<a href="/2016/07/17/web-performance/#TCP"><b style="color:red">GO</b></a>)，如果是图片量很多的页面，需要考虑使用多域名。这个可以参考百度图片</li>
+<li><strong>多域名:</strong> 浏览器对单个域名下的请求并发数是有限制的(参考TCP下的图表,<a href="/2016/07/17/web-performance/#TCP优化"><b style="color:red">GO</b></a>)，如果是图片量很多的页面，需要考虑使用多域名。这个可以参考百度图片</li>
 </ol>
 <p>图片优化无关但是和图片有关的：</p>
 <ol>
