@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/%E7%BC%93%E5%AD%98.png">
-<meta property="og:updated_time" content="2016-07-16T02:05:41.000Z">
+<meta property="og:updated_time" content="2016-07-16T02:09:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="错配的nginx——web缓存问题探究">
 <meta name="twitter:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
@@ -295,7 +295,7 @@
       
 
       
-        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>随着项目的推进，渐渐的要上https，要从tomcat服务器转换到nginx+tomcat组合的方式了。 nginx有个问题就是缓存太”严重”,我认为这其实是一个大的优化，如果用好了可以对项目体验起到很好的催化，这也是nginx作为服务器的前端的意义所在。 但是往往当开发人员对http理解薄弱的，就会对此很搓火。因为过强的缓存会导致页面滞后，debug时候很多东西无法及时出来，只要动不动强制清缓存，大大破坏了开发体验。</p>
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>随着项目的推进，渐渐的要上https，要从tomcat服务器转换到nginx+tomcat组合的方式了。 nginx有个问题就是缓存太”严重”,我认为这其实是一个大的优化，如果用好了可以对项目体验起到很好的催化，这也是nginx作为服务器的前端的意义所在。 但是往往当开发人员对http理解薄弱的，就会对此很搓火。因为过强的缓存会导致页面滞后，debug时候很多东西无法及时出来，只能动不动强制清缓存，大大破坏了开发体验。</p>
 <h1 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h1><p>其实一直一来都在做强缓存。新起的项目都做好了资源的hash。但是如果不是这次错配的nginx导致个人寻根结底找原因，也不会有这篇关于http缓存的文章。 HTTP的文章其实网上已经有很多了。个人完全不认为会比那些无比详细和成系列的雄文对比。仅仅是个人对知识体系的一个总结吧。</p>
 <p>言归正传。问题的由来其实是因为nginx的响应头配置有问题，它里面既没有 Cache-Control,也没有Expires。导致很多资源无端200(from cache)而不304，使得资源存在更新不及时的问题.</p>
 <p>举个栗子,这是清空缓存后第一次访问资源的http响应头：</p>
