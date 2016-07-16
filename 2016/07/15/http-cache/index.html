@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/%E7%BC%93%E5%AD%98.png">
-<meta property="og:updated_time" content="2016-07-16T02:09:58.000Z">
+<meta property="og:updated_time" content="2016-07-16T02:14:21.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="错配的nginx——web缓存问题探究">
 <meta name="twitter:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
@@ -367,7 +367,7 @@
 <p>Last-Modified与ETag是可以一起使用的，<strong>服务器会优先验证ETag</strong>。一致的情况下，才会继续比对Last-Modified，最后才决定是否返回304</p>
 <p><b style="color:red">个人注:</b>如果你想用304，Last-Modified和ETag是很重要的属性。如果你还想用304，那么就不要删除它们(删除其中一个会不会有影响个人还未验证)。</p>
 <h3 id="新鲜度校验的补充"><a href="#新鲜度校验的补充" class="headerlink" title="新鲜度校验的补充"></a>新鲜度校验的补充</h3><p><strong>试探性过期</strong>(本章摘自HTTP权威指南Page193)<br>如果响应中没有 Cache-Control: max-age 首部,也没有 Expires 首部,缓存可 以 <strong>计算出一个试探性最大使用期</strong>。可以使用任意算法,但如果得到的最大使用期大于24小时,就应该向响应首部添加一个 Heuristic Expiration Warning首部。据我们所知,很少有浏览器会为用户提供这种警告信息。<br>LM-Factor 算法是一种很常用的试探性过期算法,<strong>如果文档中包含了最后修改日期, 就可以使用这种算法</strong>。LM-Factor算法 <strong>将最后修改日期作为依据</strong>,来估计文档有多么易变。算法的逻辑如下所示。<br>• 如果已缓存文档最后一次修改发生在很久以前,它可能会是一份稳定的文档,不太会突然发生变化,因此将其继续保存在缓存中会比较安全。<br>• 如果已缓存文挡最近被修改过,就说明它很可能会频繁地发生变化,因此在与服 务器进行再验证之前,只应该将其缓存很短一段时间。</p>
-<p>这段代码已经解决了个人的疑惑了,<strong>简单说算法猜你近期没有改的不会突然改了,反之认为你会突然改</strong>。在《HTTP权威指南》内有简单的公式和图例，有兴趣的可以自行前往翻阅。</p>
+<p>这段描述已经解决了个人的疑惑了,<strong>简单说算法猜你近期没有改的不会突然改了,反之认为你会突然改</strong>。在《HTTP权威指南》内有简单的公式和图例，有兴趣的可以自行前往翻阅。</p>
 <p><b style="color:red">个人注:</b>《HTTP权威指南》有这样一段话：</p>
 <blockquote>
 <p>HTTP 有一组非常复杂的新鲜度检测规则,缓存产品支持的大量配置选项,以及与 非 HTTP 新鲜度标准进行互通的需要则使问题变得更加严重了。本章其余的大部分 篇幅都用于解释新鲜度的计算问题。</p>
