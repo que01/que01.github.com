@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/%E7%BC%93%E5%AD%98.png">
-<meta property="og:updated_time" content="2016-07-16T02:14:21.000Z">
+<meta property="og:updated_time" content="2016-07-16T02:15:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="错配的nginx——web缓存问题探究">
 <meta name="twitter:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
@@ -372,7 +372,7 @@
 <blockquote>
 <p>HTTP 有一组非常复杂的新鲜度检测规则,缓存产品支持的大量配置选项,以及与 非 HTTP 新鲜度标准进行互通的需要则使问题变得更加严重了。本章其余的大部分 篇幅都用于解释新鲜度的计算问题。</p>
 </blockquote>
-<p>所以，这个新鲜度校验是非常复杂的，远不是网上大多数文章提到的那么简略，如果以后在新鲜度校验这里出现疑问，不妨翻一番。</p>
+<p>所以，这个新鲜度校验是非常复杂的，远不是网上大多数文章提到的那么简略，如果以后在新鲜度校验这里出现疑问，不妨翻一翻。</p>
 <h1 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h1><p>问题到这里算是解决了，解决方案很简单，加上了Cache-Control和Expires。但是这次的服务器错配的导致的问题的探索，着实是很大程度上提高了个人对HTTP缓存的理解。</p>
 <h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a href="http://www.zhangxinxu.com/wordpress/2013/05/caching-tutorial-for-web-authors-and-webmasters/" target="_blank" rel="external">《翻译：web制作、开发人员需知的Web缓存知识》</a><br><a href="http://www.alloyteam.com/2012/03/web-cache-2-browser-cache/" target="_blank" rel="external">【Web缓存机制系列】2 – Web浏览器的缓存机制 </a><br><a href="https://book.douban.com/subject/10746113/" target="_blank" rel="external">《HTTP权威指南》</a></p>
 
