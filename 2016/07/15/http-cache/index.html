@@ -86,10 +86,12 @@
 <meta property="og:url" content="http://www.que01.top/2016/07/15/http-cache/index.html">
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
-<meta property="og:updated_time" content="2016-07-15T17:17:19.000Z">
+<meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/%E7%BC%93%E5%AD%98.png">
+<meta property="og:updated_time" content="2016-07-16T02:05:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="错配的nginx——web缓存问题探究">
 <meta name="twitter:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
+<meta name="twitter:image" content="http://7xpovu.com1.z0.glb.clouddn.com/%E7%BC%93%E5%AD%98.png">
 
 
 
@@ -345,14 +347,26 @@
 </tr>
 </tbody>
 </table>
-<h2 id="缓存机制"><a href="#缓存机制" class="headerlink" title="缓存机制"></a>缓存机制</h2><h3 id="新鲜度检测"><a href="#新鲜度检测" class="headerlink" title="新鲜度检测"></a>新鲜度检测</h3><p><strong>Cache-Control与Expires</strong> 是新鲜度检测的关键:</p>
+<h2 id="缓存机制"><a href="#缓存机制" class="headerlink" title="缓存机制"></a>缓存机制</h2><p>缓存总体上的流程是这样的(原图来自《http权威指南》,个人有涂鸦)：<br><img src="http://7xpovu.com1.z0.glb.clouddn.com/%E7%BC%93%E5%AD%98.png" alt=""></p>
+<h3 id="新鲜度检测"><a href="#新鲜度检测" class="headerlink" title="新鲜度检测"></a>新鲜度检测</h3><p><strong>Cache-Control与Expires</strong> 是新鲜度检测的关键:</p>
 <p>Cache-Control与Expires的作用一致，都是指明当前资源的有效期。只不过Cache-Control的选择更多，设置更细致，如果同时设置的话，其优先级高于Expires。<br>详细一点说明的话，Expires是http/1.0定义的资源有效期，它是一个历史遗留产物。它的值是一个绝对值，它显示指定了一个日期作为过期时间。然而经过一段时间实践之后，Bug就出来了：当客户端可服务器时间不一致，那么到底怎么处理呢？</p>
 <p>Cache-Control是http/1.1定义的，功能很多，但是核心的我认为还是还是改变了资源有效期的表达方式，我认为最大的意义是Cache-Control是Expires的bugfix产物(作为bugfix优先级当然会更高)。它使用max-age来根据最后时间加上这个max-age动态计算了过期时间，这样就不存在Expires的Bug了。</p>
-<p><b style="color:red">个人注:</b>理想的情况下，Cache-Control与Expires可以都标明已达到最优兼容，但是这不是必须都有的，多数可以只有其中一个也不会有什么大问题(如果引起BUG就另说了)，但是——不要两个都没有，不然会引起相对诡异的现象，如果本文的例子。<br><b style="color:red">——但是你硬要这么干，确实可以两个都没有.</b></p>
+<p><strong>Cache-Control可选值:</strong>(偷懒摘自《翻译：web制作、开发人员需知的Web缓存知》)</p>
+<ul>
+<li><strong>max-age=[秒]</strong>：表示在这个时间范围内缓存是新鲜的无需更新。类似Expires时间，不过这个时间是相对的，而不是绝对的。也就是某次请求成功后多少秒内缓存是新鲜的。</li>
+<li><strong>s-maxage=[秒]</strong>：类似max-age, 除了仅应用于共享缓存（如代理）。</li>
+<li><strong>public</strong>：标记认证的响应才能够被缓存。一般而言，需要认证HTTP请求内容会自动私有化（不会被缓存Add）。</li>
+<li><strong>private</strong>：允许缓存专门为某一个用户存储响应，比方说在浏览器中；共享缓存一般不会，例如在代理中。</li>
+<li><strong>no-cache</strong>：每次在释放缓存副本之前都强制发送请求给源服务器进行验证，这在确保认证有效性上很管用（和public结合使用）或者保证内容必须是即时的，不得无视缓存的所有优点，如国内的微博、twitter等的刷新显示Add。</li>
+<li><strong>no-store</strong>：强制缓存在任何情况下都不要保留任何副本。</li>
+<li><strong>must-revalidate</strong>：告诉缓存，我给你准备了一些关于新鲜度的信息，在表现的时候要严格遵循之。HTTP允许缓存在某些特定情况下返回过期数据，指定了这个属性，相对于告诉缓存，你丫必须严格遵循我的规则。</li>
+<li><strong>proxy-revalidate</strong>：类似must-revalidate，除了只能应用于代理缓存。</li>
+</ul>
+<p><b style="color:red">个人注:</b>理想的情况下，Cache-Control与Expires可以都标明以达到最优兼容，但是这不是必须都有的，多数可以只有其中一个也不会有什么大问题(如果引起BUG就另说了)，但是——不要两个都没有，不然会引起相对诡异的现象，如果本文的例子。<br><b style="color:red">——但是你硬要这么干，确实可以两个都没有.</b></p>
 <h3 id="资源二次校验"><a href="#资源二次校验" class="headerlink" title="资源二次校验"></a>资源二次校验</h3><p><strong>Last-Modified/ETag</strong> 这两个数据用于确定数据是否改变<br>Last-Modified嘛，很好理解，文件最后修改时间。如果这个东西那么好用的话其实Etag不过画蛇添足罢了，但是很可惜的Last-Modified的时间度量单位是秒——这意味着一秒内的修改服务器分辨不出来——股票行情系统和金融系统对此有利益攸关的需求。<br>所以就有了ETag，这个东西就是类似文件hash的东西，在服务器上用于分辨文件是不是同一个。</p>
 <p>Last-Modified与ETag是可以一起使用的，<strong>服务器会优先验证ETag</strong>。一致的情况下，才会继续比对Last-Modified，最后才决定是否返回304</p>
 <p><b style="color:red">个人注:</b>如果你想用304，Last-Modified和ETag是很重要的属性。如果你还想用304，那么就不要删除它们(删除其中一个会不会有影响个人还未验证)。</p>
-<h3 id="新鲜度校验的复杂纬度之一"><a href="#新鲜度校验的复杂纬度之一" class="headerlink" title="新鲜度校验的复杂纬度之一"></a>新鲜度校验的复杂纬度之一</h3><p><strong>试探性过期</strong>(本章摘自HTTP权威指南Page193)<br>如果响应中没有 Cache-Control: max-age 首部,也没有 Expires 首部,缓存可 以 <strong>计算出一个试探性最大使用期</strong>。可以使用任意算法,但如果得到的最大使用期大于24小时,就应该向响应首部添加一个 Heuristic Expiration Warning首部。据我们所知,很少有浏览器会为用户提供这种警告信息。<br>LM-Factor 算法是一种很常用的试探性过期算法,<strong>如果文档中包含了最后修改日期, 就可以使用这种算法</strong>。LM-Factor算法 <strong>将最后修改日期作为依据</strong>,来估计文档有多么易变。算法的逻辑如下所示。<br>• 如果已缓存文档最后一次修改发生在很久以前,它可能会是一份稳定的文档,不太会突然发生变化,因此将其继续保存在缓存中会比较安全。<br>• 如果已缓存文挡最近被修改过,就说明它很可能会频繁地发生变化,因此在与服 务器进行再验证之前,只应该将其缓存很短一段时间。</p>
+<h3 id="新鲜度校验的补充"><a href="#新鲜度校验的补充" class="headerlink" title="新鲜度校验的补充"></a>新鲜度校验的补充</h3><p><strong>试探性过期</strong>(本章摘自HTTP权威指南Page193)<br>如果响应中没有 Cache-Control: max-age 首部,也没有 Expires 首部,缓存可 以 <strong>计算出一个试探性最大使用期</strong>。可以使用任意算法,但如果得到的最大使用期大于24小时,就应该向响应首部添加一个 Heuristic Expiration Warning首部。据我们所知,很少有浏览器会为用户提供这种警告信息。<br>LM-Factor 算法是一种很常用的试探性过期算法,<strong>如果文档中包含了最后修改日期, 就可以使用这种算法</strong>。LM-Factor算法 <strong>将最后修改日期作为依据</strong>,来估计文档有多么易变。算法的逻辑如下所示。<br>• 如果已缓存文档最后一次修改发生在很久以前,它可能会是一份稳定的文档,不太会突然发生变化,因此将其继续保存在缓存中会比较安全。<br>• 如果已缓存文挡最近被修改过,就说明它很可能会频繁地发生变化,因此在与服 务器进行再验证之前,只应该将其缓存很短一段时间。</p>
 <p>这段代码已经解决了个人的疑惑了,<strong>简单说算法猜你近期没有改的不会突然改了,反之认为你会突然改</strong>。在《HTTP权威指南》内有简单的公式和图例，有兴趣的可以自行前往翻阅。</p>
 <p><b style="color:red">个人注:</b>《HTTP权威指南》有这样一段话：</p>
 <blockquote>
@@ -360,6 +374,7 @@
 </blockquote>
 <p>所以，这个新鲜度校验是非常复杂的，远不是网上大多数文章提到的那么简略，如果以后在新鲜度校验这里出现疑问，不妨翻一番。</p>
 <h1 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h1><p>问题到这里算是解决了，解决方案很简单，加上了Cache-Control和Expires。但是这次的服务器错配的导致的问题的探索，着实是很大程度上提高了个人对HTTP缓存的理解。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a href="http://www.zhangxinxu.com/wordpress/2013/05/caching-tutorial-for-web-authors-and-webmasters/" target="_blank" rel="external">《翻译：web制作、开发人员需知的Web缓存知识》</a><br><a href="http://www.alloyteam.com/2012/03/web-cache-2-browser-cache/" target="_blank" rel="external">【Web缓存机制系列】2 – Web浏览器的缓存机制 </a><br><a href="https://book.douban.com/subject/10746113/" target="_blank" rel="external">《HTTP权威指南》</a></p>
 
       
     </div>
@@ -508,7 +523,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#由来"><span class="nav-number">2.</span> <span class="nav-text">由来</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#问题的抛出"><span class="nav-number">3.</span> <span class="nav-text">问题的抛出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP缓存"><span class="nav-number">4.</span> <span class="nav-text">HTTP缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#用户操作对缓存的影响"><span class="nav-number">4.1.</span> <span class="nav-text">用户操作对缓存的影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存机制"><span class="nav-number">4.2.</span> <span class="nav-text">缓存机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#新鲜度检测"><span class="nav-number">4.2.1.</span> <span class="nav-text">新鲜度检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#资源二次校验"><span class="nav-number">4.2.2.</span> <span class="nav-text">资源二次校验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新鲜度校验的复杂纬度之一"><span class="nav-number">4.2.3.</span> <span class="nav-text">新鲜度校验的复杂纬度之一</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结尾"><span class="nav-number">5.</span> <span class="nav-text">结尾</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#由来"><span class="nav-number">2.</span> <span class="nav-text">由来</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#问题的抛出"><span class="nav-number">3.</span> <span class="nav-text">问题的抛出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP缓存"><span class="nav-number">4.</span> <span class="nav-text">HTTP缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#用户操作对缓存的影响"><span class="nav-number">4.1.</span> <span class="nav-text">用户操作对缓存的影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存机制"><span class="nav-number">4.2.</span> <span class="nav-text">缓存机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#新鲜度检测"><span class="nav-number">4.2.1.</span> <span class="nav-text">新鲜度检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#资源二次校验"><span class="nav-number">4.2.2.</span> <span class="nav-text">资源二次校验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新鲜度校验的补充"><span class="nav-number">4.2.3.</span> <span class="nav-text">新鲜度校验的补充</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结尾"><span class="nav-number">5.</span> <span class="nav-text">结尾</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">6.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
             
           </div>
         </section>
