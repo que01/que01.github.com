@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/domainNum.png-halt">
-<meta property="og:updated_time" content="2016-07-17T02:48:13.000Z">
+<meta property="og:updated_time" content="2016-07-17T02:50:17.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="web性能优化">
 <meta name="twitter:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
@@ -330,7 +330,7 @@
 </li>
 <li><strong>Ajax通过GET发出:</strong> Use GET for AJAX requests同样是是YSlow一个检测项目。<ul>
 <li>POST发Ajax请求需要两步：1.发送http头文件 2.发送数据</li>
-<li>GET发Ajax仅有一步，但是会带上cookie。YSlow说IE的url长度最大2kb，这时注意不能用GET——不过通过浏览器地址栏输入地址那就做Ajax吗？这点我有时间测试一下(<b style="color:red">TODO</b>)。</li>
+<li>GET发Ajax仅有一步，但是会带上cookie。YSlow说IE的url长度最大2kb，这时注意不能用GET——不过通过浏览器地址栏输入地址那叫做Ajax吗？这点我有时间测试一下(<b style="color:red">TODO</b>)。</li>
 </ul>
 </li>
 <li><strong>JS并行加载:</strong> jQuery走过来的人肯定遇到过js顺序换个就报错的事情，这是因为HTML从上到下执行，一个js载入完成之前不会载入它下面的js(下载过程中会阻塞下面的下载和渲染)。如果js过多的话这就会造成过多的时间被白白浪费。但是一定的技术方案是可以同时实现依赖和并行下载的问题的，比如Lab.js。</li>
