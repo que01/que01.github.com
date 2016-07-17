@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/domainNum.png-halt">
-<meta property="og:updated_time" content="2016-07-17T02:24:55.000Z">
+<meta property="og:updated_time" content="2016-07-17T02:48:13.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="web性能优化">
 <meta name="twitter:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
@@ -312,7 +312,7 @@
 <h3 id="JS"><a href="#JS" class="headerlink" title="JS"></a>JS</h3><p>早期项目不大要求不高时候JS效率差点其实无所谓，因为js根本就没多少行。但是随着越来越多的前端主导团队出现，SPA的盛行，项目js早就开始实现从KB向MB跨越了。还是托了GZIP的福，让那些动不动上MB的JS可以压缩到200K以内，要不然很多很多项目根本过不了上线审核。</p>
 <p>言归正传，现在说说JS相关，JS性能优化有很多，但是这里只列举一些比较重要的。依旧按按权重到低列举:</p>
 <ol>
-<li><strong>压缩:</strong> 至少在网速没有实现质的突破和移动流量变得廉价之前，优化的权重个人认为首推的还是体积。更小体积就是更快的速度，js压缩一遍在上线应当作为必经道路</li>
+<li><strong>压缩:</strong> 至少在网速没有实现质的突破和移动流量变得廉价之前，优化的权重个人认为首推的还是体积。更小体积就是更快的速度，js压缩一遍再上线应当作为必经道路</li>
 <li><strong>combo:</strong> 这玩意是说合并。每个请求背后都经历着DNS解析-&gt;TCP三次握手-&gt;HTTP传输的路径，压缩可以显著减少重复和浪费，尤其是一些早期单个页面引入JS数量达到10+的项目。</li>
 <li><strong>减少操作DOM:</strong><ul>
 <li>缓存已经访问过的元素；</li>
