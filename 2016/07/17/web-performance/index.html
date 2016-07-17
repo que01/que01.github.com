@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Que's Blog">
 <meta property="og:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/domainNum.png-halt">
-<meta property="og:updated_time" content="2016-07-16T21:30:06.000Z">
+<meta property="og:updated_time" content="2016-07-17T02:24:55.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="web性能优化">
 <meta name="twitter:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
@@ -295,11 +295,11 @@
       
 
       
-        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>在写这篇文章以前查阅了众多文章。毕竟要写个什么就得认真点弄，这些文章在最后将会一一指出出处。性能优化是个很广泛的命题，这点必须承认。</p>
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>在写这篇文章以前在个人做过的优化基础和认知基础上，查阅了众多文章。毕竟要写个什么就得认真点弄，这些文章在最后将会一一指出出处。性能优化是个很广泛的命题，这点必须承认。</p>
 <p>前端作为网站的面子工程建设者，很大程度上承担了性能优化的重担，但是这不是全部，网站的性能优化做好了前端的优化之后，优化方向就慢慢跑到底层去了——比如:<b style="color:red">HTML&amp;JS&amp;CSS&amp;IMG-&gt;HTTP-&gt;TCP-&gt;DNS</b> 这个路径。</p>
 <p>写到这个路径这里，我也算是有个写作路径了，就按这个路径来写。</p>
 <h1 id="优化纬度"><a href="#优化纬度" class="headerlink" title="优化纬度"></a>优化纬度</h1><h2 id="HTML-amp-JS-amp-CSS-amp-IMG优化"><a href="#HTML-amp-JS-amp-CSS-amp-IMG优化" class="headerlink" title="HTML&amp;JS&amp;CSS&amp;IMG优化"></a>HTML&amp;JS&amp;CSS&amp;IMG优化</h2><p>HTML&amp;JS&amp;CSS&amp;IMG这个层面上东西不少，核心的一条里面就有体积。因为体积决定了速度。不过这些都不算全部，一个个整理一下。<br><b style="color:red"><br>个人以为:HTML&amp;JS&amp;CSS&amp;IMG这个层面上的优化绝对是在考验一个前端基本的修养，这是本职。其他方面的东西，可以算是一个前端的综合面面观吧。<br></b></p>
-<h3 id="HTML"><a href="#HTML" class="headerlink" title="HTML"></a>HTML</h3><p>HTML据说可以优化的地方很多，比如这里的介绍: <a href="http://www.kancloud.cn/kancloud/web_performance_optimization/80992" target="_blank" rel="external"><strong>飞机</strong></a>,但是就可以体验来说HTML上面可以玩的文章不算多。这里按权重到低列举一下:</p>
+<h3 id="HTML"><a href="#HTML" class="headerlink" title="HTML"></a>HTML</h3><p>HTML据说可以优化的地方很多，比如这里的介绍: <a href="http://www.kancloud.cn/kancloud/web_performance_optimization/80992" target="_blank" rel="external"><strong>飞机</strong></a>,但是就个人做过的优化体验来说HTML上面可以玩的文章不算多。这里按权重到低列举一下:</p>
 <ol>
 <li><strong>压缩:</strong> 前端优化说穿了就一句:速度。体积是速度的第一道保障。选一个好的压缩工具然后压缩pre之外的一切是不会错的。</li>
 <li><strong>CSS置顶和JS置尾:</strong> css置顶可以更快渲染页面，页面不会载入初期出现无样式的难看样子，置尾JS这个一来为了更快渲染DOM防止js载入阻塞了HTML，二来是多数JS代码依赖DOMReady，过早载入js会导致部分js执行报错、失效。</li>
