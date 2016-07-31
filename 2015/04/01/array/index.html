@@ -1,14 +1,705 @@
-<!doctype html><html class="theme-next muse"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"><link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css"><link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css"><link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css"><meta name="keywords" content="Array"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1"><meta name="description" content="关于数组，其实有够熟悉了，踏上编程一路，每天都会遇到它好多次。今次算是整理一下数组相关。"><meta property="og:type" content="article"><meta property="og:title" content="Array整理"><meta property="og:url" content="http://www.que01.top/2015/04/01/array/index.html"><meta property="og:site_name" content="Que's Blog"><meta property="og:description" content="关于数组，其实有够熟悉了，踏上编程一路，每天都会遇到它好多次。今次算是整理一下数组相关。"><meta property="og:updated_time" content="2016-03-25T14:57:36.000Z"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Array整理"><meta name="twitter:description" content="关于数组，其实有够熟悉了，踏上编程一路，每天都会遇到它好多次。今次算是整理一下数组相关。"><script type="text/javascript" id="hexo.configuration">var NexT=window.NexT||{},CONFIG={scheme:"Muse",sidebar:{position:"left",display:"post"},fancybox:!0,motion:!1,duoshuo:{userId:0,author:"博主"}}</script><title>Array整理 | Que's Blog</title></head><body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans"><script type="text/javascript">var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?c34d46bb312efb9536996b40f3658645";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}()</script><div class="container one-collumn sidebar-position-left page-post-detail"><div class="headband"></div><header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="header-inner"><div class="site-meta"><div class="custom-logo-site-title"><a href="/" class="brand" rel="start"><span class="logo-line-before"><i></i></span> <span class="site-title">Que's Blog</span> <span class="logo-line-after"><i></i></span></a></div><p class="site-subtitle">WebFrontEnd Development</p></div><div class="site-nav-toggle"><button><span class="btn-bar"></span> <span class="btn-bar"></span> <span class="btn-bar"></span></button></div><nav class="site-nav"><ul id="menu" class="menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="menu-item-icon fa fa-home fa-fw"></i><br>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives" rel="section"><i class="menu-item-icon fa fa-archive fa-fw"></i><br>归档</a></li><li class="menu-item menu-item-tags"><a href="/tags" rel="section"><i class="menu-item-icon fa fa-tags fa-fw"></i><br>标签</a></li></ul></nav></div></header><main id="main" class="main"><div class="main-inner"><div class="content-wrap"><div id="content" class="content"><div id="posts" class="posts-expand"><article class="post post-type-normal" itemscope itemtype="http://schema.org/Article"><header class="post-header"><h1 class="post-title" itemprop="name headline">Array整理</h1><div class="post-meta"><span class="post-time"><span class="post-meta-item-icon"><i class="fa fa-calendar-o"></i> </span><span class="post-meta-item-text">发表于</span> <time itemprop="dateCreated" datetime="2015-04-01T00:00:00+08:00" content="2015-04-01">2015-04-01 </time></span><span class="post-comments-count">&nbsp; | &nbsp; <a href="/2015/04/01/array/#comments" itemprop="discussionUrl"><span class="post-comments-count ds-thread-count" data-thread-key="2015/04/01/array/" itemprop="commentsCount"></span> </a></span><span id="/2015/04/01/array/" class="leancloud_visitors" data-flag-title="Array整理">&nbsp; | &nbsp; <span class="post-meta-item-icon"><i class="fa fa-eye"></i> </span><span class="post-meta-item-text">阅读次数 </span><span class="leancloud-visitors-count"></span></span></div></header><div class="post-body" itemprop="articleBody"><h2 id="Javascript数组"><a href="#Javascript数组" class="headerlink" title="Javascript数组"></a>Javascript数组</h2><p>据了解，在严格类型语言中，数组是不能随意增加元素的，但是个人来说，后端基础仅限PHP，但是PHP中，数组长度其实也是可以增加的。数组的在弱类型语言中的这种特性，其实也确实方便了太多。</p><h2 id="数组的增删"><a href="#数组的增删" class="headerlink" title="数组的增删"></a>数组的增删</h2><h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><p>数组的增加有3个方法：</p><pre><code>-push       添加到尾部
+<!doctype html>
+
+
+
+
+<html class="theme-next muse">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Array" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="关于数组，其实有够熟悉了，踏上编程一路，每天都会遇到它好多次。今次算是整理一下数组相关。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Array整理">
+<meta property="og:url" content="http://www.que01.top/2015/04/01/array/index.html">
+<meta property="og:site_name" content="Que's Blog">
+<meta property="og:description" content="关于数组，其实有够熟悉了，踏上编程一路，每天都会遇到它好多次。今次算是整理一下数组相关。">
+<meta property="og:updated_time" content="2016-03-25T14:57:36.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Array整理">
+<meta name="twitter:description" content="关于数组，其实有够熟悉了，踏上编程一路，每天都会遇到它好多次。今次算是整理一下数组相关。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: false,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Array整理 | Que's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?c34d46bb312efb9536996b40f3658645";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Que's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">WebFrontEnd Development</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Array整理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2015-04-01T00:00:00+08:00" content="2015-04-01">
+              2015-04-01
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/04/01/array/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/04/01/array/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2015/04/01/array/" class="leancloud_visitors" data-flag-title="Array整理">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Javascript数组"><a href="#Javascript数组" class="headerlink" title="Javascript数组"></a>Javascript数组</h2><p>据了解，在严格类型语言中，数组是不能随意增加元素的，但是个人来说，后端基础仅限PHP，但是PHP中，数组长度其实也是可以增加的。数组的在弱类型语言中的这种特性，其实也确实方便了太多。</p>
+<h2 id="数组的增删"><a href="#数组的增删" class="headerlink" title="数组的增删"></a>数组的增删</h2><h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><p>数组的增加有3个方法：</p>
+<pre><code>-push       添加到尾部
 -unshift    添加到头部
 -splice     添加到任意位置(也可以删除）
-</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">Arr.push(<span class="number">6</span>);</div><div class="line"><span class="built_in">console</span>.log(Arr);<span class="comment">//[1,2,3,4,5,6]</span></div><div class="line">Arr.unshift(<span class="number">0</span>);</div><div class="line"><span class="built_in">console</span>.log(Arr);<span class="comment">//[0,1,2,3,4,5,6]</span></div><div class="line">Arr.splice(<span class="number">3</span>,<span class="number">0</span>,<span class="number">33</span>);</div><div class="line"><span class="built_in">console</span>.log(Arr);<span class="comment">//[0,1,2,33,3,4,5,6]</span></div></pre></td></tr></table></figure><h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><p>对应增加，删除也是三个方法：</p><pre><code>-pop        从尾部删除
+</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">Arr.push(<span class="number">6</span>);</div><div class="line"><span class="built_in">console</span>.log(Arr);<span class="comment">//[1,2,3,4,5,6]</span></div><div class="line">Arr.unshift(<span class="number">0</span>);</div><div class="line"><span class="built_in">console</span>.log(Arr);<span class="comment">//[0,1,2,3,4,5,6]</span></div><div class="line">Arr.splice(<span class="number">3</span>,<span class="number">0</span>,<span class="number">33</span>);</div><div class="line"><span class="built_in">console</span>.log(Arr);<span class="comment">//[0,1,2,33,3,4,5,6]</span></div></pre></td></tr></table></figure>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><p>对应增加，删除也是三个方法：</p>
+<pre><code>-pop        从尾部删除
 -shift      从头部删除
 -splice     指定位置删除
-</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">Arr.pop();<span class="comment">//[1,2,3,4]</span></div><div class="line">Arr.shift();<span class="comment">//[2,3,4]</span></div><div class="line">Arr.splice(<span class="number">1</span>,<span class="number">1</span>);<span class="comment">//[2,4]</span></div></pre></td></tr></table></figure><h2 id="数组的排序"><a href="#数组的排序" class="headerlink" title="数组的排序"></a>数组的排序</h2><p>数组的排序有两个方法</p><pre><code>-reverse    倒序排列
+</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">Arr.pop();<span class="comment">//[1,2,3,4]</span></div><div class="line">Arr.shift();<span class="comment">//[2,3,4]</span></div><div class="line">Arr.splice(<span class="number">1</span>,<span class="number">1</span>);<span class="comment">//[2,4]</span></div></pre></td></tr></table></figure>
+<h2 id="数组的排序"><a href="#数组的排序" class="headerlink" title="数组的排序"></a>数组的排序</h2><p>数组的排序有两个方法</p>
+<pre><code>-reverse    倒序排列
 -sort       按字典排列(元素视为字符)
-</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">Arr.reverse();<span class="comment">//[5,4,3,2,1]</span></div><div class="line">Arr.sort();<span class="comment">//[1,2,3,4,5];</span></div><div class="line"><span class="keyword">var</span> Arr2=[a,f,g,e];</div><div class="line">Arr2.sort();<span class="comment">//[a,e,f,g];</span></div><div class="line"><span class="keyword">var</span> Arr3=[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">10</span>];</div><div class="line">Arr3.sort()<span class="comment">//[1,10,2,3];</span></div></pre></td></tr></table></figure><p>从上面例子可以知道，sort这个方法，如果不传入参数，排序字符串元素的效果尚可，但是排序数字元素的效果就达不到预期。但是可以通过传入方法来纠正：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">var Arr3=[1,10,2,3];</div><div class="line">Arr3.sort(function(num1,num2)&#123;</div><div class="line">    return num1-num2    </div><div class="line">&#125;);//[1,2,3,10]</div></pre></td></tr></table></figure><h2 id="迭代-遍历"><a href="#迭代-遍历" class="headerlink" title="迭代(遍历)"></a>迭代(遍历)</h2><h3 id="不产生新数组"><a href="#不产生新数组" class="headerlink" title="不产生新数组"></a>不产生新数组</h3><pre><code>-forEach    对数组每个元素进行相关操作
+</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">Arr.reverse();<span class="comment">//[5,4,3,2,1]</span></div><div class="line">Arr.sort();<span class="comment">//[1,2,3,4,5];</span></div><div class="line"><span class="keyword">var</span> Arr2=[a,f,g,e];</div><div class="line">Arr2.sort();<span class="comment">//[a,e,f,g];</span></div><div class="line"><span class="keyword">var</span> Arr3=[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">10</span>];</div><div class="line">Arr3.sort()<span class="comment">//[1,10,2,3];</span></div></pre></td></tr></table></figure>
+<p>从上面例子可以知道，sort这个方法，如果不传入参数，排序字符串元素的效果尚可，但是排序数字元素的效果就达不到预期。但是可以通过传入方法来纠正：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">var Arr3=[1,10,2,3];</div><div class="line">Arr3.sort(function(num1,num2)&#123;</div><div class="line">    return num1-num2    </div><div class="line">&#125;);//[1,2,3,10]</div></pre></td></tr></table></figure>
+<h2 id="迭代-遍历"><a href="#迭代-遍历" class="headerlink" title="迭代(遍历)"></a>迭代(遍历)</h2><h3 id="不产生新数组"><a href="#不产生新数组" class="headerlink" title="不产生新数组"></a>不产生新数组</h3><pre><code>-forEach    对数组每个元素进行相关操作
 -every      如果所有元素都符合判断，返回true
 -some       只要有一个符合就返回true
 </code></pre><h3 id="产生新数组"><a href="#产生新数组" class="headerlink" title="产生新数组"></a>产生新数组</h3><pre><code>-map        基本等同forEach,不同的是返回一个数组副本，而不修改原数组
 -filter     筛选出符合的元素，作为数组返回
-</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> a=[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">a.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="built_in">console</span>.log(num*num)&#125;);<span class="comment">//1,4,9,16,25</span></div><div class="line"><span class="built_in">console</span>.log(a.every(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num&gt;<span class="number">0</span>&#125;);<span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log(a.some(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num&gt;<span class="number">4</span>&#125;);<span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log(a.filter(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num&gt;<span class="number">4</span>&#125;;<span class="comment">//[5]</span></div><div class="line"><span class="built_in">console</span>.log(a.map(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num*num&#125;))<span class="comment">//[1,4,9,16,25]</span></div><div class="line"><span class="comment">//PS:空数组不会输出</span></div><div class="line"><span class="keyword">var</span> b=[<span class="number">1</span>,<span class="number">2</span>,,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">b.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="built_in">console</span>.log(num*num)&#125;);<span class="comment">//1,4,16,25</span></div></pre></td></tr></table></figure><h2 id="数组的增强"><a href="#数组的增强" class="headerlink" title="数组的增强"></a>数组的增强</h2><h3 id="contains-包含"><a href="#contains-包含" class="headerlink" title="contains    包含"></a>contains 包含</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">contains</span>(<span class="params">target,item</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> target.indexOf(item)&gt;<span class="number">-1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure><h3 id="max-amp-amp-min"><a href="#max-amp-amp-min" class="headerlink" title="max&amp;&amp;min"></a>max&amp;&amp;min</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">max</span>(<span class="params">arr</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="built_in">Math</span>.max.apply(<span class="number">0</span>,arr);        </div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">min</span>(<span class="params">arr</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="built_in">Math</span>.min.apply(<span class="number">0</span>,arr);</div><div class="line">&#125;</div></pre></td></tr></table></figure><h3 id="removeAt-amp-amp-remove"><a href="#removeAt-amp-amp-remove" class="headerlink" title="removeAt&amp;&amp;remove"></a>removeAt&amp;&amp;remove</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">removeAt</span>(<span class="params">arr,index</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> !!arr.splice(index,<span class="number">1</span>).length;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">remove</span>(<span class="params">target,item</span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> index = target.indexOf(item);</div><div class="line">    <span class="keyword">return</span> !!arr.splice(index,<span class="number">1</span>).length;</div><div class="line">&#125;</div></pre></td></tr></table></figure></div><div></div><div></div><footer class="post-footer"><div class="post-nav"><div class="post-nav-next post-nav-item"><a href="/2015/03/30/closure/" rel="next" title="Javascript闭包作用"><i class="fa fa-chevron-left"></i> Javascript闭包作用</a></div><div class="post-nav-prev post-nav-item"><a href="/2015/11/01/array2/" rel="prev" title="Array整理二">Array整理二 <i class="fa fa-chevron-right"></i></a></div></div></footer></article><div class="post-spread"></div></div></div><div class="comments" id="comments"><div class="ds-thread" data-thread-key="2015/04/01/array/" data-title="Array整理" data-url="http://www.que01.top/2015/04/01/array/"></div></div></div><div class="sidebar-toggle"><div class="sidebar-toggle-line-wrap"><span class="sidebar-toggle-line sidebar-toggle-line-first"></span> <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span> <span class="sidebar-toggle-line sidebar-toggle-line-last"></span></div></div><aside id="sidebar" class="sidebar"><div class="sidebar-inner"><ul class="sidebar-nav motion-element"><li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">文章目录</li><li class="sidebar-nav-overview" data-target="site-overview">站点概览</li></ul><section class="site-overview sidebar-panel"><div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person"><img class="site-author-image" itemprop="image" src="/images/default_avatar.jpg" alt="que01"><p class="site-author-name" itemprop="name">que01</p><p class="site-description motion-element" itemprop="description">自己的学习记录</p></div><nav class="site-state motion-element"><div class="site-state-item site-state-posts"><a href="/archives"><span class="site-state-item-count">38</span> <span class="site-state-item-name">日志</span></a></div><div class="site-state-item site-state-tags"><a href="/tags"><span class="site-state-item-count">10</span> <span class="site-state-item-name">标签</span></a></div></nav><div class="links-of-author motion-element"></div></section><section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active"><div class="post-toc"><div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript数组"><span class="nav-number">1.</span> <span class="nav-text">Javascript数组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数组的增删"><span class="nav-number">2.</span> <span class="nav-text">数组的增删</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#增加"><span class="nav-number">2.1.</span> <span class="nav-text">增加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除"><span class="nav-number">2.2.</span> <span class="nav-text">删除</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数组的排序"><span class="nav-number">3.</span> <span class="nav-text">数组的排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迭代-遍历"><span class="nav-number">4.</span> <span class="nav-text">迭代(遍历)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#不产生新数组"><span class="nav-number">4.1.</span> <span class="nav-text">不产生新数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#产生新数组"><span class="nav-number">4.2.</span> <span class="nav-text">产生新数组</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数组的增强"><span class="nav-number">5.</span> <span class="nav-text">数组的增强</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#contains-包含"><span class="nav-number">5.1.</span> <span class="nav-text">contains 包含</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#max-amp-amp-min"><span class="nav-number">5.2.</span> <span class="nav-text">max&&min</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#removeAt-amp-amp-remove"><span class="nav-number">5.3.</span> <span class="nav-text">removeAt&&remove</span></a></li></ol></li></ol></div></div></section></div></aside></div></main><footer id="footer" class="footer"><div class="footer-inner"><div class="copyright">&copy; <span itemprop="copyrightYear">2016</span> <span class="with-love"><i class="fa fa-heart"></i> </span><span class="author" itemprop="copyrightHolder">que01</span></div><div class="powered-by">由 <a class="theme-link" href="http://hexo.io" rel="external nofollow">Hexo</a> 强力驱动</div><div class="theme-info">主题 - <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow">NexT.Muse</a></div></div></footer><div class="back-to-top"><i class="fa fa-arrow-up"></i></div></div><script type="text/javascript">"[object Function]"!==Object.prototype.toString.call(window.Promise)&&(window.Promise=null)</script><script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script><script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script><script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script><script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script><script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script><script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script><script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script><script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script><script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script><script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script><script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script><script type="text/javascript">var duoshuoQuery={short_name:"que01"};!function(){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.id="duoshuo-script",t.src=("https:"==document.location.protocol?"https:":"http:")+"//static.duoshuo.com/embed.js",t.charset="UTF-8",(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(t)}()</script><script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script><script>AV.initialize("TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","987dqIR4vvX2mQJjmAV86Qp0")</script><script>function showTime(e){var t=new AV.Query(e),n=[],o=$(".leancloud_visitors");o.each(function(){n.push($(this).attr("id").trim())}),t.containedIn("url",n),t.find().done(function(e){var t=".leancloud-visitors-count";if(0===e.length)return void o.find(t).text(0);for(var n=0;n<e.length;n++){var i=e[n],r=i.get("url"),l=i.get("time"),s=document.getElementById(r);$(s).find(t).text(l)}}).fail(function(e,t){console.log("Error: "+t.code+" "+t.message)})}function addCount(e){var t=$(".leancloud_visitors"),n=t.attr("id").trim(),o=t.attr("data-flag-title").trim(),i=new AV.Query(e);i.equalTo("url",n),i.find({success:function(t){if(t.length>0){var i=t[0];i.fetchWhenSave(!0),i.increment("time"),i.save(null,{success:function(e){var t=$(document.getElementById(n));t.find(".leancloud-visitors-count").text(e.get("time"))},error:function(e,t){console.log("Failed to save Visitor num, with error message: "+t.message)}})}else{var r=new e;r.set("title",o),r.set("url",n),r.set("time",1),r.save(null,{success:function(e){var t=$(document.getElementById(n));t.find(".leancloud-visitors-count").text(e.get("time"))},error:function(e,t){console.log("Failed to create")}})}},error:function(e){console.log("Error:"+e.code+" "+e.message)}})}$(function(){var e=AV.Object.extend("Counter");1==$(".leancloud_visitors").length?addCount(e):$(".post-title-link").length>1&&showTime(e)})</script></body></html>
+</code></pre><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> a=[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">a.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="built_in">console</span>.log(num*num)&#125;);<span class="comment">//1,4,9,16,25</span></div><div class="line"><span class="built_in">console</span>.log(a.every(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num&gt;<span class="number">0</span>&#125;);<span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log(a.some(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num&gt;<span class="number">4</span>&#125;);<span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log(a.filter(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num&gt;<span class="number">4</span>&#125;;<span class="comment">//[5]</span></div><div class="line"><span class="built_in">console</span>.log(a.map(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="keyword">return</span> num*num&#125;))<span class="comment">//[1,4,9,16,25]</span></div><div class="line"><span class="comment">//PS:空数组不会输出</span></div><div class="line"><span class="keyword">var</span> b=[<span class="number">1</span>,<span class="number">2</span>,,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line">b.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123;<span class="built_in">console</span>.log(num*num)&#125;);<span class="comment">//1,4,16,25</span></div></pre></td></tr></table></figure>
+<h2 id="数组的增强"><a href="#数组的增强" class="headerlink" title="数组的增强"></a>数组的增强</h2><h3 id="contains-包含"><a href="#contains-包含" class="headerlink" title="contains    包含"></a>contains    包含</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">contains</span>(<span class="params">target,item</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> target.indexOf(item)&gt;<span class="number">-1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="max-amp-amp-min"><a href="#max-amp-amp-min" class="headerlink" title="max&amp;&amp;min"></a>max&amp;&amp;min</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">max</span>(<span class="params">arr</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="built_in">Math</span>.max.apply(<span class="number">0</span>,arr);        </div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">min</span>(<span class="params">arr</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="built_in">Math</span>.min.apply(<span class="number">0</span>,arr);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="removeAt-amp-amp-remove"><a href="#removeAt-amp-amp-remove" class="headerlink" title="removeAt&amp;&amp;remove"></a>removeAt&amp;&amp;remove</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">removeAt</span>(<span class="params">arr,index</span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> !!arr.splice(index,<span class="number">1</span>).length;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">remove</span>(<span class="params">target,item</span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> index = target.indexOf(item);</div><div class="line">    <span class="keyword">return</span> !!arr.splice(index,<span class="number">1</span>).length;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/03/30/closure/" rel="next" title="Javascript闭包作用">
+                <i class="fa fa-chevron-left"></i> Javascript闭包作用
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/01/array2/" rel="prev" title="Array整理二">
+                Array整理二 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2015/04/01/array/"
+           data-title="Array整理" data-url="http://www.que01.top/2015/04/01/array/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/default_avatar.jpg"
+               alt="que01" />
+          <p class="site-author-name" itemprop="name">que01</p>
+          <p class="site-description motion-element" itemprop="description">自己的学习记录</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">39</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Javascript数组"><span class="nav-number">1.</span> <span class="nav-text">Javascript数组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数组的增删"><span class="nav-number">2.</span> <span class="nav-text">数组的增删</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#增加"><span class="nav-number">2.1.</span> <span class="nav-text">增加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除"><span class="nav-number">2.2.</span> <span class="nav-text">删除</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数组的排序"><span class="nav-number">3.</span> <span class="nav-text">数组的排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迭代-遍历"><span class="nav-number">4.</span> <span class="nav-text">迭代(遍历)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#不产生新数组"><span class="nav-number">4.1.</span> <span class="nav-text">不产生新数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#产生新数组"><span class="nav-number">4.2.</span> <span class="nav-text">产生新数组</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数组的增强"><span class="nav-number">5.</span> <span class="nav-text">数组的增强</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#contains-包含"><span class="nav-number">5.1.</span> <span class="nav-text">contains    包含</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#max-amp-amp-min"><span class="nav-number">5.2.</span> <span class="nav-text">max&&min</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#removeAt-amp-amp-remove"><span class="nav-number">5.3.</span> <span class="nav-text">removeAt&&remove</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io" rel="external nofollow">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"que01"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz", "987dqIR4vvX2mQJjmAV86Qp0");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
