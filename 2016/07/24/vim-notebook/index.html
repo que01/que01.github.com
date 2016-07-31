@@ -92,7 +92,7 @@
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/buffer.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.clouddn.com/ctrlP.png-halt">
 <meta property="og:image" content="http://7xpovu.com1.z0.glb.cloudshelldn.com/ultisnip.png">
-<meta property="og:updated_time" content="2016-07-25T15:07:18.000Z">
+<meta property="og:updated_time" content="2016-07-31T04:47:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="vim-notebook">
 <meta name="twitter:description" content="这一篇是对四五年来关于vim的第一篇记录。这算是个人备忘录，但是也能是一篇可以带你装逼带你飞的vim插件不完整教程。vim用好了其实真的无视很多IDE。当然，无意挑起战争——再牛逼编辑器也替代不了代码的作用。——不过，一入『空门』，咱就这点爱好了.折腾无罪，爱好万岁。">
@@ -301,58 +301,59 @@
 
       
         <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>Vim的使用到如今算是有4年多了。期间断断续续也开始使用sublime，notepad+，atom，vscode等现代编辑器。<br>但是同vim相比，始终少了那种手指在键盘跳舞的感觉。即使很多时候，vim在完成特定任务时候效率有所不如。<br>但是vim完全依托键盘的理念，始终让我迷醉所以不忍心放弃，尤其是当YouCompleteMe和ternJs的出世，让vim在前端编程上渐渐赶上了IDE的功能。<br>然而我也仅仅是知道了很少很少部分的vim使用而已。<br>所以这里打算做记录一下。关于插件，关于配置，关于心得。</p>
-<p>我还是执着的认为，各种编辑器层出不穷，但是Vim你完全可以使用一辈子。Geek的感觉，之间跳舞的感觉，『怀古的情节』,还有专注的力量。</p>
+<p>我还是执着的认为，各种编辑器层出不穷，但是Vim你完全可以使用一辈子。Geek的感觉，指尖跳舞的感觉，『怀古的情节』,还有专注的力量。</p>
 <h1 id="从配置开始说起"><a href="#从配置开始说起" class="headerlink" title="从配置开始说起"></a>从配置开始说起</h1><p>我fork了一份github上star最多的vimrc配置。并做了自己的定义和修改。我尽量保持对原来配置的完整的情况进行定义，这样可以保证那一天我再想去merge大神配置时候不会出现太多的配置冲突。<br>这里是大神的配置<a href="https://github.com/amix/vimrc" target="_blank" rel="external">amix/vimrc</a>,这里是我的配置<a href="https://github.com/que01/vimrc" target="_blank" rel="external">que01/vimrc</a>.</p>
 <p>虽然大神的配置千锤百炼，但是如果是同为前端的你话，那么还是更加推荐我自己的配置。毕竟作为一名一直紧追前沿的前端从业者,我也许更懂前端开发过程中需要怎样的体验。</p>
 <p>个人的vimrc和amix/vimrc的安装还是有区别的。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"># 首先是官方的安装走一遍</div><div class="line">git clone https://github.com/que01/vimrc ~/.vim_runtime &amp;&amp; cd ~/.vim_runtime &amp;&amp; sh install_awesome_vimrc.sh</div><div class="line"># 个人配置需要的</div><div class="line">git submodule init &amp;&amp; git submodule update</div><div class="line">cd sources_non_forked/YouCompleteMe &amp;&amp; sh install.sh</div><div class="line">cd sources_non_forked/vimproc &amp;&amp; make</div></pre></td></tr></table></figure>
+<p>当然，如果你不想配置的，我自己做了一份docker的镜像，如果想多地共用，可以直接使用docker来替代本地的vim。==&gt; <a href="https://hub.docker.com/r/que01/docker-vim-tiny/" target="_blank" rel="external">que01/docker-vim-tiny</a></p>
 <p>这里列举一下自己新加入的插件:</p>
 <table>
 <thead>
 <tr>
-<th>名称</th>
+<th style="text-align:left">名称</th>
 <th style="text-align:left">简介</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="#YoucompleteMe-amp-amp-tern-for-vim">YouCompleteMe</a></td>
+<td style="text-align:left"><a href="#YoucompleteMe-amp-amp-tern-for-vim">YouCompleteMe</a></td>
 <td style="text-align:left">vim补全神器top1</td>
 </tr>
 <tr>
-<td><a href="#YoucompleteMe-amp-amp-tern-for-vim">tern for vim</a></td>
+<td style="text-align:left"><a href="#YoucompleteMe-amp-amp-tern-for-vim">tern for vim</a></td>
 <td style="text-align:left">js语气补全引擎</td>
 </tr>
 <tr>
-<td>emmet</td>
+<td style="text-align:left">emmet</td>
 <td style="text-align:left">emmet前端都知道</td>
 </tr>
 <tr>
-<td>vim-jsx</td>
+<td style="text-align:left">vim-jsx</td>
 <td style="text-align:left">react的jsx支持</td>
 </tr>
 <tr>
-<td>auto-pairs</td>
+<td style="text-align:left">auto-pairs</td>
 <td style="text-align:left">括号自动配对</td>
 </tr>
 <tr>
-<td>tabular</td>
+<td style="text-align:left">tabular</td>
 <td style="text-align:left">对其代码</td>
 </tr>
 <tr>
-<td>vim-es6</td>
+<td style="text-align:left">vim-es6</td>
 <td style="text-align:left">es6支持</td>
 </tr>
 <tr>
-<td>vim-markdown(替换了原来的)</td>
+<td style="text-align:left">vim-markdown(替换了原来的)</td>
 <td style="text-align:left">markdown支持</td>
 </tr>
 <tr>
-<td><a href="#vim-youdao-translater">vim-youdao-translater </a></td>
+<td style="text-align:left"><a href="#vim-youdao-translater">vim-youdao-translater </a></td>
 <td style="text-align:left">有道翻译,这个还是超级好用!读源代码时候有这个东西如虎添翼</td>
 </tr>
 <tr>
-<td>vimshell</td>
+<td style="text-align:left">vimshell</td>
 <td style="text-align:left">在vim下进行shell操作。虽然没有zsh好用,但是可堪一用的</td>
 </tr>
 </tbody>
@@ -372,29 +373,29 @@ h 向左
 <h3 id="复杂一点的移动"><a href="#复杂一点的移动" class="headerlink" title="复杂一点的移动"></a>复杂一点的移动</h3><table>
 <thead>
 <tr>
-<th>按键</th>
+<th style="text-align:left">按键</th>
 <th style="text-align:left">行为</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>0</td>
+<td style="text-align:left">0</td>
 <td style="text-align:left">数字零，到行头,本配置有修改,到当前行第一个字母</td>
 </tr>
 <tr>
-<td>^</td>
+<td style="text-align:left">^</td>
 <td style="text-align:left">到本行第一个不是blank字符的位置（所谓blank字符就是空格，tab，换行，回车等）</td>
 </tr>
 <tr>
-<td>$</td>
+<td style="text-align:left">$</td>
 <td style="text-align:left">到本行行尾</td>
 </tr>
 <tr>
-<td>g_</td>
+<td style="text-align:left">g_</td>
 <td style="text-align:left">到本行最后一个不是blank字符的位置。</td>
 </tr>
 <tr>
-<td>/pattern</td>
+<td style="text-align:left">/pattern</td>
 <td style="text-align:left">搜索 pattern 的字符串（陈皓注：如果搜索出多个匹配，可按n键到下一个）</td>
 </tr>
 </tbody>
@@ -405,25 +406,25 @@ h 向左
 <thead>
 <tr>
 <th style="text-align:left">按键</th>
-<th>行为</th>
+<th style="text-align:left">行为</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left">:q!</td>
-<td>退出不保存</td>
+<td style="text-align:left">退出不保存</td>
 </tr>
 <tr>
 <td style="text-align:left">:wq</td>
-<td>保存并退出</td>
+<td style="text-align:left">保存并退出</td>
 </tr>
 <tr>
 <td style="text-align:left">:qa!</td>
-<td>强行退出所有的正在编辑的文件，就算别的文件有更改</td>
+<td style="text-align:left">强行退出所有的正在编辑的文件，就算别的文件有更改</td>
 </tr>
 <tr>
 <td style="text-align:left">:x</td>
-<td>相当于:wq但是仅在需要时候才保存</td>
+<td style="text-align:left">相当于:wq但是仅在需要时候才保存</td>
 </tr>
 </tbody>
 </table>
@@ -432,138 +433,138 @@ h 向左
 <table>
 <thead>
 <tr>
-<th>按键</th>
-<th>作用</th>
+<th style="text-align:left">按键</th>
+<th style="text-align:left">作用</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>loader+yd</td>
-<td>翻译光标所在单词</td>
+<td style="text-align:left">loader+yd</td>
+<td style="text-align:left">翻译光标所在单词</td>
 </tr>
 <tr>
-<td>ysw(</td>
-<td><a href="#vim-surround">vim-surround</a>系列快捷键</td>
+<td style="text-align:left">ysw(</td>
+<td style="text-align:left"><a href="#vim-surround">vim-surround</a>系列快捷键</td>
 </tr>
 <tr>
-<td>:Tab /=</td>
-<td>对其=号</td>
+<td style="text-align:left">:Tab /=</td>
+<td style="text-align:left">对其=号</td>
 </tr>
 <tr>
-<td>:TableFormat</td>
-<td>在markdown文档中格式化table</td>
+<td style="text-align:left">:TableFormat</td>
+<td style="text-align:left">在markdown文档中格式化table</td>
 </tr>
 <tr>
-<td>loader+o</td>
-<td>打开buffer列表</td>
+<td style="text-align:left">loader+o</td>
+<td style="text-align:left">打开buffer列表</td>
 </tr>
 <tr>
-<td>C+f</td>
-<td>ctrlP搜索,多次按下可以改变搜索规则</td>
+<td style="text-align:left">C+f</td>
+<td style="text-align:left">ctrlP搜索,多次按下可以改变搜索规则</td>
 </tr>
 <tr>
-<td>C+l</td>
-<td>jsdoc激活，在js的function上方按下生成注释</td>
+<td style="text-align:left">C+l</td>
+<td style="text-align:left">jsdoc激活，在js的function上方按下生成注释</td>
 </tr>
 <tr>
-<td>C+J</td>
-<td>ultisnips补全需要用到这个</td>
+<td style="text-align:left">C+J</td>
+<td style="text-align:left">ultisnips补全需要用到这个</td>
 </tr>
 <tr>
-<td>Tab&amp;S-Tab</td>
-<td>superTab的上下切换</td>
+<td style="text-align:left">Tab&amp;S-Tab</td>
+<td style="text-align:left">superTab的上下切换</td>
 </tr>
 <tr>
-<td>C-d</td>
-<td>多光标选中</td>
+<td style="text-align:left">C-d</td>
+<td style="text-align:left">多光标选中</td>
 </tr>
 <tr>
-<td>*</td>
-<td>高亮所有光标下单词,n,p上写切换</td>
+<td style="text-align:left">*</td>
+<td style="text-align:left">高亮所有光标下单词,n,p上写切换</td>
 </tr>
 <tr>
-<td>gg</td>
-<td>跳到文件头部</td>
+<td style="text-align:left">gg</td>
+<td style="text-align:left">跳到文件头部</td>
 </tr>
 <tr>
-<td>GG</td>
-<td>调到文件尾部</td>
+<td style="text-align:left">GG</td>
+<td style="text-align:left">调到文件尾部</td>
 </tr>
 <tr>
-<td>0</td>
-<td>跳到当前行第一个字符</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">跳到当前行第一个字符</td>
 </tr>
 <tr>
-<td>I</td>
-<td>调到当前行首并设为插入状态</td>
+<td style="text-align:left">I</td>
+<td style="text-align:left">调到当前行首并设为插入状态</td>
 </tr>
 <tr>
-<td>A</td>
-<td>调到当前行末尾并设为插入状态</td>
+<td style="text-align:left">A</td>
+<td style="text-align:left">调到当前行末尾并设为插入状态</td>
 </tr>
 <tr>
-<td>dd</td>
-<td>删除当前行</td>
+<td style="text-align:left">dd</td>
+<td style="text-align:left">删除当前行</td>
 </tr>
 <tr>
-<td>gG,g$</td>
-<td>删除光标到行末尾</td>
+<td style="text-align:left">gG,g$</td>
+<td style="text-align:left">删除光标到行末尾</td>
 </tr>
 <tr>
-<td>S</td>
-<td>删除当前行内容，但是不删除行</td>
+<td style="text-align:left">S</td>
+<td style="text-align:left">删除当前行内容，但是不删除行</td>
 </tr>
 <tr>
-<td>dw</td>
-<td>删除一个单词</td>
+<td style="text-align:left">dw</td>
+<td style="text-align:left">删除一个单词</td>
 </tr>
 <tr>
-<td>yw</td>
-<td>复制一个单词</td>
+<td style="text-align:left">yw</td>
+<td style="text-align:left">复制一个单词</td>
 </tr>
 <tr>
-<td>:split</td>
-<td>水平切割窗口</td>
+<td style="text-align:left">:split</td>
+<td style="text-align:left">水平切割窗口</td>
 </tr>
 <tr>
-<td>:vsplit</td>
-<td>垂直切割窗口</td>
+<td style="text-align:left">:vsplit</td>
+<td style="text-align:left">垂直切割窗口</td>
 </tr>
 <tr>
-<td>:close</td>
-<td>关闭窗口</td>
+<td style="text-align:left">:close</td>
+<td style="text-align:left">关闭窗口</td>
 </tr>
 <tr>
-<td>H</td>
-<td>移动到可视区域最上一行</td>
+<td style="text-align:left">H</td>
+<td style="text-align:left">移动到可视区域最上一行</td>
 </tr>
 <tr>
-<td>L</td>
-<td>移动到可视区域最下一行</td>
+<td style="text-align:left">L</td>
+<td style="text-align:left">移动到可视区域最下一行</td>
 </tr>
 <tr>
-<td>M</td>
-<td>移动到可视区域中间</td>
+<td style="text-align:left">M</td>
+<td style="text-align:left">移动到可视区域中间</td>
 </tr>
 <tr>
-<td>:s/aa/bb/g</td>
-<td>光标所在行出现的所有包含 aa 的字符串中的 aa 替换为 bb</td>
+<td style="text-align:left">:s/aa/bb/g</td>
+<td style="text-align:left">光标所在行出现的所有包含 aa 的字符串中的 aa 替换为 bb</td>
 </tr>
 <tr>
-<td>:g/^$/d</td>
-<td>删除空行</td>
+<td style="text-align:left">:g/^$/d</td>
+<td style="text-align:left">删除空行</td>
 </tr>
 <tr>
-<td>cib</td>
-<td>光标移动到括号按下，清除括号内部并设为插入</td>
+<td style="text-align:left">cib</td>
+<td style="text-align:left">光标移动到括号按下，清除括号内部并设为插入</td>
 </tr>
 <tr>
-<td>cit</td>
-<td>同上 html标签内部</td>
+<td style="text-align:left">cit</td>
+<td style="text-align:left">同上 html标签内部</td>
 </tr>
 <tr>
-<td>ci’ &amp; ci”</td>
-<td>同上，单双引号</td>
+<td style="text-align:left">ci’ &amp; ci”</td>
+<td style="text-align:left">同上，单双引号</td>
 </tr>
 </tbody>
 </table>
@@ -581,46 +582,46 @@ h 向左
 <table>
 <thead>
 <tr>
-<th>start</th>
-<th>命令</th>
-<th>end</th>
+<th style="text-align:left">start</th>
+<th style="text-align:left">命令</th>
+<th style="text-align:left">end</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>H*ello world</td>
-<td>ysw(</td>
-<td>H(ello) world</td>
+<td style="text-align:left">H*ello world</td>
+<td style="text-align:left">ysw(</td>
+<td style="text-align:left">H(ello) world</td>
 </tr>
 <tr>
-<td>H*ello world</td>
-<td>ysaw(</td>
-<td>(Hello) world</td>
+<td style="text-align:left">H*ello world</td>
+<td style="text-align:left">ysaw(</td>
+<td style="text-align:left">(Hello) world</td>
 </tr>
 <tr>
-<td>H*ello world</td>
-<td>ys$(</td>
-<td>H(ello world)</td>
+<td style="text-align:left">H*ello world</td>
+<td style="text-align:left">ys$(</td>
+<td style="text-align:left">H(ello world)</td>
 </tr>
 <tr>
-<td>H*ello world</td>
-<td>ys2aw(</td>
-<td>(Hello world)</td>
+<td style="text-align:left">H*ello world</td>
+<td style="text-align:left">ys2aw(</td>
+<td style="text-align:left">(Hello world)</td>
 </tr>
 <tr>
-<td>Hello wo*rld</td>
-<td>yss(</td>
-<td>(Hello world)</td>
+<td style="text-align:left">Hello wo*rld</td>
+<td style="text-align:left">yss(</td>
+<td style="text-align:left">(Hello world)</td>
 </tr>
 <tr>
-<td>Hello wo*rld</td>
-<td>vlllllS(</td>
-<td>Hel(lo wor)ld)</td>
+<td style="text-align:left">Hello wo*rld</td>
+<td style="text-align:left">vlllllS(</td>
+<td style="text-align:left">Hel(lo wor)ld)</td>
 </tr>
 <tr>
-<td>*Hello world</td>
-<td>VS</td>
-<td>&lt; p>Hello world&lt; /p></td>
+<td style="text-align:left">*Hello world</td>
+<td style="text-align:left">VS</td>
+<td style="text-align:left">&lt; p>Hello world&lt; /p></td>
 </tr>
 </tbody>
 </table>
@@ -628,26 +629,26 @@ h 向左
 <table>
 <thead>
 <tr>
-<th>start</th>
-<th>命令</th>
-<th>end</th>
+<th style="text-align:left">start</th>
+<th style="text-align:left">命令</th>
+<th style="text-align:left">end</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>[H*ello world]</td>
-<td>cs[&lt; p&gt;</td>
-<td>&lt; p&gt;Hello world&lt;/ p&gt;</td>
+<td style="text-align:left">[H*ello world]</td>
+<td style="text-align:left">cs[&lt; p&gt;</td>
+<td style="text-align:left">&lt; p&gt;Hello world&lt;/ p&gt;</td>
 </tr>
 <tr>
-<td>&lt; p&gt;H*ello world&lt;/ p&gt;</td>
-<td>cst&lt; div&gt;</td>
-<td>&lt; div&gt;Hello world&lt;/ div></td>
+<td style="text-align:left">&lt; p&gt;H*ello world&lt;/ p&gt;</td>
+<td style="text-align:left">cst&lt; div&gt;</td>
+<td style="text-align:left">&lt; div&gt;Hello world&lt;/ div></td>
 </tr>
 <tr>
-<td>&lt; div&gt;H*ello world&lt;/ div&gt;</td>
-<td>cst(</td>
-<td>(Hello world)</td>
+<td style="text-align:left">&lt; div&gt;H*ello world&lt;/ div&gt;</td>
+<td style="text-align:left">cst(</td>
+<td style="text-align:left">(Hello world)</td>
 </tr>
 </tbody>
 </table>
@@ -655,21 +656,21 @@ h 向左
 <table>
 <thead>
 <tr>
-<th>start</th>
-<th>命令</th>
-<th>end</th>
+<th style="text-align:left">start</th>
+<th style="text-align:left">命令</th>
+<th style="text-align:left">end</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>(H*ello) world</td>
-<td>ds(</td>
-<td>Hello world</td>
+<td style="text-align:left">(H*ello) world</td>
+<td style="text-align:left">ds(</td>
+<td style="text-align:left">Hello world</td>
 </tr>
 <tr>
-<td>&lt; p&gt;Hello world&lt;/ p&gt;</td>
-<td>dst</td>
-<td>Hello world))</td>
+<td style="text-align:left">&lt; p&gt;Hello world&lt;/ p&gt;</td>
+<td style="text-align:left">dst</td>
+<td style="text-align:left">Hello world))</td>
 </tr>
 </tbody>
 </table>
@@ -698,61 +699,61 @@ h 向左
 <tr>
 <th style="text-align:left">git</th>
 <th style="text-align:left">fugitive</th>
-<th>action</th>
+<th style="text-align:left">action</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left">:Git checkout %</td>
 <td style="text-align:left">:Gread</td>
-<td>将当前文件反转至上次的checkout状态</td>
+<td style="text-align:left">将当前文件反转至上次的checkout状态</td>
 </tr>
 <tr>
 <td style="text-align:left">:Git rm %</td>
 <td style="text-align:left">:Gremove</td>
-<td>从Git中删除该文件，并且vim中也删除该文件的buffer</td>
+<td style="text-align:left">从Git中删除该文件，并且vim中也删除该文件的buffer</td>
 </tr>
 <tr>
 <td style="text-align:left">:Git mv %</td>
 <td style="text-align:left">:Gmove</td>
-<td>重命名当前的文件名以及对应的buffer名</td>
+<td style="text-align:left">重命名当前的文件名以及对应的buffer名</td>
 </tr>
 <tr>
 <td style="text-align:left">:Git commit</td>
 <td style="text-align:left">:Gcommit</td>
-<td>提交，可以使用ctrl+n来补全</td>
+<td style="text-align:left">提交，可以使用ctrl+n来补全</td>
 </tr>
 <tr>
 <td style="text-align:left">:Git blame</td>
 <td style="text-align:left">:Gblame</td>
-<td>查看当前文件每一行的最后一次修改都是谁完成的</td>
+<td style="text-align:left">查看当前文件每一行的最后一次修改都是谁完成的</td>
 </tr>
 <tr>
 <td style="text-align:left">:Git status</td>
 <td style="text-align:left">:Gstatus</td>
-<td>打开一个git status命令的窗口.Ctrl+n和Ctrl+p可以在文件中上下移动</td>
+<td style="text-align:left">打开一个git status命令的窗口.Ctrl+n和Ctrl+p可以在文件中上下移动</td>
 </tr>
 </tbody>
 </table>
 <h3 id="Gstatus的内部命令"><a href="#Gstatus的内部命令" class="headerlink" title=":Gstatus的内部命令"></a>:Gstatus的内部命令</h3><table>
 <thead>
 <tr>
-<th>命令</th>
-<th>行为</th>
+<th style="text-align:left">命令</th>
+<th style="text-align:left">行为</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><enter></enter></td>
-<td>open current file in the window below</td>
+<td style="text-align:left"><enter></enter></td>
+<td style="text-align:left">open current file in the window below</td>
 </tr>
 <tr>
-<td>p</td>
-<td>run <code>git add –patch</code> for current file</td>
+<td style="text-align:left">p</td>
+<td style="text-align:left">run <code>git add –patch</code> for current file</td>
 </tr>
 <tr>
-<td>C</td>
-<td>invoke :Gcommit</td>
+<td style="text-align:left">C</td>
+<td style="text-align:left">invoke :Gcommit</td>
 </tr>
 </tbody>
 </table>
