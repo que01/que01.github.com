@@ -2,6 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://www.que01.top/categories/index.html</loc>
+    
+    <lastmod>2016-09-16T13:40:11.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/tags/index.html</loc>
+    
+    <lastmod>2016-09-16T13:39:59.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/07/24/Promise/</loc>
+    
+    <lastmod>2016-09-16T07:38:34.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.que01.top/2016/07/24/vim-notebook/</loc>
     
     <lastmod>2016-07-31T04:47:38.000Z</lastmod>
@@ -142,6 +163,13 @@
   </url>
   
   <url>
+    <loc>http://www.que01.top/2016/03/20/mongodb2/</loc>
+    
+    <lastmod>2016-03-25T15:29:30.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.que01.top/2016/03/18/mongodb/</loc>
     
     <lastmod>2016-03-25T15:29:30.000Z</lastmod>
@@ -156,21 +184,14 @@
   </url>
   
   <url>
-    <loc>http://www.que01.top/2016/03/24/mongodb3/</loc>
-    
-    <lastmod>2016-03-25T15:29:30.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/03/20/mongodb2/</loc>
-    
-    <lastmod>2016-03-25T15:29:30.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://www.que01.top/2015/12/15/react_cycle/</loc>
+    
+    <lastmod>2016-03-25T15:29:30.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/03/24/mongodb3/</loc>
     
     <lastmod>2016-03-25T15:29:30.000Z</lastmod>
     
@@ -184,14 +205,7 @@
   </url>
   
   <url>
-    <loc>http://www.que01.top/2014/03/19/evn_for_webfrontend/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2014/03/20/evn_for_webfrontend_2/</loc>
+    <loc>http://www.que01.top/2014/04/01/javascript_event/</loc>
     
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     
@@ -205,49 +219,7 @@
   </url>
   
   <url>
-    <loc>http://www.que01.top/2014/04/10/animate2/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2014/04/01/javascript_event/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://www.que01.top/2014/03/31/animate/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2014/03/25/throw_a_errors/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2015/02/01/mocha_test_1/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2015/02/02/mocha_test_2/</loc>
-    
-    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2015/03/30/closure/</loc>
     
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     
@@ -268,7 +240,56 @@
   </url>
   
   <url>
+    <loc>http://www.que01.top/2015/03/30/closure/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2015/02/02/mocha_test_2/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2015/02/01/mocha_test_1/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2014/04/10/animate2/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.que01.top/2015/01/11/read_plan/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2014/03/19/evn_for_webfrontend/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2014/03/25/throw_a_errors/</loc>
+    
+    <lastmod>2016-03-25T14:57:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2014/03/20/evn_for_webfrontend_2/</loc>
     
     <lastmod>2016-03-25T14:57:36.000Z</lastmod>
     
