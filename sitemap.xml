@@ -2,114 +2,156 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://www.que01.top/2016/04/30/template/</loc>
-    
-    <lastmod>2018-09-29T06:26:13.891Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/04/17/backbone-3/</loc>
-    
-    <lastmod>2018-09-29T06:26:13.226Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/03/20/mongodb2/</loc>
-    
-    <lastmod>2018-09-29T06:26:13.226Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/07/24/Promise/</loc>
-    
-    <lastmod>2018-09-29T06:26:13.225Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/07/24/vim-notebook/</loc>
-    
-    <lastmod>2018-09-29T06:26:13.225Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/07/17/web-performance/</loc>
-    
-    <lastmod>2018-09-29T06:26:13.225Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://www.que01.top/2016/11/20/dva-react/</loc>
     
-    <lastmod>2018-09-29T06:26:13.225Z</lastmod>
+    <lastmod>2018-11-20T07:09:19.346Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2018/11/05/2018-11-5-typescript-redux-starter/</loc>
+    
+    <lastmod>2018-11-20T06:57:15.028Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2018/05/01/react-domComponent/</loc>
+    
+    <lastmod>2018-11-12T07:18:11.320Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2018/05/01/react-ReactReconciler/</loc>
+    
+    <lastmod>2018-11-12T07:01:14.567Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2018/04/26/react-lifecycle/</loc>
+    
+    <lastmod>2018-11-12T07:01:06.865Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2018/04/20/react-render/</loc>
+    
+    <lastmod>2018-11-12T07:00:46.818Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2018/04/15/react-build/</loc>
+    
+    <lastmod>2018-11-12T06:39:41.739Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/03/24/mongodb3/</loc>
     
-    <lastmod>2018-09-29T06:26:13.224Z</lastmod>
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://www.que01.top/2016/04/05/backbone-1/</loc>
+    <loc>http://www.que01.top/2016/04/30/template/</loc>
     
-    <lastmod>2018-09-29T06:21:53.648Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/04/02/http-1/</loc>
-    
-    <lastmod>2018-09-29T06:21:53.647Z</lastmod>
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://www.que01.top/2017/08/13/ignite-note/</loc>
+    <loc>http://www.que01.top/2016/04/17/backbone-3/</loc>
     
-    <lastmod>2018-09-29T06:21:53.647Z</lastmod>
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://www.que01.top/2016/03/18/mongodb/</loc>
+    <loc>http://www.que01.top/2016/07/24/Promise/</loc>
     
-    <lastmod>2018-09-29T06:21:53.647Z</lastmod>
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/07/24/vim-notebook/</loc>
+    
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/03/20/mongodb2/</loc>
+    
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/07/17/web-performance/</loc>
+    
+    <lastmod>2018-09-29T06:26:13.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/07/15/http-cache/</loc>
     
-    <lastmod>2018-09-29T06:21:53.645Z</lastmod>
+    <lastmod>2018-09-29T06:21:53.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/06/16/react-starter-kit-2/</loc>
     
-    <lastmod>2018-09-29T06:21:53.641Z</lastmod>
+    <lastmod>2018-09-29T06:21:53.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/04/02/http-1/</loc>
+    
+    <lastmod>2018-09-29T06:21:53.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/04/05/backbone-1/</loc>
+    
+    <lastmod>2018-09-29T06:21:53.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2017/08/13/ignite-note/</loc>
+    
+    <lastmod>2018-09-29T06:21:53.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/03/18/mongodb/</loc>
+    
+    <lastmod>2018-09-29T06:21:53.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2018/01/15/typescript-notes/</loc>
     
-    <lastmod>2018-08-20T02:06:20.662Z</lastmod>
+    <lastmod>2018-08-20T02:06:20.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2017/02/20/framework1/</loc>
     
-    <lastmod>2017-11-12T16:02:45.934Z</lastmod>
+    <lastmod>2017-11-12T16:02:45.000Z</lastmod>
     
   </url>
   
@@ -254,86 +296,86 @@
   </url>
   
   <url>
-    <loc>http://www.que01.top/tags/index.html</loc>
-    
-    <lastmod>2017-10-28T08:05:12.747Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/categories/index.html</loc>
-    
-    <lastmod>2017-10-28T08:05:12.746Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://www.que01.top/2016/12/31/bye-bye-2016/</loc>
     
-    <lastmod>2017-10-28T08:05:12.744Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/11/06/node-buffer/</loc>
-    
-    <lastmod>2017-10-28T08:05:12.743Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/11/15/docker-compose/</loc>
-    
-    <lastmod>2017-10-28T08:05:12.743Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/07/22/mobile-develop/</loc>
-    
-    <lastmod>2017-10-28T08:05:12.741Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/07/08/docker-note/</loc>
-    
-    <lastmod>2017-10-28T08:05:12.739Z</lastmod>
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/07/13/dockerfile/</loc>
     
-    <lastmod>2017-10-28T08:05:12.739Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://www.que01.top/2016/07/01/react-starter-kit-3/</loc>
-    
-    <lastmod>2017-10-28T08:05:12.738Z</lastmod>
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/06/08/react-starter-kit-1/</loc>
     
-    <lastmod>2017-10-28T08:05:12.737Z</lastmod>
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/05/07/a-simple-mvvm-framwork-1/</loc>
     
-    <lastmod>2017-10-28T08:05:12.736Z</lastmod>
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/07/22/mobile-develop/</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/tags/index.html</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/07/01/react-starter-kit-3/</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/07/08/docker-note/</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/11/06/node-buffer/</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/2016/11/15/docker-compose/</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://www.que01.top/categories/index.html</loc>
+    
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>http://www.que01.top/2016/05/03/two-way-bind/</loc>
     
-    <lastmod>2017-10-28T08:05:12.735Z</lastmod>
+    <lastmod>2017-10-28T08:05:12.000Z</lastmod>
     
   </url>
   
