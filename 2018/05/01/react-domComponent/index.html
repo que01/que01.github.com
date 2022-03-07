@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="开始读react代码。续之前的render分析篇。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react ReactDOMComponent分析">
+<meta property="og:url" content="http://www.que01.top/2018/05/01/react-domComponent/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="开始读react代码。续之前的render分析篇。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/20180824104927.png">
+<meta property="og:image" content="http://www.que01.top/images/20180823140712.png">
+<meta property="article:published_time" content="2018-04-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-11-24T07:51:00.000Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/20180824104927.png">
+
+<link rel="canonical" href="http://www.que01.top/2018/05/01/react-domComponent/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react ReactDOMComponent分析 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2018/05/01/react-domComponent/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react ReactDOMComponent分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-05-01 00:00:00" itemprop="dateCreated datePublished" datetime="2018-05-01T00:00:00+08:00">2018-05-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-24 15:51:00" itemprop="dateModified" datetime="2021-11-24T15:51:00+08:00">2021-11-24</time>
+              </span>
+
+          
+            <span id="/2018/05/01/react-domComponent/" class="post-meta-item leancloud_visitors" data-flag-title="react ReactDOMComponent分析" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">开始读react代码。续之前的render分析篇。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ReactDOMComponent"><a href="#ReactDOMComponent" class="headerlink" title="ReactDOMComponent"></a>ReactDOMComponent</h1><p>虽然整体的逻辑看起来异常复杂，但是仔细分析，实际上它处理的事情也仍然很清晰。</p>
+<p>这件简要分析</p>
+<p>line461-line482简单的定义了ReactDOMComponent内部的私有变量。</p>
+<p>line1203-line1207的Object.assign则很简单将<code>ReactDOMComponent.Mixin&amp;ReactMultiChild.Mixin</code>复制到<code>ReactDOMComponent</code>的原型上。所以这里需要对<code>ReactDOMComponent.Mixin&amp;ReactMultiChild.Mixin</code>做一些分析</p>
+<h2 id="ReactDOMComponent-Mixin"><a href="#ReactDOMComponent-Mixin" class="headerlink" title="ReactDOMComponent.Mixin"></a>ReactDOMComponent.Mixin</h2><table>
+<thead>
+<tr>
+<th>API</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>mountComponent</strong></td>
+<td>生成根标记然后递归生成内部标记。这个生成是在事务支持下的生成(更新前卸载事件更新后重新绑定诸如此类)。这个操作不是冥等的，多次执行结果并不完全一致。</td>
+</tr>
+<tr>
+<td>_createOpenTagMarkupAndPutListeners</td>
+<td>生成html标记的openTag markup并处理事件绑定</td>
+</tr>
+<tr>
+<td>_createContentMarkup</td>
+<td>为html标签内的内容创建对应的markup</td>
+</tr>
+<tr>
+<td>_createInitialChildren</td>
+<td>遍历下级children标记放到目标元素中</td>
+</tr>
+<tr>
+<td><strong>receiveComponent</strong></td>
+<td>更新_currentElement并调用this.updateComponent更新组件</td>
+</tr>
+<tr>
+<td>updateComponent</td>
+<td>使用_updateDOMProperties &amp; _updateDOMChildren更新props、styles和children</td>
+</tr>
+<tr>
+<td>_updateDOMProperties</td>
+<td>更新styles和props</td>
+</tr>
+<tr>
+<td>_updateDOMChildren</td>
+<td>更新children</td>
+</tr>
+<tr>
+<td><strong>getHostNode</strong></td>
+<td>获取组件对应的HTMLElement节点</td>
+</tr>
+<tr>
+<td><strong>unmountComponent</strong></td>
+<td>卸载事件注册 但不直接影响DOM</td>
+</tr>
+<tr>
+<td>getPublicInstance</td>
+<td>获取组件对应的HTMLElement节点 同getHostNode</td>
+</tr>
+</tbody></table>
+<h3 id="mountComponent"><a href="#mountComponent" class="headerlink" title="mountComponent"></a>mountComponent</h3><p>生成根标记然后递归生成内部标记。这个生成是在事务支持下的生成(更新前卸载事件更新后重新绑定诸如此类)。这个操作不是冥等的，多次执行结果并不完全一致。</p>
+<p>关于事务的分析，我们后面再总体分析一下看看，这里简单看看这里的遍历生成标记是如何做到的。</p>
+<p>首先看看mountComponent整体执行完毕后的返回数据结构</p>
+<p><img src="/images/20180824104927.png"></p>
+<p>其次，这个函数里面有两行非常关键的代码，这是遍历生成标记的核心调用</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> lazyTree = DOMLazyTree(el);</span><br><span class="line"><span class="built_in">this</span>._createInitialChildren(transaction, props, context, lazyTree);</span><br></pre></td></tr></table></figure>
+
+<p>这里看看lazyTree返回值:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">DOMLazyTree</span>(<span class="params">node</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    node: node,</span><br><span class="line">    children: [],</span><br><span class="line">    html: <span class="literal">null</span>,</span><br><span class="line">    text: <span class="literal">null</span>,</span><br><span class="line">    toString,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后这里接下来先看看<code>_createInitialChildren</code></p>
+<h3 id="createInitialChildren"><a href="#createInitialChildren" class="headerlink" title="_createInitialChildren"></a>_createInitialChildren</h3><p>它的作用是遍历下级children标记放到目标元素中</p>
+<p>先看看大致逻辑和参数问题，这里有transaction, props, context, lazyTree</p>
+<p>这里props是实例化ReactDOMComponent时候传入的element，transaction、context这里不再讲，lazyTree是上一步传入。此时props上显然会有children保存其子元素的数组。</p>
+<p>这里有两个逻辑分支</p>
+<ul>
+<li><p>props.children 是string|number -&gt; contentToUse 此时DOMLazyTree.queueText(lazyTree, contentToUse)</p>
+</li>
+<li><p>否则childrenToUse执行</p>
+</li>
+<li><p>下一步:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mountImages = <span class="built_in">this</span>.mountChildren(</span><br><span class="line">  childrenToUse,</span><br><span class="line">  transaction,</span><br><span class="line">  context,</span><br><span class="line">);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; mountImages.length; i++) &#123;</span><br><span class="line">  DOMLazyTree.queueChild(lazyTree, mountImages[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>这个this.mountChildren在ReactMultiChild.Mixin被集成到原型上来。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">mountChildren: <span class="function"><span class="keyword">function</span>(<span class="params">nestedChildren, transaction, context</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> children = <span class="built_in">this</span>._reconcilerInstantiateChildren(</span><br><span class="line">    nestedChildren,</span><br><span class="line">    transaction,</span><br><span class="line">    context,</span><br><span class="line">  );</span><br><span class="line">  <span class="built_in">this</span>._renderedChildren = children;</span><br><span class="line">  <span class="keyword">var</span> mountImages = [];</span><br><span class="line">  <span class="keyword">var</span> index = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> name <span class="keyword">in</span> children) &#123;</span><br><span class="line">    <span class="keyword">if</span> (children.hasOwnProperty(name)) &#123;</span><br><span class="line">      <span class="keyword">var</span> child = children[name];</span><br><span class="line">      <span class="keyword">var</span> selfDebugID = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">var</span> mountImage = ReactReconciler.mountComponent(</span><br><span class="line">        child,</span><br><span class="line">        transaction,</span><br><span class="line">        <span class="built_in">this</span>,</span><br><span class="line">        <span class="built_in">this</span>._hostContainerInfo,</span><br><span class="line">        context,</span><br><span class="line">        selfDebugID,</span><br><span class="line">      );</span><br><span class="line">      child._mountIndex = index++;</span><br><span class="line">      mountImages.push(mountImage);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> mountImages;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这里暂不用去理会<code>this._reconcilerInstantiateChildren</code>只是简单提一下，它是一个数组，里面的元素的结构和lazyTree返回值是一致的。</p>
+<p>仅仅看ReactReconciler.mountComponent就可以知道，mountComponent里面说到的这个遍历，便是从这里而来。他的流程是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ReactDOMComponent.mountComponent </span><br><span class="line">  -&gt; ReactDOMComponent._createInitialChildren </span><br><span class="line">   	-&gt; ReactMultiChild.Mixin.mountChildren </span><br><span class="line">		-&gt; ReactReconciler.mountComponent </span><br><span class="line">    		-&gt; instantiateReactComponent </span><br><span class="line">    			-&gt; ReactDOMComponent.mountComponent</span><br></pre></td></tr></table></figure>
+
+<p>至于ReactReconciler.mountComponent 到 ReactDOMComponent.mountComponent这个环节，请参考上文ReactReconciler.mountComponent。</p>
+<p>这里的遍历是起到这样的作用。我们知道jsx转换到js之后是近似</p>
+<p><img src="/images/20180823140712.png"></p>
+<p>的嵌套结构，如果有子组件那么也是这样的结构放在props.children上，以此类推。</p>
+<p>而这里的遍历则是将这个结构转换成</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    node: node,</span><br><span class="line">    children: [],</span><br><span class="line">    html: <span class="literal">null</span>,</span><br><span class="line">    text: <span class="literal">null</span>,</span><br><span class="line">    toString,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样的结构，子元素放到children数组中。只不过此时这里的node已经是HTML元素了可以直接插入到DOM中。</p>
+<p>这时候使用ReactMount._mountImageIntoNode就可以将其渲染到DOM了。</p>
+<p>PS: 需要注意的，这个转换仅仅是在<code>transaction.useCreateElement</code>成立(在这里,<strong>服务端渲染才会为fasle</strong>,这里暂不考虑这块)，否则回直接返回html标记字符串。</p>
+<h3 id="updateDOMChildren"><a href="#updateDOMChildren" class="headerlink" title="_updateDOMChildren"></a>_updateDOMChildren</h3><p>_updateDOMChildren这个方法是当children更新后的调用。它在updateComponent环节被调用过。</p>
+<p>在这个函数中有个调用非常关键 <code>this.updateChildren</code>，它从<code>ReactMultiChild.Mixin</code>继承而来。这里设计到了diff算法处理，暂且放下。</p>
+<h3 id="createOpenTagMarkupAndPutListeners"><a href="#createOpenTagMarkupAndPutListeners" class="headerlink" title="_createOpenTagMarkupAndPutListeners"></a>_createOpenTagMarkupAndPutListeners</h3><p>这个函数可以返回一个<code>&lt;div class=&quot;name&quot; /&gt;</code>代码中的<code>&lt;div class=&quot;name&quot;</code>这个部分。并对事件进行绑定。<strong>服务端渲染会用到。</strong></p>
+<h3 id="createContentMarkup"><a href="#createContentMarkup" class="headerlink" title="_createContentMarkup"></a>_createContentMarkup</h3><p>为html标签内的内容创建对应的markup。<strong>服务端渲染会用到。</strong></p>
+<p>和_createOpenTagMarkupAndPutListeners有一些关联，前者是获得openTagMarkup,这个获取标记中间的元素内容Markup。</p>
+<h3 id="updateComponent"><a href="#updateComponent" class="headerlink" title="updateComponent"></a>updateComponent</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>._updateDOMProperties(lastProps, nextProps, transaction);</span><br><span class="line"><span class="built_in">this</span>._updateDOMChildren(lastProps, nextProps, transaction, context);</span><br></pre></td></tr></table></figure>
+
+<h3 id="unmountComponent"><a href="#unmountComponent" class="headerlink" title="unmountComponent"></a>unmountComponent</h3><p>关键代码是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>.unmountChildren(safely);</span><br><span class="line">ReactDOMComponentTree.uncacheNode(<span class="built_in">this</span>);</span><br><span class="line">EventPluginHub.deleteAllListeners(<span class="built_in">this</span>);</span><br></pre></td></tr></table></figure>
+
+<p>主要涉及了ReactDOMComponentTree、EventPluginHub、ReactMultiChild三个模块</p>
+<h3 id="getHostNode"><a href="#getHostNode" class="headerlink" title="getHostNode"></a>getHostNode</h3><p>调用了ReactDOMComponentTree.getNodeFromInstance获取组件对应的HTMLElement节点。这个模块后面分析。</p>
+<h3 id="updateDOMProperties"><a href="#updateDOMProperties" class="headerlink" title="_updateDOMProperties"></a>_updateDOMProperties</h3><p>这个函数其实还挺重要的。在我们的使用过程中，我们在props上放style放className 放refs放onClick。这些都会得到体现。</p>
+<p>这里有三个逻辑分支</p>
+<ul>
+<li>style的处理</li>
+<li>事件注册的处理[registrationNameModules.hasOwnProperty(propKey)]。先解绑后重新绑定。关键函数enqueuePutListener</li>
+<li>自定义标签的处理</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/26/react-lifecycle/" rel="prev" title="react生命周期分析">
+      <i class="fa fa-chevron-left"></i> react生命周期分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/06/10/react-event/" rel="next" title="react Event">
+      react Event <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ReactDOMComponent"><span class="nav-number">1.</span> <span class="nav-text">ReactDOMComponent</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactDOMComponent-Mixin"><span class="nav-number">1.1.</span> <span class="nav-text">ReactDOMComponent.Mixin</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mountComponent"><span class="nav-number">1.1.1.</span> <span class="nav-text">mountComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#createInitialChildren"><span class="nav-number">1.1.2.</span> <span class="nav-text">_createInitialChildren</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#updateDOMChildren"><span class="nav-number">1.1.3.</span> <span class="nav-text">_updateDOMChildren</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#createOpenTagMarkupAndPutListeners"><span class="nav-number">1.1.4.</span> <span class="nav-text">_createOpenTagMarkupAndPutListeners</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#createContentMarkup"><span class="nav-number">1.1.5.</span> <span class="nav-text">_createContentMarkup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#updateComponent"><span class="nav-number">1.1.6.</span> <span class="nav-text">updateComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unmountComponent"><span class="nav-number">1.1.7.</span> <span class="nav-text">unmountComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getHostNode"><span class="nav-number">1.1.8.</span> <span class="nav-text">getHostNode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#updateDOMProperties"><span class="nav-number">1.1.9.</span> <span class="nav-text">_updateDOMProperties</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

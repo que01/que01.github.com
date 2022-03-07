@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="调度算是整个React实现中的核心，VirtualDom算是一种架构规划，Diff算法可以视为一种规则，而这个调度，则是这个规则具体执行者。它们之间的关系，可以近似视为机构设置-宪法-政府的关系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React核心:Reconciler调度模块">
+<meta property="og:url" content="http://www.que01.top/2019/07/04/react-Reconciler/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="调度算是整个React实现中的核心，VirtualDom算是一种架构规划，Diff算法可以视为一种规则，而这个调度，则是这个规则具体执行者。它们之间的关系，可以近似视为机构设置-宪法-政府的关系。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/React-Reconciler.png">
+<meta property="article:published_time" content="2019-07-04T07:39:50.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.669Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/React-Reconciler.png">
+
+<link rel="canonical" href="http://www.que01.top/2019/07/04/react-Reconciler/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React核心:Reconciler调度模块 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/07/04/react-Reconciler/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React核心:Reconciler调度模块
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-04 15:39:50" itemprop="dateCreated datePublished" datetime="2019-07-04T15:39:50+08:00">2019-07-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/07/04/react-Reconciler/" class="post-meta-item leancloud_visitors" data-flag-title="React核心:Reconciler调度模块" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">调度算是整个React实现中的核心，VirtualDom算是一种架构规划，Diff算法可以视为一种规则，而这个调度，则是这个规则具体执行者。它们之间的关系，可以近似视为机构设置-宪法-政府的关系。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Reconciler范畴"><a href="#Reconciler范畴" class="headerlink" title="Reconciler范畴"></a>Reconciler范畴</h1><p>关注点放到<code>src/renders/shared/stack/reconciler</code>上来。这里Reconciler模块的实现代码。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">renderers/shared/stack/reconciler</span><br><span class="line">├── ReactChildReconciler.js</span><br><span class="line">├── ReactComponentEnvironment.js</span><br><span class="line">├── ReactCompositeComponent.js</span><br><span class="line">├── ReactDefaultBatchingStrategy.js</span><br><span class="line">├── ReactEmptyComponent.js</span><br><span class="line">├── ReactEventEmitterMixin.js</span><br><span class="line">├── ReactHostComponent.js</span><br><span class="line">├── ReactInstanceType.js</span><br><span class="line">├── ReactMultiChild.js</span><br><span class="line">├── ReactMultiChildUpdateTypes.js</span><br><span class="line">├── ReactNodeTypes.js</span><br><span class="line">├── ReactOwner.js</span><br><span class="line">├── ReactReconciler.js</span><br><span class="line">├── ReactRef.js</span><br><span class="line">├── ReactSimpleEmptyComponent.js</span><br><span class="line">├── ReactUpdateQueue.js</span><br><span class="line">├── ReactUpdates.js</span><br><span class="line">├── getHostComponentFromComposite.js</span><br><span class="line">└── instantiateReactComponent.js</span><br></pre></td></tr></table></figure>
+
+<h2 id="getHostComponentFromComposite"><a href="#getHostComponentFromComposite" class="headerlink" title="getHostComponentFromComposite"></a>getHostComponentFromComposite</h2><p>用于从自定义组件上获取实例上的<code>_renderedComponent</code>,如果自定义组件不断相互嵌套使用，他还会不断往下深挖，直到返回的是<code>ReactDomComponent</code>节点为止，如果为空返回null。</p>
+<p>这个函数可以反馈组件架构上的涉及：</p>
+<ul>
+<li><p><code>_renderedComponent</code>保存children节点</p>
+</li>
+<li><p><code>_renderedNodeType</code>保存节点类型</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Enum ReactNodeTypes &#123;</span><br><span class="line">    HOST: 0,</span><br><span class="line">    COMPOSITE: 1,</span><br><span class="line">    EMPTY: 2,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="instantiateReactComponent"><a href="#instantiateReactComponent" class="headerlink" title="instantiateReactComponent"></a>instantiateReactComponent</h2><p>根据给出的ReactNode返回一个组件实例。</p>
+<p>小小研究一下这个函数，其实可以窥见<a href="/2019/04/03/react-VirtualDom/">ReactNode</a>和React组件实例之间的关系。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">type ReactDOMElement = &#123; </span><br><span class="line">  type : string, </span><br><span class="line">  props : &#123; </span><br><span class="line">    children : ReactNodeList, </span><br><span class="line">    className : string, </span><br><span class="line">    etc.</span><br><span class="line">  &#125;, </span><br><span class="line">  key : string | boolean | number | <span class="literal">null</span>, </span><br><span class="line">  ref : string | <span class="literal">null</span> </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">type ReactComponentElement&lt;TProps&gt; = &#123; </span><br><span class="line">  type : ReactClass&lt;TProps&gt;, </span><br><span class="line">  props : TProps, </span><br><span class="line">  key : string | boolean | number | <span class="literal">null</span>, </span><br><span class="line">  ref : string | <span class="literal">null</span> </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>对于<code>ReactDOMElement</code>来说，type是字符串<br>对于<code>ReactComponentElement</code>来说， type是一个函数</p>
+<p>这里这个函数根据type属性做了4个分支</p>
+<ul>
+<li>如果是string，使用ReactHostComponent.createInternalComponent(element)返回ReactDOMElement</li>
+<li>如果是function且已知(定义好了mountComponent|receiveComponent这些)，那么调用type(自定义组件的render函数)</li>
+<li>如果是function且未知，使用<code>new ReactCompositeComponentWrapper(element)</code>返回一个ReactCompositeComponent包装结构。</li>
+<li>如果这个节点没有type属性直接是一个string|number，那么返回一个文本节点</li>
+</ul>
+<h2 id="ReactChildReconciler"><a href="#ReactChildReconciler" class="headerlink" title="ReactChildReconciler"></a>ReactChildReconciler</h2><p>这个函数是<a href="/2019/06/25/react-diff/">Diff算法</a>的一部分。主要是Element Diff部分。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type ReactChildReconciler &#123;</span><br><span class="line">    instantiateChildren: <span class="function">() =&gt;</span> &#123;&#125; <span class="comment">// 返回新的Children实例对象</span></span><br><span class="line">    updateChildren: <span class="function">() =&gt;</span> &#123;&#125;	  <span class="comment">// 进行内部Diff更新 三种算法都会综合使用</span></span><br><span class="line">    unmountChildren: <span class="function">() =&gt;</span> &#123;&#125;     <span class="comment">// 调用internalInstance.unmountComponent，移除ref引用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里updateChildren是diff算法的核心实现。</p>
+<h2 id="ReactComponentEnvironment"><a href="#ReactComponentEnvironment" class="headerlink" title="ReactComponentEnvironment"></a>ReactComponentEnvironment</h2><p>代码相关引用路径如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactComponentEnvironment = &#123;</span><br><span class="line">  replaceNodeWithMarkup: (<span class="literal">null</span>: ?ReplaceNodeWithMarkup),</span><br><span class="line">  processChildrenUpdates: (<span class="literal">null</span>: ?ReplaceNodeWithMarkup),</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ReactDefaultInjection.js</span></span><br><span class="line">ReactInjection.Component.injectEnvironment(ReactComponentBrowserEnvironment);</span><br><span class="line"><span class="comment">// ReactComponentBrowserEnvironment.js</span></span><br><span class="line"><span class="keyword">var</span> DOMChildrenOperations = <span class="built_in">require</span>(<span class="string">&#x27;DOMChildrenOperations&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> ReactDOMIDOperations = <span class="built_in">require</span>(<span class="string">&#x27;ReactDOMIDOperations&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ReactComponentBrowserEnvironment = &#123;</span><br><span class="line">  processChildrenUpdates: ReactDOMIDOperations.dangerouslyProcessChildrenUpdates,</span><br><span class="line">  replaceNodeWithMarkup: DOMChildrenOperations.dangerouslyReplaceNodeWithMarkup,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">module</span>.exports = ReactComponentBrowserEnvironment;</span><br></pre></td></tr></table></figure>
+
+<p>这里为Reconciler模块抽象出了需要了解浏览器上下文的功能。这些都是一些实质性对浏览器DOM进行操作的函数。</p>
+<p>这里先说<code>processChildrenUpdates</code>,它主要引用了<code>DOMChildrenOperations.processUpdates</code>，关于这个函数，参考<a href="/2019/06/25/react-diff/#%E6%9B%B4%E6%96%B0%E5%88%B0DOM">Diff算法-更新到DOM</a>。因为这里是Diff操作后，将虚拟dom变化反馈到实质Dom的流程，所以必须按照浏览器的DOM API来进行dom更新，这里必须知道浏览器上下文。</p>
+<p>其次是<code>replaceNodeWithMarkup</code>,它指向了<code>DOMChildrenOperations.DOMChildrenOperations</code>。这个函数用途也是在Diff环节中的，我们知道，如果一个组件没有变化只是props更新，那么它会走更新逻辑，但是变化了呢？它会直接删除旧的+替换为成新生成的，这就是这个API的功能。这里替换都是用的<a target="_blank" rel="noopener" href="http://www.w3school.com.cn/xmldom/met_node_replacechild.asp">replaceChild</a>，暂时也没看到和浏览器兼容相关代码，此处兼容相关的是<code>insertTreeChildren</code>。</p>
+<h2 id="ReactCompositeComponent"><a href="#ReactCompositeComponent" class="headerlink" title="ReactCompositeComponent"></a>ReactCompositeComponent</h2><p>这个是自定义组件的相关代码，这里不再说细节。</p>
+<p>主要是提一下，自定义组件也是Reconciler模块的一部分。</p>
+<h2 id="ReactDefaultBatchingStrategy"><a href="#ReactDefaultBatchingStrategy" class="headerlink" title="ReactDefaultBatchingStrategy"></a>ReactDefaultBatchingStrategy</h2><p>这个模块是批量更新的处理。主要涉及到3个部分: 事务、更新。</p>
+<p>两个事务在于:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">var RESET_BATCHED_UPDATES &#x3D; &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: function() &#123;</span><br><span class="line">    ReactDefaultBatchingStrategy.isBatchingUpdates &#x3D; false;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">var FLUSH_BATCHED_UPDATES &#x3D; &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: ReactUpdates.flushBatchedUpdates.bind(ReactUpdates),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>前者是模块事务操作，后者是更新事务。</strong>其中模块事务完毕后要重设<code>isBatchingUpdates=false;</code></p>
+<p>这个<code>isBatchingUpdates</code>变量是事务过程中需要使用的变量：当没有事务执行中的时候直接执行，否则以事务方式执行这个函数(先执行initializeAll, 函数完毕再执行closeAll)。</p>
+<p>核心代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactDefaultBatchingStrategy = &#123;</span><br><span class="line">  isBatchingUpdates: <span class="literal">false</span>,</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Call the provided function in a context within which calls to `setState`</span></span><br><span class="line"><span class="comment">   * and friends are batched such that components aren&#x27;t updated unnecessarily.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  batchedUpdates: <span class="function"><span class="keyword">function</span>(<span class="params">callback, a, b, c, d, e</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> alreadyBatchingUpdates = ReactDefaultBatchingStrategy.isBatchingUpdates;</span><br><span class="line">    ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// The code is written this way to avoid extra allocations</span></span><br><span class="line">    <span class="keyword">if</span> (alreadyBatchingUpdates) &#123;</span><br><span class="line">      <span class="keyword">return</span> callback(a, b, c, d, e);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> transaction.perform(callback, <span class="literal">null</span>, a, b, c, d, e);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>更新事务则关注<code>ReactUpdates.flushBatchedUpdates.bind(ReactUpdates)</code>。这里值得扯一扯的是<code>ReactUpdates.batchedUpdates</code>实质上指向了这个<code>ReactDefaultBatchingStrategy.batchedUpdates</code>,最后又根据事务反向指向回去了<code>flushBatchedUpdates</code>。</p>
+<p>具体细节在<a href="/2019/06/15/react-ReactUpdates/#batchedUpdates">《React ReactUpdates》</a>里面有抽丝剥茧式得剖析，这里不再赘述。</p>
+<p>只是做宏观讲述，这个batchedUpdates最后是对所有脏组件(dirtyComponents),调用其自身<code>receiveComponent</code>函数走Diff，然后反馈到浏览器UI。</p>
+<p><font color="red">★</font>这里倒是可以提一提dirtyComponents的维护。直接调用是<code>ReactUpdates.enqueueUpdate</code>,这里有简单的<a href="/2019/06/15/react-ReactUpdates/#enqueueUpdate">说明</a>。</p>
+<p>它这里有一个主要维护路径:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">props更新(假如有)</span><br><span class="line">-&gt;<span class="built_in">this</span>.setState</span><br><span class="line">--&gt;<span class="built_in">this</span>.updater.enqueueSetState || <span class="built_in">this</span>.updater.enqueueCallback </span><br><span class="line">---&gt;ReactUpdates.enqueueUpdate</span><br></pre></td></tr></table></figure>
+
+<p>这里就是脏组件的维护路径了。关于this.updater的赋值，在ReactCompositeComponent.js,line 255, mountComponent函数中，而不是setState函数里面默认的那一个。</p>
+<h2 id="ReactEmptyComponent"><a href="#ReactEmptyComponent" class="headerlink" title="ReactEmptyComponent"></a>ReactEmptyComponent</h2><p>这个地方无甚可说，就是返回一个<code>ReactDOMEmptyComponent</code></p>
+<h2 id="ReactEventEmitterMixin"><a href="#ReactEventEmitterMixin" class="headerlink" title="ReactEventEmitterMixin"></a>ReactEventEmitterMixin</h2><p>这个函数作用是从委托到Document上的回调集合里面找到对应当前组件的事件，然后对事件进行分发。</p>
+<p>关于这个部分，可以参考<a href="/2018/06/10/react-event/#handleTopLevelImpl">React Event</a>。这里直接链入的是核心调用分析环节，如果想有一个全面了解，还是必须整体通读这一篇。</p>
+<h2 id="ReactHostComponent"><a href="#ReactHostComponent" class="headerlink" title="ReactHostComponent"></a>ReactHostComponent</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactHostComponent = &#123;</span><br><span class="line">  createInternalComponent: createInternalComponent,</span><br><span class="line">  createInstanceForText: createInstanceForText,</span><br><span class="line">  isTextComponent: isTextComponent,</span><br><span class="line">  injection: ReactHostComponentInjection,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>主要就是两个函数:</p>
+<p>createInternalComponent =&gt; new ReactDOMComponent(element)</p>
+<p>createInstanceForText =&gt; new ReactDOMTextComponent(text)</p>
+<p>这里需要明白，ReactNode和组件实例之间的区别。</p>
+<h2 id="ReactMultiChild"><a href="#ReactMultiChild" class="headerlink" title="ReactMultiChild"></a>ReactMultiChild</h2><p>ReactMultiChild是Diff算法环节中重要一环。</p>
+<p>这里因为Diff算法已经先总结好了，直接去<a href="/2019/06/25/react-diff/">React Diff算法</a>看即可</p>
+<h2 id="ReactOwner"><a href="#ReactOwner" class="headerlink" title="ReactOwner"></a>ReactOwner</h2><p>这个模块和ReactCompositeComponent是有很大关联性的。</p>
+<p>这里具体参看之前的文章：<a href="/2019/06/28/react-ReactCurrentOwner/">ReactCurrentOwner:ReacCompositeComponent &amp; ReactDomComponent之间的胶水</a>。</p>
+<p>至于除此之外的两个调用:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">owner.attachRef(ref, component);</span><br><span class="line">owner.detachRef(ref);</span><br></pre></td></tr></table></figure>
+
+<p>都是对ReactInstance的属性调用。这两个函数是对ref这个props的处理。</p>
+<p>这里涉及的是ReactRef模块</p>
+<h2 id="ReactRef"><a href="#ReactRef" class="headerlink" title="ReactRef"></a>ReactRef</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">attachRef</span>(<span class="params">ref, component, owner</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> ref === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    ref(component.getPublicInstance());</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Legacy ref</span></span><br><span class="line">    ReactOwner.addComponentAsRefTo(component, ref, owner);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">detachRef</span>(<span class="params">ref, component, owner</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> ref === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    ref(<span class="literal">null</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Legacy ref</span></span><br><span class="line">    ReactOwner.removeComponentAsRefFrom(component, ref, owner);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个ref经常用到，函数也简单到可以靠猜，所以不再赘述了。</p>
+<p>主要提一下其调用。它们在<code>ReactReconciler.receiveComponent</code>和<code>ReactReconciler.unmountComponent</code>分别有相关调用。</p>
+<h2 id="ReactSimpleEmptyComponent"><a href="#ReactSimpleEmptyComponent" class="headerlink" title="ReactSimpleEmptyComponent"></a>ReactSimpleEmptyComponent</h2><p>这个函数是给ReactNative用的，这里我们就不管了。</p>
+<h2 id="ReactUpdates"><a href="#ReactUpdates" class="headerlink" title="ReactUpdates"></a>ReactUpdates</h2><p>关于这个ReactUpdates,可以直接看之前的一篇, <a href="/2019/06/15/react-ReactUpdates/">React ReactUpdates</a>, 这里有详细的说明。</p>
+<h2 id="ReactUpdateQueue"><a href="#ReactUpdateQueue" class="headerlink" title="ReactUpdateQueue"></a>ReactUpdateQueue</h2><p>ReactUpdates是一个队列的执行，但是既然是队列，那么他还是需要一个角色来维护这个队列，以便后面任务有序加入更新队列里。这里ReactUpdateQueue起到的作用就是维护这个队列。</p>
+<p>这里还是有些细节可以看，不过这里暂时略过，后面加以补充。</p>
+<h1 id="体系-amp-作用"><a href="#体系-amp-作用" class="headerlink" title="体系&amp;作用"></a>体系&amp;作用</h1><p>上面主要提到了构成Reconciler体系的各个小模块。</p>
+<p>但是这些在整个React体系里面是怎么发挥其核心作用的呢？这里需要一张图，来简要诠释，在整个React体系中，它是怎么居中调配React各个功能模块，使它井然有序工作的。</p>
+<p><img src="/images/React-Reconciler.png" alt="React-Reconciler"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/28/react-ReactCurrentOwner/" rel="prev" title="React ReactCurrentOwner">
+      <i class="fa fa-chevron-left"></i> React ReactCurrentOwner
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/10/react-Event-System-Design/" rel="next" title="React事件体系设计">
+      React事件体系设计 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Reconciler%E8%8C%83%E7%95%B4"><span class="nav-number">1.</span> <span class="nav-text">Reconciler范畴</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#getHostComponentFromComposite"><span class="nav-number">1.1.</span> <span class="nav-text">getHostComponentFromComposite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#instantiateReactComponent"><span class="nav-number">1.2.</span> <span class="nav-text">instantiateReactComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactChildReconciler"><span class="nav-number">1.3.</span> <span class="nav-text">ReactChildReconciler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactComponentEnvironment"><span class="nav-number">1.4.</span> <span class="nav-text">ReactComponentEnvironment</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactCompositeComponent"><span class="nav-number">1.5.</span> <span class="nav-text">ReactCompositeComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactDefaultBatchingStrategy"><span class="nav-number">1.6.</span> <span class="nav-text">ReactDefaultBatchingStrategy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactEmptyComponent"><span class="nav-number">1.7.</span> <span class="nav-text">ReactEmptyComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactEventEmitterMixin"><span class="nav-number">1.8.</span> <span class="nav-text">ReactEventEmitterMixin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactHostComponent"><span class="nav-number">1.9.</span> <span class="nav-text">ReactHostComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactMultiChild"><span class="nav-number">1.10.</span> <span class="nav-text">ReactMultiChild</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactOwner"><span class="nav-number">1.11.</span> <span class="nav-text">ReactOwner</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactRef"><span class="nav-number">1.12.</span> <span class="nav-text">ReactRef</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactSimpleEmptyComponent"><span class="nav-number">1.13.</span> <span class="nav-text">ReactSimpleEmptyComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactUpdates"><span class="nav-number">1.14.</span> <span class="nav-text">ReactUpdates</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactUpdateQueue"><span class="nav-number">1.15.</span> <span class="nav-text">ReactUpdateQueue</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%93%E7%B3%BB-amp-%E4%BD%9C%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">体系&amp;作用</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

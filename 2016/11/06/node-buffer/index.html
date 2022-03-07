@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一直以来在node这条路上是走了捷径，开始学node时候只是草草看了下初步的API并且没有进行深入的记忆和运用。express固然还是好用，但是到了想写各种插件和看webpack相关的东西的时候，各种node短板就各种暴露出来。所以这里就通过笔记来记忆和归类总结Node，这篇主要是Buffer。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="node-buffer笔记">
+<meta property="og:url" content="http://www.que01.top/2016/11/06/node-buffer/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="一直以来在node这条路上是走了捷径，开始学node时候只是草草看了下初步的API并且没有进行深入的记忆和运用。express固然还是好用，但是到了想写各种插件和看webpack相关的东西的时候，各种node短板就各种暴露出来。所以这里就通过笔记来记忆和归类总结Node，这篇主要是Buffer。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-11-05T16:50:10.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.616Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="node">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/11/06/node-buffer/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>node-buffer笔记 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/11/06/node-buffer/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          node-buffer笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-11-06 00:50:10" itemprop="dateCreated datePublished" datetime="2016-11-06T00:50:10+08:00">2016-11-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/11/06/node-buffer/" class="post-meta-item leancloud_visitors" data-flag-title="node-buffer笔记" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">一直以来在node这条路上是走了捷径，开始学node时候只是草草看了下初步的API并且没有进行深入的记忆和运用。express固然还是好用，但是到了想写各种插件和看webpack相关的东西的时候，各种node短板就各种暴露出来。所以这里就通过笔记来记忆和归类总结Node，这篇主要是Buffer。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Buffer是什么"><a href="#Buffer是什么" class="headerlink" title="Buffer是什么"></a>Buffer是什么</h1><p>Javascript十分善于操作字符串，但是它并不善于操作二进制数据，在Javascript语言中也没有任何二进制相关的数据结构。<br>但是当Javascript扩展到后端领域以后，数据库操作、图像操作、文件上传这类后端很常见的操作，都无法再依赖字符这种类型来进行操作了，所以Node实现了一个叫做Buffer的 <strong>二进制缓冲区</strong>。它的单位是 <strong>字节</strong>，可以 <strong>随机设置和获取缓冲区的数据</strong>。</p>
+<h1 id="Buffer怎么用"><a href="#Buffer怎么用" class="headerlink" title="Buffer怎么用"></a>Buffer怎么用</h1><h2 id="创建一个缓冲区"><a href="#创建一个缓冲区" class="headerlink" title="创建一个缓冲区"></a>创建一个缓冲区</h2><h3 id="根据一个字符串创建一个Buffer缓冲区很容易"><a href="#根据一个字符串创建一个Buffer缓冲区很容易" class="headerlink" title="根据一个字符串创建一个Buffer缓冲区很容易"></a>根据一个字符串创建一个Buffer缓冲区很容易</h3><p>  <code style="margin-left: 2em;">语法: new Buffer(string[, encoding]) </code><br>但是node最近也在快速发展中，这个API在v6中遭到了废弃，所以在v6之后的版本中，使用以下语法<br>  <code style="margin-left: 2em;"> Buffer.from(string[, encoding])</code></p>
+<p>这里encoding默认值为utf-8，其他的可选值还有asciii、base64等。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Buffer.from(&quot;que01.top&quot;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="创建一个指定空间的Buffer"><a href="#创建一个指定空间的Buffer" class="headerlink" title="创建一个指定空间的Buffer"></a>创建一个指定空间的Buffer</h3><p><code style="margin-left: 2em;">语法: new Buffer(size) </code><br>同样的，这个语法在v6之后废弃了，新的API：<br><code style="margin-left: 2em;">语法: Buffer.alloc(size[, fill[, encoding]]) </code></p>
+<p>size:关于size的大小有以下规定</p>
+<ul>
+<li>size必须小于等于buffer.kMaxLength，在32位系统下它为(2^30)-1,64位系统下它为(2^31)-1</li>
+<li>当size&lt;=0,将会创建一个size=0的buffer</li>
+</ul>
+<p>fill:预先填充的值，默认为0<br>encoding:编码</p>
+<h2 id="Buffer的其他方法"><a href="#Buffer的其他方法" class="headerlink" title="Buffer的其他方法"></a>Buffer的其他方法</h2><h3 id="toString-NaN"><a href="#toString-NaN" class="headerlink" title="toString"></a>toString</h3><p>我们可以将buffer还原为一个字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; var buf &#x3D; Buffer.from(&quot;my webSite:que01.top&quot;)</span><br><span class="line">undefined</span><br><span class="line">&gt; buf.toString()</span><br><span class="line">&#39;my webSite:que01.top&#39;</span><br></pre></td></tr></table></figure>
+<h3 id="toJSON"><a href="#toJSON" class="headerlink" title="toJSON"></a>toJSON</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; var buf2 &#x3D; Buffer.from([1,2,3,4])</span><br><span class="line">undefined</span><br><span class="line">&gt; buf2.toJSON()</span><br><span class="line">&#123; type: &#39;Buffer&#39;, data: [ 1, 2, 3, 4 ] &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="indexOf-amp-amp-lastIndexOf"><a href="#indexOf-amp-amp-lastIndexOf" class="headerlink" title="indexOf &amp;&amp; lastIndexOf"></a>indexOf &amp;&amp; lastIndexOf</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; var buf &#x3D; Buffer.from(&quot;my webSite:que01.top&quot;)</span><br><span class="line">undefined</span><br><span class="line">&gt; buf.indexOf(&quot;que01&quot;)</span><br><span class="line">11</span><br><span class="line">&gt; var buf2 &#x3D; Buffer.from([1,2,3,4])</span><br><span class="line">undefined</span><br><span class="line">&gt; buf2.indexOf(2)</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+<h3 id="concat"><a href="#concat" class="headerlink" title="concat"></a>concat</h3><p><code style="margin-left: 2em;">语法: Buffer.concat(list[, totalLength]) </code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; let a &#x3D;  Buffer.from(&quot;我是：&quot;),</span><br><span class="line">      b &#x3D;  Buffer.from(&quot;张三&quot;);</span><br><span class="line">console.log(Buffer.concat([a,b],a.length+b.length).toSring())</span><br><span class="line">我是：张三    </span><br></pre></td></tr></table></figure>
+
+<h1 id="暂结"><a href="#暂结" class="headerlink" title="暂结"></a>暂结</h1><p>暂时就这样吧。Buffer目前来说因为个人还是偏向Web开发，暂时也没有太多应用。更多的时间有机会我再来补充。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/node/" rel="tag"># node</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/24/vim-notebook/" rel="prev" title="vim-notebook">
+      <i class="fa fa-chevron-left"></i> vim-notebook
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/11/15/docker-compose/" rel="next" title="docker-compose实战笔记">
+      docker-compose实战笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Buffer%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text">Buffer是什么</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Buffer%E6%80%8E%E4%B9%88%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">Buffer怎么用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">创建一个缓冲区</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B9%E6%8D%AE%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AABuffer%E7%BC%93%E5%86%B2%E5%8C%BA%E5%BE%88%E5%AE%B9%E6%98%93"><span class="nav-number">2.1.1.</span> <span class="nav-text">根据一个字符串创建一个Buffer缓冲区很容易</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%8C%87%E5%AE%9A%E7%A9%BA%E9%97%B4%E7%9A%84Buffer"><span class="nav-number">2.1.2.</span> <span class="nav-text">创建一个指定空间的Buffer</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Buffer%E7%9A%84%E5%85%B6%E4%BB%96%E6%96%B9%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">Buffer的其他方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#toString-NaN"><span class="nav-number">2.2.1.</span> <span class="nav-text">toString</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#toJSON"><span class="nav-number">2.2.2.</span> <span class="nav-text">toJSON</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#indexOf-amp-amp-lastIndexOf"><span class="nav-number">2.2.3.</span> <span class="nav-text">indexOf &amp;&amp; lastIndexOf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#concat"><span class="nav-number">2.2.4.</span> <span class="nav-text">concat</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9A%82%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">暂结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

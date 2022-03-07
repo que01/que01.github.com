@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="上一篇主要是整理了API并对内部实现进行了大胆的猜测，这一篇就从源码角度来看看Backbone内部到底如何运作的。本章可能会偏重于内部架构和实现，对细节的注解和翻译我尽量在文末放出。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="backbone初探(二)-辅助函数">
+<meta property="og:url" content="http://www.que01.top/2016/04/16/backbone-2/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="上一篇主要是整理了API并对内部实现进行了大胆的猜测，这一篇就从源码角度来看看Backbone内部到底如何运作的。本章可能会偏重于内部架构和实现，对细节的注解和翻译我尽量在文末放出。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-04-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.580Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/04/16/backbone-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>backbone初探(二)-辅助函数 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/04/16/backbone-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          backbone初探(二)-辅助函数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-16 00:00:00" itemprop="dateCreated datePublished" datetime="2016-04-16T00:00:00+08:00">2016-04-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/04/16/backbone-2/" class="post-meta-item leancloud_visitors" data-flag-title="backbone初探(二)-辅助函数" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">上一篇主要是整理了API并对内部实现进行了大胆的猜测，这一篇就从源码角度来看看Backbone内部到底如何运作的。本章可能会偏重于内部架构和实现，对细节的注解和翻译我尽量在文末放出。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>这篇文章开始动笔之前抽了一周的晚上看源码，对Backbone的源码结构也算是有了整体认识。在宏观已经有了大体了解和有过大体猜测基础上，有了这篇文章，依赖是梳理学习脉络，二来强化记忆便于进一步整理代码。</p>
+<h1 id="Backbone的基础公用函数"><a href="#Backbone的基础公用函数" class="headerlink" title="Backbone的基础公用函数"></a>Backbone的基础公用函数</h1><p>Backbone代码经过好多年的整理和重构代码变得非常复用，以至于很多基础函数代码很难一下子整理完毕。这里先看看它的基础函数。</p>
+<h2 id="extend"><a href="#extend" class="headerlink" title="extend"></a>extend</h2><p>backbone很多代码都从underscore里面继承过来，并且对underscrore函数进行了高度的复用。但是它本身的extend函数确实根据自身的需要量身定制的。我们先看看TODO实例里面的几段代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">var</span> Todo = Backbone.Model.extend(&#123;</span><br><span class="line">...</span><br><span class="line"> &#125;);</span><br><span class="line"> <span class="keyword">var</span> TodoList = Backbone.Collection.extend(&#123;</span><br><span class="line">...</span><br><span class="line"> &#125;);</span><br><span class="line"> <span class="keyword">var</span> Todos = <span class="keyword">new</span> TodoList;</span><br><span class="line"> <span class="keyword">var</span> TodoView = Backbone.View.extend(&#123;</span><br><span class="line">...</span><br><span class="line"> &#125;);</span><br><span class="line"> <span class="keyword">var</span> App = <span class="keyword">new</span> AppView;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>为了精简和明晰，主干代码已经被精简掉了。具体可以查看<a target="_blank" rel="noopener" href="http://backbonejs.org/examples/todos/todos.js">这里</a>查看更多。<br>这三段代码就是Todo的DEMO的主题逻辑代码，可以看到backbone并没有像以往很多库和框架一样使用new的方式来实例化构造器。<br>然后把源码拖到最后几行，可以看到这一段：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Model.extend = Collection.extend = Router.extend = View.extend = History.extend = extend;</span><br></pre></td></tr></table></figure>
+<p>很显然，不管是M、V还是C，他们的extend都指向了extend函数，我们来看细节：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Helper function to correctly set up the prototype chain for subclasses.</span></span><br><span class="line"><span class="comment">// 辅助函数-&gt;用于正确设置子类的原型链。</span></span><br><span class="line"><span class="comment">// Similar to `goog.inherits`, but uses a hash of prototype properties and</span></span><br><span class="line"><span class="comment">// 类似于`goog.inherits`，但是使用一个原型的hash属性并继承原型。</span></span><br><span class="line"><span class="comment">// class properties to be extended.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 参数protoProps对象中的属性是所有child实例的公用方法</span></span><br><span class="line"><span class="comment">// 参数staticProps对象中的属性是child类的静态属性</span></span><br><span class="line"><span class="keyword">var</span> extend = <span class="function"><span class="keyword">function</span>(<span class="params">protoProps, staticProps</span>) </span>&#123;</span><br><span class="line">  <span class="comment">//=&gt;this指向谁？当作为方法调用 指向调用对象本身，也就是说可能会指向Model,View,Events&amp;Collection之一</span></span><br><span class="line">  <span class="keyword">var</span> parent = <span class="built_in">this</span>;</span><br><span class="line">  <span class="keyword">var</span> child;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The constructor function for the new subclass is either defined by you</span></span><br><span class="line">  <span class="comment">// (the &quot;constructor&quot; property in your `extend` definition), or defaulted</span></span><br><span class="line">  <span class="comment">// by us to simply call the parent constructor.</span></span><br><span class="line">  <span class="comment">// 如果定义了protoProps，且protoProps有constructor属性</span></span><br><span class="line">  <span class="comment">// 那么protoProps.constructor将作为子类的构造器</span></span><br><span class="line">  <span class="comment">// 否则，会定义一个构造器，且构造器里调用了父类的构造函数</span></span><br><span class="line">  <span class="keyword">if</span> (protoProps &amp;&amp; _.has(protoProps, <span class="string">&#x27;constructor&#x27;</span>)) &#123;</span><br><span class="line">    child = protoProps.constructor;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 借用parent的构造函数初始化自身</span></span><br><span class="line">    child = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> parent.apply(<span class="built_in">this</span>, <span class="built_in">arguments</span>); &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Add static properties to the constructor function, if supplied.</span></span><br><span class="line">  <span class="comment">// 将静态属性staticProps以及parent上的类属性添加到child上作为类属性</span></span><br><span class="line">  _.extend(child, parent, staticProps);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Set the prototype chain to inherit from `parent`, without calling</span></span><br><span class="line">  <span class="comment">// 设置继承自parent的原型链 而不调用parent的构造器函数(实际上在上面已经调用过了)</span></span><br><span class="line">  <span class="comment">// `parent`&#x27;s constructor function and add the prototype properties.</span></span><br><span class="line">  <span class="comment">// 并添加原型属性</span></span><br><span class="line">  child.prototype = _.create(parent.prototype, protoProps);</span><br><span class="line">  child.prototype.constructor = child;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Set a convenience property in case the parent&#x27;s prototype is needed</span></span><br><span class="line">  <span class="comment">// later.</span></span><br><span class="line">  child.__super__ = parent.prototype;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> child;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>前面几段还算好理解，主要麻烦的是原型prototype和constructor还有__super__这三个玩意儿之间的关系了。这里尽量用几句话说完：<br>众所周知，在面向对象继承这个概念有两个非常基础的概念:类&amp;实例。<br>但是在Javascript这门语言中，还存在一个叫做原型(prototype)的东西,js依赖它实现继承。<br>这里做个场景模拟：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> A = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;;<span class="comment">//构造函数</span></span><br><span class="line">A.prototype.a=<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;;<span class="comment">//构造函数的原型</span></span><br><span class="line"><span class="keyword">var</span> b = A.prototype.constructor;</span><br><span class="line"><span class="keyword">var</span> B = <span class="keyword">new</span> A();</span><br><span class="line"><span class="keyword">var</span> c = B.__proto__;</span><br><span class="line"><span class="keyword">var</span> d = B.constructor;</span><br></pre></td></tr></table></figure>
+<p>这里首先说明一下，构造器(A)通常会分为两个部分组成：构造函数(line1)+构造函数的原型(line2);<br>然后指出这里存在的三个对应关系：</p>
+<ul>
+<li>b === A =&gt;构造器的原型上的constructor会指向构造器的构造函数</li>
+<li>c === A.prototype =&gt; 实例的__proto__属性会指向构造器的原型链</li>
+<li>d === A =&gt;实例的constructor会指向构造器的原型链</li>
+</ul>
+<p>最后，需要补充的是：</p>
+<ol>
+<li>constructor属性在实例化时候动态生成,覆盖原来prototype的值</li>
+<li>__proto__和__super__其实是不同的引用,__proto__是个别浏览器对原型的内部实现，而__super__仅仅是backbone的内部属性名称而已。</li>
+</ol>
+<p>最后来说下代码的意图：<br><code>child.prototype = <em>.create(parent.prototype, protoProps)</code>:这里设置了child.prototype为parent和protoProps的混合体；<br><code>child.prototype.constructor = child</code>:这里将prototype.constructor指向了本身<br><code>child._<em>super\</em></em> = parent.prototype</code>这里将__super__指向了parent.prototype；</p>
+<p>——打住！看到这里是不是有似曾相识的感觉？没错，上面代码干了这两件事：</p>
+<ul>
+<li>设置原型然后将原型的constructor指向自身构造函数，这里它可以当做一个构造器使用了！</li>
+<li>然后它把自己的__super__又给指向了parent.prototype……</li>
+</ul>
+<p>有点眼熟了吧，我们离题一下，假设_<em>super_<em>就是__proto\</em></em>,那么会发生什么奇妙的事情呢？</p>
+<p>废话不说了，眼见为实：<br><a class="jsbin-embed" target="_blank" rel="noopener" href="http://jsbin.com/jebaweciki/embed?js,console">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.12"></script></p>
+<p>很奇妙的，如果这样写，那么此时这个child会既可以做构造器也可以作为实例来使用原型上的值。<br>然而__proto__毕竟是个属于浏览器内部实现的属性，所以不管基于什么原因也不该如此写。所以很遗憾的说，以上行为其实在backbone里面并不存在，__super__，其实也就是一个__proto__的替代性的引用。</p>
+<p>扯淡了那么多，言归正传，这里说说extend干了什么：</p>
+<p>三句话说：</p>
+<ol>
+<li>设置自身的构造函数</li>
+<li>设置自身的原型，并把原型的constructor指向自身以作为构造器使用</li>
+<li>添加一个__super__，用来保持对Model、Collection等这些超类原型的引用。以此为基础可以访问到这些超类的构造器和原型。防止设置了自身的属性后覆盖超类的方法要用时候获取不到.类似es6的super，仅此而已…</li>
+</ol>
+<p>一句话说：</p>
+<ol>
+<li>返回一个继承了指定类函数原型和构造器属性并带有一个指向指定类的原型引用的构造函数。</li>
+</ol>
+<p>这样，当需要时候，设置好构造器的构造函数，直接像上面代码一样，new一下就ok了。</p>
+<h2 id="addUnderscoreMethods"><a href="#addUnderscoreMethods" class="headerlink" title="addUnderscoreMethods"></a>addUnderscoreMethods</h2><p>addUnderscoreMethods也是一个可以和extend具有同等地位的函数：<br>不管是Model还是Collection还是View，通通都用到了这个方法。不同的是extend主要用于暴露给用户使用，而addUnderscoreMethods是用于在内部构建原型使用。<br>相对于extend来说，addUnderscoreMethods要复杂许多。这里看源码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用 addMethod方法 添加方法到Class原型上 attribute可能是&quot;attributes&quot;也可能是&quot;models&quot;</span></span><br><span class="line"><span class="keyword">var</span> addUnderscoreMethods = <span class="function"><span class="keyword">function</span>(<span class="params">Class, methods, attribute</span>) </span>&#123;</span><br><span class="line">  _.each(methods, <span class="function"><span class="keyword">function</span>(<span class="params">length, method</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (_[method]) Class.prototype[method] = addMethod(length, method, attribute);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里来简单解析一下：_.each方法用来遍历方法数组执行回调。在回调内部，执行这样的逻辑：</p>
+<blockquote>
+<p>如果method这个方法在Underscore下有同名的方法，那么为第一个参数的的原型下添加一个同名方法。这个方法的定义调用addMethod来生成。<br>追溯一下addMethod：</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Proxy Backbone class methods to Underscore functions, wrapping the model&#x27;s</span></span><br><span class="line"><span class="comment">// 将Backbone类方法代理到Underscore的函数上，包装model的attributes或者</span></span><br><span class="line"><span class="comment">// `attributes` object or collection&#x27;s `models` array behind the scenes.</span></span><br><span class="line"><span class="comment">// attributes对象或者collection的models数组到该场景后</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// collection.filter(function(model) &#123; return model.get(&#x27;age&#x27;) &gt; 10 &#125;);</span></span><br><span class="line"><span class="comment">// collection.each(this.addView);</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// `Function#apply` can be slow so we use the method&#x27;s arg count, if we know it.</span></span><br><span class="line"><span class="comment">// `Function#apply`会变慢，所以我们使用方法的参数数量来判定执行方案</span></span><br><span class="line"><span class="keyword">var</span> addMethod = <span class="function"><span class="keyword">function</span>(<span class="params">length, method, attribute</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (length) &#123;</span><br><span class="line">    <span class="comment">// 1个参数:返回函数-&gt;使用method方法处理window的attribute</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> _[method](<span class="built_in">this</span>[attribute]);</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 2个参数:返回函数,同上,只是可以多接受一个参数</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">value</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> _[method](<span class="built_in">this</span>[attribute], value);</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 3个参数:返回函数,同上,多接受两个参数:过滤条件和上下文</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">3</span>: <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">iteratee, context</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> _[method](<span class="built_in">this</span>[attribute], cb(iteratee, <span class="built_in">this</span>), context);</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 4个参数:返回函数,同上,多接受三个参数,过滤条件、默认值和上下文</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">4</span>: <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">iteratee, defaultVal, context</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> _[method](<span class="built_in">this</span>[attribute], cb(iteratee, <span class="built_in">this</span>), defaultVal, context);</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 默认不为以上值时候(0个)，返回一个函数:将this的attribute数组中顶部元素压入，返回 _[method].apply(_, args)</span></span><br><span class="line">    <span class="keyword">default</span>: <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">var</span> args = slice.call(<span class="built_in">arguments</span>);</span><br><span class="line">      args.unshift(<span class="built_in">this</span>[attribute]);</span><br><span class="line">      <span class="keyword">return</span> _[method].apply(_, args);</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>addMethod的是个非常公用的方法，基本上是为添加underscore到MVC上而存在。这个函数存在的意义主要是为了优化apply性能而生，它转为参数数量进行了分支处理。<br>当参数数量不同时候，进行了类似重载的功能。需要注意的是：这里this，刚开始初始化Backbone时候this指向了Window，再之后this指向Model、View和Collection。这个如果太抽象的话，那么来个有点实际的情况：当length=1，而attribute为”models”,这时候addMethod实际上就是使用undercore的method方法来处理models指向的数组。<br>当然，这是最简单的情况，实际上，当lenght为3和4时候，这时候就有个cb函数要处理，我们继续追溯：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Support `collection.sortBy(&#x27;attr&#x27;)` and `collection.findWhere(&#123;id: 1&#125;)`.</span></span><br><span class="line"><span class="comment">// 支持`collection.sortBy(&#x27;attr&#x27;)` 和 `collection.findWhere(&#123;id: 1&#125;)`</span></span><br><span class="line"><span class="comment">// 函数作用：过滤多余对象属性&amp;根据属性查找数组中对象</span></span><br><span class="line"><span class="keyword">var</span> cb = <span class="function"><span class="keyword">function</span>(<span class="params">iteratee, instance</span>) </span>&#123;</span><br><span class="line">  <span class="comment">//如果iteratee是函数，直接把函数原样返回</span></span><br><span class="line">  <span class="keyword">if</span> (_.isFunction(iteratee)) <span class="keyword">return</span> iteratee;</span><br><span class="line">  <span class="comment">//如果iteratee是Oject同时也是Model，返回modelMatcher过滤的对象</span></span><br><span class="line">  <span class="keyword">if</span> (_.isObject(iteratee) &amp;&amp; !instance._isModel(iteratee)) <span class="keyword">return</span> modelMatcher(iteratee);</span><br><span class="line">  <span class="comment">//如果iteratee是字符串，返回model.get(iteratee)</span></span><br><span class="line">  <span class="keyword">if</span> (_.isString(iteratee)) <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">model</span>) </span>&#123; <span class="keyword">return</span> model.get(iteratee); &#125;;</span><br><span class="line">  <span class="keyword">return</span> iteratee;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 模型匹配函数，使用_的matches来生成闭包，过滤model中指定的属性</span></span><br><span class="line"><span class="keyword">var</span> modelMatcher = <span class="function"><span class="keyword">function</span>(<span class="params">attrs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> matcher = _.matches(attrs);</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">model</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> matcher(model.attributes);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>cb本身还依赖了modelMatcher，这里顺便一起贴出来，具体实现已经有了，简单说下它的作用:用来过滤多余属性，比如有个对象A:{a:1,b:1},使用modelMatcher(“a”)后会返回{a:1},b被过滤掉了。<br>简单整理下cb逻辑:</p>
+<ol>
+<li>如果是函数，直接返回函数</li>
+<li>如果是对象且是Model封装。那么返回过滤属性后的Model</li>
+<li>如果是字符串，那么使用model的get方法获取指定属性然后返回。</li>
+</ol>
+<p>简而言之，这个cb，就是个属性过滤函数。用来过滤多余的属性。</p>
+<h3 id="来个小总结"><a href="#来个小总结" class="headerlink" title="来个小总结"></a>来个小总结</h3><p>addUnderscoreMethods方法的总体作用其实如他的名字一样好理解。这里顺了一遍逻辑发现确实如此，如果非要说这个代码细节阅读一次之后的收获，那么应该是从这个对参数处理分支的角度可以发现，不同的underscore方法传参时候参数是存在规律的。这里顺便归纳一下：</p>
+<ol>
+<li>1个参数的:一个参数的接受的数据类型不确定，但是共同点是都是逻辑运行需要的数据</li>
+<li>2个参数的:如_.pluck(list, propertyName) </li>
+<li>3个参数的:参考_.sortBy(list, iteratee, [context]) </li>
+<li>4个参数的:参考:_.reduce(list, iteratee, [memo], [context]) </li>
+</ol>
+<p>这里需要注意的是！<br>backbone根据自身逻辑来进行了部分设计，所以backbone在对underscore分配length长度时候有时候并没有完全根据underscore实际接受数据来，比如reduce实际上接受4个参数，但是分派的lenght却是0，这样可以直接apply来引用。除了如此，实际上方法参数长度===2的，也并不存在。</p>
+<blockquote>
+<p>实际设计过程中存在的有3种：0，1和3.</p>
+</blockquote>
+<h2 id="eventsApi"><a href="#eventsApi" class="headerlink" title="eventsApi"></a>eventsApi</h2><p>如果说上面2个方法是各个大模块都会用到，那么eventsApi这个应用范围就会变少很多，它只是在Event这个上面用到，应用范围变小很多，但是它本身是设计精巧，高度复用，应该是AOP的完美实例。</p>
+<blockquote>
+<p>PS:AOP:AOP(面向切面编程)的主要作用是把一些跟核心业务逻辑模块无关的功能抽离出来,这些 跟业务逻辑无关的功能通常包括日志统计、安全控制、异常处理等。把这些功能抽离出来之后, 再通过“动态织入”的方式掺入业务逻辑模块中。</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Iterates over the standard `event, callback` (as well as the fancy multiple</span></span><br><span class="line"><span class="comment">// 迭代 兼容标准的`event, callback` 同时支持空格分隔多事件`&quot;change blur&quot;, callback`</span></span><br><span class="line"><span class="comment">// space-separated events `&quot;change blur&quot;, callback` and jQuery-style event</span></span><br><span class="line"><span class="comment">// 以及jquery的对象式的&#123;event: callback&#125;映射</span></span><br><span class="line"><span class="comment">// maps `&#123;event: callback&#125;`).</span></span><br><span class="line"><span class="comment">// eventsApi实质上是利用iteratee来实现操作events对象并返回，eventsApi</span></span><br><span class="line"><span class="comment">// 实际上只是处理了不同参数类型的问题，这里iteratee是onApi或者offApi</span></span><br><span class="line"><span class="keyword">var</span> eventsApi = <span class="function"><span class="keyword">function</span>(<span class="params">iteratee, events, name, callback, opts</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> i = <span class="number">0</span>, names;</span><br><span class="line">  <span class="keyword">if</span> (name &amp;&amp; <span class="keyword">typeof</span> name === <span class="string">&#x27;object&#x27;</span>) &#123;<span class="comment">//jQuery-style event map</span></span><br><span class="line">    <span class="comment">// Handle event maps.</span></span><br><span class="line">    <span class="keyword">if</span> (callback !== <span class="keyword">void</span> <span class="number">0</span> &amp;&amp; <span class="string">&#x27;context&#x27;</span> <span class="keyword">in</span> opts &amp;&amp; opts.context === <span class="keyword">void</span> <span class="number">0</span>) opts.context = callback;</span><br><span class="line">    <span class="comment">//_.keys获取对象的键名，返回一个包含键名的数组</span></span><br><span class="line">    <span class="keyword">for</span> (names = _.keys(name); i &lt; names.length ; i++) &#123;</span><br><span class="line">      <span class="comment">//将对象转换为单个字符串式，然后循环调用自身</span></span><br><span class="line">      events = eventsApi(iteratee, events, names[i], name[names[i]], opts);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (name &amp;&amp; eventSplitter.test(name)) &#123;</span><br><span class="line">    <span class="comment">// Handle space-separated event names by delegating them individually.</span></span><br><span class="line">    <span class="comment">//判断name存在并由空格分隔</span></span><br><span class="line">    <span class="comment">//切割成数组循环传入函数自身进入下一分支环节</span></span><br><span class="line">    <span class="keyword">for</span> (names = name.split(eventSplitter); i &lt; names.length; i++) &#123;</span><br><span class="line">      events = iteratee(events, names[i], callback, opts);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Finally, standard events.</span></span><br><span class="line">    events = iteratee(events, name, callback, opts);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> events;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  这段代码有三个分支，一共接受3种类型的值已完善使用体验，它接受 <b>对象</b>、<b>空格分隔的字符串如”click change”</b>和 <b>字符串</b>三种。实际上真正处理业务逻辑的只有第三种逻辑，逻辑是这样的：</p>
+<ol>
+<li>如果是对象，将对象的键名全部取出来组成数组作为参数传入自身(步骤1)，将数组遍历作为参数传入自身进入分支3(步骤2)</li>
+<li>如果是空格分隔的字符串，那么split变成数组，执行步骤2</li>
+<li>如果是字符串，直接进入分支3</li>
+</ol>
+<p>eventsApi作为AOP编程方法的实践，它处理的是公共的逻辑。</p>
+<p>而eventsApi除了使用了AOP的的思想很值得称赞外，它还在自身内部实现了递归，这种递归在AOP的情景下发挥了很重要的作用:</p>
+<p>几乎所有最重要的逻辑都交由分支3处理，这样保持了传入参数的一致性，只需要维护分支3的参数传递即可，其他的分支只需要对参数类型进行转换然后递归调用自身进入分支3即可，防止了3个分支各自维护自己的参数顺序造成可能的混乱。</p>
+<p>而且相对来说，降低了源码阅读的难度，这里我们看看eventsApi有哪些iteratee传入：onApi、offApi、onceMap、triggerApi。函数很明晰了，这些iteratee涵盖了绑定、解绑、一次性绑定和事件触发4个方案的方法。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The reducing API that adds a callback to the `events` object.</span></span><br><span class="line"><span class="comment">// 增加了一个回调到`events`对象。</span></span><br><span class="line"><span class="comment">// 这个函数用来处理events对象，为events内部指定监听的事件对应的数组添加一个回调函数，同时将options的linstening数量+1</span></span><br><span class="line"><span class="comment">// 返回一个events对象(实际上已经实质性操作了，返回是为了方便操作)</span></span><br><span class="line"><span class="keyword">var</span> onApi = <span class="function"><span class="keyword">function</span>(<span class="params">events, name, callback, options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (callback) &#123;</span><br><span class="line">    <span class="keyword">var</span> handlers = events[name] || (events[name] = []);</span><br><span class="line">    <span class="keyword">var</span> context = options.context, ctx = options.ctx, listening = options.listening;</span><br><span class="line">    <span class="keyword">if</span> (listening) listening.count++;</span><br><span class="line"></span><br><span class="line">    handlers.push(&#123;<span class="attr">callback</span>: callback, <span class="attr">context</span>: context, <span class="attr">ctx</span>: context || ctx, <span class="attr">listening</span>: listening&#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> events;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>贴一下onApi的源码，这个事件绑定的内部细节可以实证一下第一篇的想法，使用Pub/Sub即订阅发布模式来处理事件。同时也排除了可能使用Dom方式如AddEventListener来绑定事件的猜测。<br>backbone Event内部完全使用了Pub/Sub模式，这样的操作的最大好处是：DOM无关，那么与DOM相关的兼容性在backbone Event这个模块内部也就不再存在。当然还有一个好处是容易维护和扩展。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这篇暂时就写这三个辅助函数或者也能叫做公用方法了。Backbone内部大面积使用了这些，如果不对其做深入的研究，那么下一步也相当困难也无法继续深入。本文对其进行了相对深入的了解和探索。到此也就告落一段。从下一篇就要开始整理Model、Event、View和Collection了。</p>
+<p>先收工！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/04/05/backbone-1/" rel="prev" title="backbone初探(一)-猜想和API">
+      <i class="fa fa-chevron-left"></i> backbone初探(一)-猜想和API
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/04/17/backbone-3/" rel="next" title="backbone初探(三)-整体结构">
+      backbone初探(三)-整体结构 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Backbone%E7%9A%84%E5%9F%BA%E7%A1%80%E5%85%AC%E7%94%A8%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">Backbone的基础公用函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#extend"><span class="nav-number">2.1.</span> <span class="nav-text">extend</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#addUnderscoreMethods"><span class="nav-number">2.2.</span> <span class="nav-text">addUnderscoreMethods</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%A5%E4%B8%AA%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">2.2.1.</span> <span class="nav-text">来个小总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eventsApi"><span class="nav-number">2.3.</span> <span class="nav-text">eventsApi</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

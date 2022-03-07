@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这篇是玩物丧志的docker。。。主要docker安装，运行，构建前端环境。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker构建前端开发环境">
+<meta property="og:url" content="http://www.que01.top/2016/07/08/docker-note/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这篇是玩物丧志的docker。。。主要docker安装，运行，构建前端环境。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-07-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.600Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/07/08/docker-note/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Docker构建前端开发环境 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/07/08/docker-note/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker构建前端开发环境
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-08 00:00:00" itemprop="dateCreated datePublished" datetime="2016-07-08T00:00:00+08:00">2016-07-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/07/08/docker-note/" class="post-meta-item leancloud_visitors" data-flag-title="Docker构建前端开发环境" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这篇是玩物丧志的docker。。。主要docker安装，运行，构建前端环境。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>本文写作前面其实个人也尝试用过docker，那时候docker for Mac尚需要virtualBox支持。不过到本文开篇时候，docker的版本已经是 <strong>1.12.0-rc3</strong> ,似乎已经不需要单独的virtualBox了。</p>
+<p>之前因为virtualBox依赖所以个人放弃了继续玩下去，一来因为对性能有点洁癖，二来因为vagrant还是能满足需求的同时似乎没比docker在mac上性能差。不过现在看到不需要virtualBox了，所以又开始折腾一下，算玩物丧志吧。</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>安装这事，感觉还是不提了，这个直接上官网链接就好了，这里是 <a target="_blank" rel="noopener" href="https://docs.docker.com/engine/installation/#installation">直达飞机</a></p>
+<h1 id="获取镜像"><a href="#获取镜像" class="headerlink" title="获取镜像"></a>获取镜像</h1><p>获取镜像使用 <strong>docker pull</strong> 命令即可。<br>如果顾虑dockerHub的网速，可以使用网易的仓库。<a target="_blank" rel="noopener" href="https://c.163.com/hub#/m/home/">网易蜂巢</a>.<br>这里安装的是ubuntu：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 网易</span></span><br><span class="line">docker pull hub.c.163.com/public/ubuntu:14.04-common</span><br><span class="line"><span class="meta">#</span><span class="bash"> dockerHub</span></span><br><span class="line">docker pull ubuntu</span><br></pre></td></tr></table></figure>
+
+<p>PS:顺便说一句，直接使用dockerHub现在速度也非常理想，为了更好的兼容性，建议还是dockerHub吧。本文最初使用网易的镜像，但是运行run失败了，始终无法进入tty，数次ctrl-c重新运行也无效。而dockerHub的几乎不到一秒就进入了tty。<br>对比了一下网易和dockerHub的镜像，网易的达到350多M，而dockerHub的只有182M，这应该是Mac新版本的docker导致的。</p>
+<h1 id="运行容器"><a href="#运行容器" class="headerlink" title="运行容器"></a>运行容器</h1><p>运行容器需要运行 <strong>docker run</strong> 命令。run命令参数比较多：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">--add-host          -- Add a custom host-to-IP mapping</span><br><span class="line">--attach        -a  -- Attach to STDIN, STDOUT or STDERR</span><br><span class="line">--cap-add           -- Add Linux capabilities</span><br><span class="line">--cap-drop          -- Drop Linux capabilities</span><br><span class="line">--cidfile           -- Write the container ID to the file</span><br><span class="line">--cpu-shares    -c  -- CPU shares (relative weight)</span><br><span class="line">--cpuset-cpus       -- CPUs in which to allow execution (0-3, 0,1)</span><br><span class="line">--detach        -d  -- Run container in the background, print new container id</span><br><span class="line">--device            -- Add a host device to the container</span><br><span class="line">--dns               -- Set custom dns servers</span><br><span class="line">--dns-search        -- Set custom DNS search domains</span><br><span class="line">--entrypoint        -- Overwrite the default entrypoint of the image</span><br><span class="line">--env           -e  -- Set environment variables</span><br><span class="line">--env-file          -- Read in a file of environment variables</span><br><span class="line">--expose            -- Expose a port from the container without publishing it to your host</span><br><span class="line">--hostname      -h  -- Container host name</span><br><span class="line">--interactive   -i  -- Keep STDIN open even if not attached</span><br><span class="line">--ipc               -- IPC namespace to use</span><br><span class="line">--label         -l  -- Set meta data on a container</span><br><span class="line">--link              -- Add link to another container (name:alias)</span><br><span class="line">--log-driver        -- Logging driver for the container</span><br><span class="line">--lxc-conf          -- Add custom LXC options</span><br><span class="line">--mac-address       -- Container MAC address (e.g. 92:d0:c6:0a:29:33)</span><br><span class="line">--memory        -m  -- Memory limit (format: &lt;number&gt;&lt;optional unit&gt;, where unit = b, k, m or g)</span><br><span class="line">--name              -- Assign a name to the container</span><br><span class="line">--net               -- Set the Network mode for the container</span><br><span class="line">--pid               -- PID namespace to use</span><br><span class="line">--privileged        -- Give extended privileges to this container</span><br><span class="line">--publish       -p  -- Publish a containers port to the host (format: ip:hostPort:containerPort/protocol)</span><br><span class="line">--publish-all   -P  -- Publish all exposed ports to the host interfaces</span><br><span class="line">--restart           -- Restart policy to apply when a container exits</span><br><span class="line">--rm                -- Automatically remove the container when it exits (incompatible with -d)</span><br><span class="line">--security-opt      -- Security Options</span><br><span class="line">--sig-proxy         -- Proxify all received signal to the process (even in non-tty mode)</span><br><span class="line">--tty           -t  -- Allocate a pseudo-tty</span><br><span class="line">--ulimit            -- Ulimit options</span><br><span class="line">--user          -u  -- Username or UID</span><br><span class="line">--volume        -v  -- Bind mount a volume (e.g. -v /host:/container or -v /container)</span><br><span class="line">--volumes-from      -- Mount volumes from the specified container(s)</span><br><span class="line">--workdir       -w  -- Working directory inside the container</span><br></pre></td></tr></table></figure>
+<p>我们这里运行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -t -i ubuntu /bin/bash</span><br></pre></td></tr></table></figure>
+<p>其中，-t 选项让Docker分配一个伪终端（pseudo-tty）并绑定到容器的标准输入上， -i 则让容器的标准输入保持打开。这个在上面的选项里面有。</p>
+<h1 id="终止-amp-运行容器"><a href="#终止-amp-运行容器" class="headerlink" title="终止&amp;运行容器"></a>终止&amp;运行容器</h1><p>终止和重新运行一个容器都很容易。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ docker ps #获取容器的列表</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES</span><br><span class="line">c72f5174d56a        ubuntu              &quot;/bin/bash&quot;         3 minutes ago       Up 3 minutes                            naughty_almeida</span><br><span class="line">➜  ~ docker stop c72f5174d56a # 将id填入即可终止</span><br><span class="line">➜  ~ docker start c72f5174d56a # 将id填入即可运行</span><br></pre></td></tr></table></figure>
+<h1 id="exce"><a href="#exce" class="headerlink" title="exce"></a>exce</h1><p>Docker的优势是轻量级，一个高配置服务器可以同时运行超过上百个Container，这就决定了绝大多数的Container都是在后台静默运行的。<br>之前说的终止和运行容器，其实就是说，在后台进行终止和运行。但是容器最终还是需要进行shell交互的。这里就需要用到exce命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it baseBox zsh</span><br></pre></td></tr></table></figure>
+<p>这里的-i和-t和run是一样的，baseBox是容器的名称，zsh是要运行的命令。<br>几乎是一秒后，容器就进入了tty交互了。此时我们就可以开始进入自己的镜像定制了。</p>
+<h1 id="定制镜像-vim-wrapper"><a href="#定制镜像-vim-wrapper" class="headerlink" title="定制镜像(vim-wrapper)"></a>定制镜像(vim-wrapper)</h1><p>这里就随意记录一下自己的折腾记录。记录是按标题顺序来的。</p>
+<h2 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h2><p>先安装vim非我所愿。只是ubuntu这个最小的镜像没有vi也没有vim导致我没法换源。。。跨洋的网速大家都知道的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get update</span><br><span class="line">apt-get install vim</span><br><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+<p>然后填入163的源。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">163</span></span><br><span class="line">deb http://cn.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://cn.archive.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse</span><br><span class="line">deb http://cn.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb http://cn.archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse</span><br><span class="line">deb http://cn.archive.ubuntu.com/ubuntu/ xenial-proposed main restricted universe multiverse</span><br><span class="line">deb-src http://cn.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb-src http://cn.archive.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse</span><br><span class="line">deb-src http://cn.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb-src http://cn.archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse</span><br><span class="line">deb-src http://cn.archive.ubuntu.com/ubuntu/ xenial-proposed main restricted universe multiverse</span><br></pre></td></tr></table></figure>
+<p>然后 <code>apt-get update</code>更新之。</p>
+<h2 id="oh-my-zsh-amp-amp-git"><a href="#oh-my-zsh-amp-amp-git" class="headerlink" title="oh-my-zsh &amp;&amp; git"></a>oh-my-zsh &amp;&amp; git</h2><p>oh-my-zsh是愉快工作的第一步。感觉这是个没有就没法活的东西。<br>因为安装需要git和zsh和wget依赖，先行安装一下。考虑到git这东西其实是必备的，所以一起弄了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get instal -y git zsh wget</span><br><span class="line">sh -c &quot;$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="vim-plugins-YouCompeleteMe"><a href="#vim-plugins-YouCompeleteMe" class="headerlink" title="vim plugins + YouCompeleteMe"></a>vim plugins + YouCompeleteMe</h2><p>YouCompeleteMe其实也是vim plugins。。。这个大家都知道，不过这东西好用到可以拿出来着重说了。基于语意的补全加上ternJs的加持，很大程度上可以媲美IDE补全了。如果用vim做开发，这个插件是体验的最大保证之一了。个人因为是前端开发，所以这里的配置基本以此为准，只处理js补全。其他语言的可以酌情看github的Readme处理。</p>
+<p>ps: <a target="_blank" rel="noopener" href="https://github.com/que01/vimrc">https://github.com/que01/vimrc</a> 这个仓库是根据 <a target="_blank" rel="noopener" href="https://github.com/amix/vimrc">https://github.com/amix/vimrc</a> 项目而来。6k的star看着比较眼馋。主要补充了YouCompeleteMe和一个巴掌不到的插件补充。可以放心用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/que01/vimrc ~/.vim_runtime</span><br><span class="line">cd ~/.vim_runtime &amp;&amp; git submodule init &amp;&amp; git submodule update</span><br><span class="line">cd ~/.vim_runtime/sources_non_forked/YouCompleteMe &amp;&amp; git submodule update --init --recursive</span><br></pre></td></tr></table></figure>
+<p>到这里配置就完事了。不过还需要对YouCompeleteMe单独编译一番。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 先处理编译环境</span></span><br><span class="line">apt-get install build-essential cmake &amp;&amp; apt-get install python-dev</span><br><span class="line"><span class="meta">#</span><span class="bash"> 会被安装的包，记录一下，等会编译完了删掉，删掉。。。不然这image打包起来也太大了。</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> binutils build-essential bzip2 cmake cmake-data cpp cpp-5 dpkg-dev fakeroot g++ g++-5 gcc gcc-5 libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl</span></span><br><span class="line">  libarchive13 libasan2 libatomic1 libcc1-0 libcilkrts5 libcurl3 libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-5-dev libgomp1 libisl15 libitm1 libjsoncpp1 liblsan0</span><br><span class="line">  liblzo2-2 libmpc3 libmpfr4 libmpx0 libquadmath0 libstdc++-5-dev libtsan0 libubsan0 libxml2 sgml-base xml-core</span><br><span class="line"><span class="meta">#</span><span class="bash"> node安装 ternJS需要</span></span><br><span class="line">apt-get install nodejs curl &amp;&amp; mv /usr/bin/nodejs /usr/bin/node #其他发行版都是node，这里改改不然麻烦</span><br><span class="line"><span class="meta">#</span><span class="bash"> npm安装</span></span><br><span class="line">curl -L https://www.npmjs.com/install.sh | sh</span><br><span class="line"><span class="meta">#</span><span class="bash"> 编译开始</span></span><br><span class="line">cd ~/.vim/bundle/YouCompleteMe &amp;&amp; ./install.py --tern-completer</span><br><span class="line"><span class="meta">#</span><span class="bash"> 完成后删除工具包 wget curl 还有build-essential cmake和相关依赖</span></span><br><span class="line">apt-get remove curl wget binutils build-essential bzip2 cmake cmake-data cpp cpp-5 dpkg-dev fakeroot g++ g++-5 gcc gcc-5 libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl</span><br><span class="line">  libarchive13 libasan2 libatomic1 libcc1-0 libcilkrts5 libcurl3 libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-5-dev libgomp1 libisl15 libitm1 libjsoncpp1 liblsan0</span><br><span class="line">  liblzo2-2 libmpc3 libmpfr4 libmpx0 libquadmath0 libstdc++-5-dev libtsan0 libubsan0 libxml2 sgml-base xml-core</span><br></pre></td></tr></table></figure>
+<p>到这里基本就完事了，不过下一步我们继续来精简体积保证images更小。这里从更多还是YouCompeleteMe下手，毕竟这玩意儿实在太大了。</p>
+<p>这里操作依赖zsh，所以务必运行一下zsh进入oh-my-zsh。其实主要就一条：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">删除版本库</span></span><br><span class="line">cd ~/.vim_runtime</span><br><span class="line">rm -rf */**/.git&lt;TAB&gt; #然后oh-my-zsh会将所有的.git自动补全处理，回车，删除，这些git版本记录是体积大头</span><br><span class="line"><span class="meta">#</span><span class="bash">删除不要的third_party，我们只需要前端补全</span></span><br><span class="line">cd ~/.vim_runtime/sources_non_forked/YouCompleteMe/third_party/ycmd/third_party</span><br><span class="line">rm -rf gocode godef JediHTTP</span><br></pre></td></tr></table></figure>
+<p>然后我查看了一下体积：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">➜  third_party du -h --max-depth=1 .</span><br><span class="line">3.5M	./requests</span><br><span class="line">216K	./racerd</span><br><span class="line">11M	./tern_runtime</span><br><span class="line">28M	./OmniSharpServer</span><br><span class="line">4.9M	./python-future</span><br><span class="line">472K	./argparse</span><br><span class="line">668K	./waitress</span><br><span class="line">1.3M	./bottle</span><br><span class="line">48K	./frozendict</span><br><span class="line">49M	.</span><br></pre></td></tr></table></figure>
+<p>似乎也没可以放心删了，其他的不知道会不会有依赖。。。不删了。最后看了下体积，整个root目录当前118M，顺手把.vim_runtime下么的doc目录全删了(rm -rf */**/doc<TAB>)，反正我用不上。。。现在116M。。。</p>
+<h2 id="打包前的清场"><a href="#打包前的清场" class="headerlink" title="打包前的清场"></a>打包前的清场</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get clean &amp;&amp; apt-get autoremove &amp;&amp; apt-get autoclean &amp;&amp; rm -rf /tmp</span><br></pre></td></tr></table></figure>
+
+<h2 id="打包"><a href="#打包" class="headerlink" title="打包"></a>打包</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit -a que01  -m &#x27;vim config &amp; zhs config &amp; git&#x27; baseBox que01/vim</span><br></pre></td></tr></table></figure>
+<p>最后查看打包好的镜像，体积：561.6 MB。<br>。。。有些心醉啊。。。。git,oh-my-zsh,vim这3个作为工作基础那真是一个都不能少，不过vim+youcomplete确实占用了太多空间了，youcomplete单独的占用达到105M+，vim+python目测有80到100M，git有60，oh-my-zsh暂用不大大概有7M的样子，加起来大概有270M的样子(加上ubuntu有125，至少也会有将近400了)，加上杂七杂八的依赖，估计也小不下去了。</p>
+<h2 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push que01/vim</span><br></pre></td></tr></table></figure>
+
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>这篇呢，记录了自己打包的基础docker image，总体来讲还是可以用了，不过容器之间的连接还是有些犯晕，有时间我再另行整理记录一下。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># docker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/01/react-starter-kit-3/" rel="prev" title="React全家桶:react-starter-kit之三">
+      <i class="fa fa-chevron-left"></i> React全家桶:react-starter-kit之三
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/07/13/dockerfile/" rel="next" title="dockerfile构建前端vim环境">
+      dockerfile构建前端vim环境 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E9%95%9C%E5%83%8F"><span class="nav-number">3.</span> <span class="nav-text">获取镜像</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E5%AE%B9%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">运行容器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%88%E6%AD%A2-amp-%E8%BF%90%E8%A1%8C%E5%AE%B9%E5%99%A8"><span class="nav-number">5.</span> <span class="nav-text">终止&amp;运行容器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#exce"><span class="nav-number">6.</span> <span class="nav-text">exce</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9A%E5%88%B6%E9%95%9C%E5%83%8F-vim-wrapper"><span class="nav-number">7.</span> <span class="nav-text">定制镜像(vim-wrapper)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#vim"><span class="nav-number">7.1.</span> <span class="nav-text">vim</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#oh-my-zsh-amp-amp-git"><span class="nav-number">7.2.</span> <span class="nav-text">oh-my-zsh &amp;&amp; git</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-plugins-YouCompeleteMe"><span class="nav-number">7.3.</span> <span class="nav-text">vim plugins + YouCompeleteMe</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E5%8C%85%E5%89%8D%E7%9A%84%E6%B8%85%E5%9C%BA"><span class="nav-number">7.4.</span> <span class="nav-text">打包前的清场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E5%8C%85"><span class="nav-number">7.5.</span> <span class="nav-text">打包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%91%E5%B8%83"><span class="nav-number">7.6.</span> <span class="nav-text">发布</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">8.</span> <span class="nav-text">结语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

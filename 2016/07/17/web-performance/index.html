@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="web性能优化">
+<meta property="og:url" content="http://www.que01.top/2016/07/17/web-performance/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/domainNum.png">
+<meta property="article:published_time" content="2016-07-16T17:04:28.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.606Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="性能优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/domainNum.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/07/17/web-performance/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>web性能优化 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/07/17/web-performance/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          web性能优化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-17 01:04:28" itemprop="dateCreated datePublished" datetime="2016-07-17T01:04:28+08:00">2016-07-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/07/17/web-performance/" class="post-meta-item leancloud_visitors" data-flag-title="web性能优化" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">性能优化这事其实很久以前就想写一写，然而这东西虽然网上说的很多但是如果没有自己的实践做起来还是很有难度。这段时间研究了一下缓存相关的算是有点心得，加上其他对web做过的性能优化也算是可以整理一下了。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>在写这篇文章以前在个人做过的优化基础和认知基础上，查阅了众多文章。毕竟要写个什么就得认真点弄，这些文章在最后将会一一指出出处。性能优化是个很广泛的命题，这点必须承认。</p>
+<p>前端作为网站的面子工程建设者，很大程度上承担了性能优化的重担，但是这不是全部，网站的性能优化做好了前端的优化之后，优化方向就慢慢跑到底层去了——比如:<b style="color:red">HTML&amp;JS&amp;CSS&amp;IMG-&gt;HTTP-&gt;TCP-&gt;DNS</b> 这个路径。</p>
+<p>写到这个路径这里，我也算是有个写作路径了，就按这个路径来写。</p>
+<h1 id="优化纬度"><a href="#优化纬度" class="headerlink" title="优化纬度"></a>优化纬度</h1><h2 id="HTML-amp-JS-amp-CSS-amp-IMG优化"><a href="#HTML-amp-JS-amp-CSS-amp-IMG优化" class="headerlink" title="HTML&amp;JS&amp;CSS&amp;IMG优化"></a>HTML&amp;JS&amp;CSS&amp;IMG优化</h2><p>HTML&amp;JS&amp;CSS&amp;IMG这个层面上东西不少，核心的一条里面就有体积。因为体积决定了速度。不过这些都不算全部，一个个整理一下。<br><b style="color:red"><br>个人以为:HTML&amp;JS&amp;CSS&amp;IMG这个层面上的优化绝对是在考验一个前端基本的修养，这是本职。其他方面的东西，可以算是一个前端的综合面面观吧。<br></b></p>
+<h3 id="HTML"><a href="#HTML" class="headerlink" title="HTML"></a>HTML</h3><p>HTML据说可以优化的地方很多，比如这里的介绍: <a target="_blank" rel="noopener" href="http://www.kancloud.cn/kancloud/web_performance_optimization/80992"><strong>飞机</strong></a>,但是就个人做过的优化体验来说HTML上面可以玩的文章不算多。这里按权重到低列举一下:</p>
+<ol>
+<li><strong>压缩:</strong> 前端优化说穿了就一句:速度。体积是速度的第一道保障。选一个好的压缩工具然后压缩pre之外的一切是不会错的。</li>
+<li><strong>CSS置顶和JS置尾:</strong> css置顶可以更快渲染页面，页面不会载入初期出现无样式的难看样子，置尾JS这个一来为了更快渲染DOM防止js载入阻塞了HTML，二来是多数JS代码依赖DOMReady，过早载入js会导致部分js执行报错、失效。</li>
+<li><strong>外部js和css:</strong> 这个有利于充分利用缓存，使得js和css不会因为html变化失效重新请求占用带宽和时间。</li>
+<li><strong>指定图片大小:</strong> 可以减少页面的重排。</li>
+<li><strong>使用相对URL:</strong> 使用相对路径的好处有几个，一个是可以减少路径长度，一个则是对工程化有非常大的便利程度，相对路径有利于自动化工具找到引用的文件。</li>
+<li><strong>删除注释:</strong> 这个似乎不用说太多。更少的注释代表更少的带宽和更快的速度，不过大多数时候这个无足重轻，注释在HTML中个人认为占用不会达到1%。不过这实在一个很容易做到的优化措施。</li>
+<li><strong>减少HTML标签嵌套深度:</strong> PC端这不是一个问题，但是在移动端这是一个行之有效的优化方案。</li>
+</ol>
+<h3 id="JS"><a href="#JS" class="headerlink" title="JS"></a>JS</h3><p>早期项目不大要求不高时候JS效率差点其实无所谓，因为js根本就没多少行。但是随着越来越多的前端主导团队出现，SPA的盛行，项目js早就开始实现从KB向MB跨越了。还是托了GZIP的福，让那些动不动上MB的JS可以压缩到200K以内，要不然很多很多项目根本过不了上线审核。</p>
+<p>言归正传，现在说说JS相关，JS性能优化有很多，但是这里只列举一些比较重要的。依旧按按权重到低列举:</p>
+<ol>
+<li><strong>压缩:</strong> 至少在网速没有实现质的突破和移动流量变得廉价之前，优化的权重个人认为首推的还是体积。更小体积就是更快的速度，js压缩一遍再上线应当作为必经道路</li>
+<li><strong>combo:</strong> 这玩意是说合并。每个请求背后都经历着DNS解析-&gt;TCP三次握手-&gt;HTTP传输的路径，压缩可以显著减少重复和浪费，尤其是一些早期单个页面引入JS数量达到10+的项目。</li>
+<li><strong>减少操作DOM:</strong></li>
+</ol>
+<ul>
+<li>缓存已经访问过的元素；</li>
+<li>使用 DocumentFragment 暂存 DOM，整理好以后再插入 DOM 树；</li>
+<li>操作 className，而不是多次读写 style；</li>
+<li>避免使用 JavaScript 修复布局。</li>
+</ul>
+<ol start="4">
+<li><strong>ajax缓存:</strong> Make AJAX cacheable是YSlow一个检测项目。Optimizing AJAX responses is important to improve performance(优化ajax请求对提高性能是重要的)。ajax更多是304协商缓存，但是个人认为已经足够。至于200(from cache)强缓存嘛，如果服务端做好Cache-Control或者Expires配置，那更是极好的。 <strong>使用这个措施，jQuery的ajaxSetup就要打开缓存了。</strong></li>
+<li><strong>高效的事件处理:</strong></li>
+</ol>
+<ul>
+<li>减少绑定事件监听的节点，如通过事件委托；</li>
+<li>尽早处理事件，在 DOMContentLoaded 即可进行，不用等到 load 以后。</li>
+<li>节流函数限制mousemove,scroll等触发频次太高的事件触发次数</li>
+</ul>
+<ol start="6">
+<li><strong>Ajax通过GET发出:</strong> Use GET for AJAX requests同样是是YSlow一个检测项目。</li>
+</ol>
+<ul>
+<li>POST发Ajax请求需要两步：1.发送http头文件 2.发送数据</li>
+<li>GET发Ajax仅有一步，但是会带上cookie。YSlow说IE的url长度最大2kb，这时注意不能用GET——不过通过浏览器地址栏输入地址那叫做Ajax吗？这点我有时间测试一下(<b style="color:red">TODO</b>)。</li>
+</ul>
+<ol start="7">
+<li><strong>JS并行加载:</strong> jQuery走过来的人肯定遇到过js顺序换个就报错的事情，这是因为HTML从上到下执行，一个js载入完成之前不会载入它下面的js(下载过程中会阻塞下面的下载和渲染)。如果js过多的话这就会造成过多的时间被白白浪费。但是一定的技术方案是可以同时实现依赖和并行下载的问题的，比如Lab.js。</li>
+</ol>
+<h3 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h3><p>CSS研究的不深入，下面是自己可以想到的全部了：</p>
+<ol>
+<li><strong>压缩:</strong> 减少体积</li>
+<li><strong>合并:</strong> 减少HTTP</li>
+<li><strong>雪碧图:</strong> 减少HTTP</li>
+<li><strong>拆分&amp;按需加载:</strong> 尽量减少无用的css</li>
+<li><strong>选择器优化:</strong> 研究的不深入就不献丑了，个人认为大头是层级嵌套这类。</li>
+</ol>
+<h2 id="IMG"><a href="#IMG" class="headerlink" title="IMG"></a>IMG</h2><ol>
+<li><strong>不用图片:</strong> 体积的节省不如直接不用，很多简单的图可以用css实现的就别用图片了。另外SVG也可以用来替代图片了。</li>
+<li><strong>优化图片格式:</strong> 比如说:webP。这个可以视为压缩的更优方案。更小体积更多细节。</li>
+<li><strong>压缩:</strong> 这个不用说吧？</li>
+<li><strong>合并</strong> 雪碧图，不要问我雪碧图是啥</li>
+<li><strong>合适的尺寸:</strong> 不要用100*100的图缩放成10*10的</li>
+<li><strong>多域名:</strong> 浏览器对单个域名下的请求并发数是有限制的(参考TCP下的图表,<a href="/2016/07/17/web-performance/#TCP%E4%BC%98%E5%8C%96"><b style='color:red'>GO</b></a>)，如果是图片量很多的页面，需要考虑使用多域名。这个可以参考百度图片</li>
+</ol>
+<p>图片优化无关但是和图片有关的：</p>
+<ol>
+<li>懒加载</li>
+<li>Gzip</li>
+<li>CDN</li>
+<li>缓存</li>
+</ol>
+<h1 id="HTTP优化"><a href="#HTTP优化" class="headerlink" title="HTTP优化"></a>HTTP优化</h1><p>http优化这块呢，就一个原则吧：<br><b style="color:red">越少越好,越小越好,越快越好</b></p>
+<h2 id="越少越好"><a href="#越少越好" class="headerlink" title="越少越好"></a>越少越好</h2><p>这个就是要减少请求数量了。<br>主要是下么几个方面：</p>
+<ul>
+<li><strong>js&amp;css&amp;img合并:</strong> 这个在上面已经有提到。</li>
+<li><strong>做好强缓存方案:</strong> 强缓存(200 from cache)是当代web优化的重中之重吧。为了实现这个目的，一定要配置好响应头的Cache-Control&amp;Expires(可以参考上一篇<a href="/2016/07/15/http-cache/">《错配的nginx——web缓存问题探究》</a>)。如果不写这个到响应头,很多坑比的事情会找上你。</li>
+<li><strong>Ajax缓存:</strong> 做好服务端优化这个不少地方也是可以实现强缓存而不需要多次请求的。</li>
+<li><strong>正确设置src属性</strong> 空的src属性，会被浏览器指向前页面所在目录。</li>
+</ul>
+<h2 id="越小越好"><a href="#越小越好" class="headerlink" title="越小越好"></a>越小越好</h2><ul>
+<li><strong>js&amp;css&amp;img压缩:</strong> 压缩能减少体积这个地球人都知道。</li>
+<li><strong>Gzip</strong> 这个东西嘛,说实话,多数时候比你进行js&amp;css&amp;img压缩更加简单高效。<b style="color:red">Gzip绝对是重量级的东西(200 from cache强缓存也是重量级的东西，他们一个从根源上解决请求，一个解决请求中的传输大小，做好这两个往往比你费尽心思做的其他所有的优化更加管用&amp;省事)</b>。</li>
+</ul>
+<h2 id="越快越好"><a href="#越快越好" class="headerlink" title="越快越好"></a>越快越好</h2><p>就三个字母:CDN</p>
+<h1 id="TCP优化"><a href="#TCP优化" class="headerlink" title="TCP优化"></a>TCP优化</h1><ol>
+<li><strong>同一域名下的TCP连接的限制:</strong> CDN和单独的图片空间和避开这个限制提高并行下载速度，但是过多域名会造成DNS解析时间的开销。</li>
+<li><strong>一定要减少404:</strong> 上面说了TCP限制的事情，，而404本身就会占用一个TCP链接。这就和有数几条运输公路堵了1条一样，如果404更多的话，那岂不是就三四条路动不动堵车一样。。。</li>
+</ol>
+<p><strong>补充:</strong> 下面是网上找到的TCP数量资料(<a target="_blank" rel="noopener" href="http://www.stevesouders.com/blog/2008/03/20/roundup-on-parallel-connections/">Roundup on Parallel Connections</a>),数据不是很新，但是可以参考一下。</p>
+<table>
+<thead>
+<tr>
+<th align="left">Browser</th>
+<th align="left">HTTP/1.1</th>
+<th align="left">HTTP/1.0</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">IE 6,7</td>
+<td align="left">2</td>
+<td align="left">4</td>
+</tr>
+<tr>
+<td align="left">IE 8</td>
+<td align="left">6</td>
+<td align="left">6</td>
+</tr>
+<tr>
+<td align="left">Firefox 3</td>
+<td align="left">6</td>
+<td align="left">6</td>
+</tr>
+<tr>
+<td align="left">Safari 3,4</td>
+<td align="left">4</td>
+<td align="left">4</td>
+</tr>
+<tr>
+<td align="left">Chrome 4+</td>
+<td align="left">6</td>
+<td align="left">?</td>
+</tr>
+<tr>
+<td align="left">iPhone 4</td>
+<td align="left">4</td>
+<td align="left">?</td>
+</tr>
+<tr>
+<td align="left">Opera 10.51+</td>
+<td align="left">8</td>
+<td align="left">?</td>
+</tr>
+</tbody></table>
+<h1 id="DNS优化"><a href="#DNS优化" class="headerlink" title="DNS优化"></a>DNS优化</h1><p>DNS优化说实话个人没有做过，不过写到这里还是去了解了一下:<br>一般来说，在前端优化中与 DNS 有关的有两点：一个是减少DNS的请求次数，另一个就是进行DNS预获取。</p>
+<h2 id="减少请求数量"><a href="#减少请求数量" class="headerlink" title="减少请求数量"></a>减少请求数量</h2><p>减少请求数量这个东西其实和提升TCP并发是相爱相杀的关系。这表现在:</p>
+<ul>
+<li>越少的域名代表越少的DNS请求</li>
+<li>越多的域名代表着越多的并发</li>
+<li>而我们想要的是：更少的DNS请求和更多并发</li>
+</ul>
+<p>这样就没得整了，大多数方案都是整个平衡，将域名限制在2-4之间。<br>然而淘宝跳出来说：我有钱我任性，我的资产一个域名装不下：<br><img width=200 src="/images/domainNum.png"/><br>好吧，淘宝牺牲了DNS访问请求来保证并发了，好了，你现在知道淘宝为什么要做 <a target="_blank" rel="noopener" href="http://www.alidns.com/">阿里DNS</a>了吧？相应的，还有”马化腾DNS”和”李寥宏DNS”，你们现在知道为嘛要有这个吗？</p>
+<p>不过除了自建DNS服务器，淘宝还在首页用到了DNS Prefetch，就是下面这货，算是取了个很好的平衡。</p>
+<h2 id="预获取"><a href="#预获取" class="headerlink" title="预获取"></a>预获取</h2><p>淘宝网站首页用到了这个DNS优化:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;dns-prefetch&quot;</span> <span class="attr">href</span>=<span class="string">&quot;//g.tbcdn.cn&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;dns-prefetch&quot;</span> <span class="attr">href</span>=<span class="string">&quot;//g.alicdn.com&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;dns-prefetch&quot;</span> <span class="attr">href</span>=<span class="string">&quot;//tce.alicdn.com&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这个就是预先获取的实现方式了，具体的可以点参考文章了解更多，或者直接这里：<a target="_blank" rel="noopener" href="http://www.itechzero.com/first-of-front-end-series-dns-prefetch-increase-load-speed.html">1-2-3——走你！</a>。</p>
+<h2 id="DNS缓存"><a href="#DNS缓存" class="headerlink" title="DNS缓存"></a>DNS缓存</h2><p>DNS也是有缓存，它定义了DNS在服务器上的存活时间。<br>当地址栏敲下网址按下Enter，浏览器就开始使用DNS来进行网址解析，这个路径往往是这样的浏览器缓存-&gt;本机缓存-&gt;路由器缓存-&gt;ISP DNS-&gt;根服务器递归搜索。</p>
+<p><strong>浏览器DNS缓存的DNS和TTL无关</strong>，这个一般看浏览器厂商的倾向了，Chrome的过期时间是1分钟。<br><strong>本机缓存不会完全等于这个TTL</strong> 它会参考但是不完全等于TTL值。<br><strong>ISP的缓存要看ISP心情和良心</strong>，有些缓存服务器（不多）会忽略网站DNS提供的TTL，自己设置一个较长的TTL。</p>
+<p>所以总体来说，较长的TTL有利于提高网页打开速度，这个速度是全局性质的,因为所有的速度都必须加上DNS解析时间，积少成多这个时间就非常可观了。举个例子说你网站就算快成光不要时间传输渲染，但是DNS解析要10秒，照样体验一团糟。</p>
+<p>所以说较长的TTL会直接有利于提高网站打开速度，这个速度是基础级别的，你的网络DNS解析时间有多长，这个优化相应的就会多有效。一般的域名TTL从20分钟到数小时都是很常见的。如果你不考虑灾备的话可以将这个TTL设为一天或者一周。但是这也意味一旦你的网站服务器挂了你无法快速恢复，比如被人格式化了硬盘，那么你的服务就必然会中断一天或者一周。</p>
+<p>这项优化必须要谨慎再谨慎。毕竟灾难可能随时到来。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>到这里算是词穷了。目前个人理解的优化基本就到此为止了。不过最后还是做个总结吧，优化的主要路径：</p>
+<ol>
+<li>200(from cache)强缓存、304协商缓存和Gzip，这个一定要做，所谓web优化，我认为5成的比重在这里。</li>
+<li>HTML+JS+CSS压缩、按需加载，雪碧图，这个也必须要做，我认为它占到优化比重的3成。</li>
+<li>最后2成嘛，多域名，高TCP并发，CDN，自建DNS，服务器集群，这些就要靠钱来砸了。</li>
+</ol>
+<p>就这样了，如果有错误，欢迎大家指出。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="http://www.infoq.com/cn/news/2010/05/baidu-html-optimize">《不应忽视的HTML优化》</a><br><a target="_blank" rel="noopener" href="https://csspod.com/frontend-performance-best-practices/#javascript">《前端性能优化最佳实践》</a><br><a target="_blank" rel="noopener" href="http://borninsummer.com/2015/01/03/web-performance-in-practice/">《Web前端性能优化实践》</a><br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/21815101">知乎问答</a><br><a target="_blank" rel="noopener" href="http://www.itechzero.com/first-of-front-end-series-dns-prefetch-increase-load-speed.html">《前端优化系列之一：DNS预获取 DNS Prefetch 提升页面载入速度》</a><br><a target="_blank" rel="noopener" href="http://blog.csdn.net/charleslei/article/details/51083229">《浏览器、操作系统DNS缓存时间》</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" rel="tag"># 性能优化</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/15/http-cache/" rel="prev" title="错配的nginx——web缓存问题探究">
+      <i class="fa fa-chevron-left"></i> 错配的nginx——web缓存问题探究
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/07/22/mobile-develop/" rel="next" title="移动端开发整理">
+      移动端开发整理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E5%8C%96%E7%BA%AC%E5%BA%A6"><span class="nav-number">2.</span> <span class="nav-text">优化纬度</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTML-amp-JS-amp-CSS-amp-IMG%E4%BC%98%E5%8C%96"><span class="nav-number">2.1.</span> <span class="nav-text">HTML&amp;JS&amp;CSS&amp;IMG优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTML"><span class="nav-number">2.1.1.</span> <span class="nav-text">HTML</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JS"><span class="nav-number">2.1.2.</span> <span class="nav-text">JS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSS"><span class="nav-number">2.1.3.</span> <span class="nav-text">CSS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IMG"><span class="nav-number">2.2.</span> <span class="nav-text">IMG</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP%E4%BC%98%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">HTTP优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B6%8A%E5%B0%91%E8%B6%8A%E5%A5%BD"><span class="nav-number">3.1.</span> <span class="nav-text">越少越好</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B6%8A%E5%B0%8F%E8%B6%8A%E5%A5%BD"><span class="nav-number">3.2.</span> <span class="nav-text">越小越好</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B6%8A%E5%BF%AB%E8%B6%8A%E5%A5%BD"><span class="nav-number">3.3.</span> <span class="nav-text">越快越好</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP%E4%BC%98%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">TCP优化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DNS%E4%BC%98%E5%8C%96"><span class="nav-number">5.</span> <span class="nav-text">DNS优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%8F%E5%B0%91%E8%AF%B7%E6%B1%82%E6%95%B0%E9%87%8F"><span class="nav-number">5.1.</span> <span class="nav-text">减少请求数量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E8%8E%B7%E5%8F%96"><span class="nav-number">5.2.</span> <span class="nav-text">预获取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNS%E7%BC%93%E5%AD%98"><span class="nav-number">5.3.</span> <span class="nav-text">DNS缓存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

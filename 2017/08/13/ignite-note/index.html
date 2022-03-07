@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="最近几个月一直挣扎在业务逻辑里，博客半年没有更新快要长草，这次更新一下ReactNative的手脚架的笔记。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ignite-note">
+<meta property="og:url" content="http://www.que01.top/2017/08/13/ignite-note/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="最近几个月一直挣扎在业务逻辑里，博客半年没有更新快要长草，这次更新一下ReactNative的手脚架的笔记。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/reactnative-swiper.gif">
+<meta property="og:image" content="http://www.que01.top/images/reac-native-tabs.gif">
+<meta property="og:image" content="http://www.que01.top/images/react-native-home.png">
+<meta property="og:image" content="http://www.que01.top/images/react-native-demo.gif">
+<meta property="article:published_time" content="2017-08-13T02:16:08.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.626Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="reactNative">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/reactnative-swiper.gif">
+
+<link rel="canonical" href="http://www.que01.top/2017/08/13/ignite-note/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ignite-note | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2017/08/13/ignite-note/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ignite-note
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-08-13 10:16:08" itemprop="dateCreated datePublished" datetime="2017-08-13T10:16:08+08:00">2017-08-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2017/08/13/ignite-note/" class="post-meta-item leancloud_visitors" data-flag-title="ignite-note" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">最近几个月一直挣扎在业务逻辑里，博客半年没有更新快要长草，这次更新一下ReactNative的手脚架的笔记。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Ignite简介"><a href="#Ignite简介" class="headerlink" title="Ignite简介"></a>Ignite简介</h1><p>Ignite是一个基于ReactNative的手脚架和基础代码的生成工具, 使用它可以从0开始构建一个ReactNative的项目，并且可以为生成基础项目、为项目添加plugins，以及自动生成新页面和对应redux和相关sagas代码并自动插入到router等地方而不需要手动复制。</p>
+<p>关于Ignite相关教程实际上早就想写一下，之前6月初通过Google搜索一直没有找到比较好用的step by step教程，然而到现在了暂时也还是没看到。索性我自己写一个吧。</p>
+<h1 id="安装和命令行的使用一瞥"><a href="#安装和命令行的使用一瞥" class="headerlink" title="安装和命令行的使用一瞥"></a>安装和命令行的使用一瞥</h1><p>安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g ignite-cli</span><br></pre></td></tr></table></figure>
+<p>初始化新项目</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ignite new PizzaApp</span><br></pre></td></tr></table></figure>
+<p>添加和移除plugins</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ignite add maps</span><br><span class="line">$ ignite add vector-icons</span><br><span class="line">$ ignite add i18n</span><br><span class="line">$ ignite remove i18n</span><br></pre></td></tr></table></figure>
+<p>自动构建代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ignite generate screen PizzaLocationList</span><br><span class="line">$ ignite generate component PizzaLocation</span><br><span class="line">$ ignite generate map StoreLocator</span><br><span class="line">$ ignite generate redux home</span><br><span class="line">$ ignite generate saga home</span><br></pre></td></tr></table></figure>
+<p>前面的可能只需要知道就可以了，但是ignite generate这个命令很值得一说，因为项目开发过程中使用它可以提高很多效率避免了很多手动copy过程。</p>
+<ul>
+<li>ignite generate screen 在App/Containers页面生成一个Container，这个相当于HTML里面的一个页面。</li>
+<li>ignite generate component 在App/Components页面生成一个组件</li>
+<li>ignite generate map 生成地图，这个暂时没用过</li>
+<li>ignite generate redux 生成redux</li>
+<li>ignite generate sagas 生成sagas</li>
+</ul>
+<p>其次是运行环境要求<br>ignite需要先配置好<a target="_blank" rel="noopener" href="https://reactnative.cn/docs/0.48/getting-started.html#content">reactNative的运行环境</a>和node环境(node7.6+, 看文档8.0+有点小问题，所以最好还是用7.6+吧)。</p>
+<h1 id="运行机制"><a href="#运行机制" class="headerlink" title="运行机制"></a>运行机制</h1><p>在用Ignite开始做项目之前我们需要先了解一下它的结构和运行机制。<br>我们先初始化一个Demo项目</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ ignite new Demo</span><br><span class="line"></span><br><span class="line">🔥 igniting app Demo</span><br><span class="line">✔ using the Infinite Red boilerplate v2 (code name &#39;Andross&#39;)</span><br><span class="line">✔ added React Native 0.47.2 in 193.29s</span><br><span class="line">? Would you like Ignite Development Screens? No</span><br><span class="line">? What vector icon library will you use? react-native-vector-icons</span><br><span class="line">? What internationalization library will you use? none</span><br><span class="line">? What animation library will you use? react-native-animatable</span><br><span class="line">✔ added ignite-ir-boilerplate in 171.26s</span><br><span class="line">✔ added ignite-vector-icons in 29.13s</span><br><span class="line">✔ added ignite-animatable in 27.4s</span><br><span class="line">✔ added ignite-standard in 64.23s</span><br><span class="line">✔ configured git</span><br><span class="line">✔ ignited Demo in 604.97s</span><br></pre></td></tr></table></figure>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><p>先看看第一层目录，它是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── App</span><br><span class="line">├── README.md</span><br><span class="line">├── Tests</span><br><span class="line">├── android</span><br><span class="line">├── app.json</span><br><span class="line">├── ignite</span><br><span class="line">├── index.android.js</span><br><span class="line">├── index.ios.js</span><br><span class="line">├── ios</span><br><span class="line">├── node_modules</span><br><span class="line">├── package.json</span><br><span class="line">├── storybook</span><br><span class="line">└── yarn.lock</span><br></pre></td></tr></table></figure>
+<p>所有的业务逻辑大抵都在App里面，所以重点说App里面的逻辑。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── Components 组件</span><br><span class="line">│   ├── SearchBar.js</span><br><span class="line">│   └── Styles</span><br><span class="line">├── Config 配置</span><br><span class="line">│   ├── AppConfig.js</span><br><span class="line">│   ├── DebugConfig.js</span><br><span class="line">│   ├── README.md</span><br><span class="line">│   ├── ReactotronConfig.js</span><br><span class="line">│   ├── ReduxPersist.js</span><br><span class="line">│   └── index.js</span><br><span class="line">├── Containers 容器&amp;页面</span><br><span class="line">│   ├── App.js</span><br><span class="line">│   ├── LaunchScreen.js</span><br><span class="line">│   ├── README.md</span><br><span class="line">│   ├── RootContainer.js</span><br><span class="line">│   └── Styles</span><br><span class="line">├── Fixtures 数据mock的本地json</span><br><span class="line">│   ├── README.md</span><br><span class="line">│   ├── gantman.json</span><br><span class="line">│   ├── rateLimit.json</span><br><span class="line">│   ├── root.json</span><br><span class="line">│   └── skellock.json</span><br><span class="line">├── Images 图片</span><br><span class="line">├── Lib 库</span><br><span class="line">│   └── README.md</span><br><span class="line">├── Navigation 导航、router react-navigation</span><br><span class="line">│   ├── AppNavigation.js</span><br><span class="line">│   ├── ReduxNavigation.js</span><br><span class="line">│   └── Styles</span><br><span class="line">├── Redux</span><br><span class="line">│   ├── StartupRedux.js</span><br><span class="line">│   └── index.js</span><br><span class="line">├── Sagas</span><br><span class="line">│   ├── GithubSagas.js</span><br><span class="line">│   ├── StartupSagas.js</span><br><span class="line">│   └── index.js</span><br><span class="line">├── Services 服务 主要是ajax,数据mock，持久化相关的逻辑层</span><br><span class="line">│   ├── Api.js</span><br><span class="line">│   ├── ExamplesRegistry.js</span><br><span class="line">│   ├── FixtureApi.js</span><br><span class="line">│   ├── ImmutablePersistenceTransform.js</span><br><span class="line">│   └── RehydrationServices.js</span><br><span class="line">├── Themes 主题</span><br><span class="line">│   ├── ApplicationStyles.js</span><br><span class="line">│   ├── Colors.js</span><br><span class="line">│   └── index.js</span><br><span class="line">└── Transforms</span><br><span class="line">    ├── ConvertFromKelvin.js</span><br><span class="line">    └── README.md</span><br></pre></td></tr></table></figure>
+<p>这里仅保留大致结构，很多文件对展示结构无关紧要就删掉了，实际上还有很多图片、组件等等。这里仅做原理的分析。<br>Ignite提供的框架做了很多工作，它提供的功能包括: 主题、国际化、redux、redux-sagas、数据本地模拟、数据持久化(redux-persist)、测试、Reactotron调试等等。</p>
+<p>由于这是一片step by step的教程式的笔记，所以主要从使用的角度做分析，不做过于复杂的分析。这个结构实际上依然是MVC结构，其中M用Redux实现、V用react-native实现、C用Sagas实现。简单说，reactNative负责了页面，redux负责向页面传递数据，而sogas则负责业务逻辑并更改redux最终实现页面的变更。</p>
+<h2 id="配置Ignite"><a href="#配置Ignite" class="headerlink" title="配置Ignite"></a>配置Ignite</h2><p>这里对一些前期需要知道的文件做简要介绍。</p>
+<p>首先是Config/DebugConfig.js，任何程序编写过程都无法跳过debug环节，对一个新程序的编写也必然需要debug来查看内部数据变化，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;*file:Config&#x2F;DebugConfig.js*&#x2F;</span><br><span class="line">useFixtures: true, &#x2F;&#x2F; 使用本地数据，这里设为true让我们可以在没有后端支持的情况实现数据mock</span><br><span class="line">ezLogin: false, &#x2F;&#x2F; 暂时还不知道这个ezlogin干嘛的</span><br><span class="line">yellowBox: __DEV__, &#x2F;&#x2F; 黄屏警告 开发模式默认打开</span><br><span class="line">reduxLogging: __DEV__, &#x2F;&#x2F; redux-logging当redux变更时打log 开发模式默认打开</span><br><span class="line">includeExamples: __DEV__, &#x2F;&#x2F; 载入初始的includeExamples 开发模式默认打开</span><br><span class="line">useReactotron: __DEV__ &#x2F;&#x2F; 使用useReactotron 开发模式默认打开</span><br></pre></td></tr></table></figure>
+<p>这里我们打开useFixtures设为true即可。</p>
+<h2 id="Ignite的Sagas"><a href="#Ignite的Sagas" class="headerlink" title="Ignite的Sagas"></a>Ignite的Sagas</h2><p>接下来是C层了解下这里怎么处理的。打开Sagas/index.js,里面的内容不算复杂。需要关注的代码就三行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">const api &#x3D; DebugConfig.useFixtures ? FixtureAPI : API.create()</span><br><span class="line">...</span><br><span class="line">takeLatest(StartupTypes.STARTUP, startup)</span><br><span class="line">takeLatest(GithubTypes.USER_REQUEST, getUserAvatar, api)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这里注意到api变量, 这里是设置数据mock的关键地方, 当useFixtures设为true的时候使用FixtureAPI否则使用API.create(),这里api可以视为一个代理, 这也决定了FixtureAPI和API.create()实际上返回的数据具有相同的数据结构。</p>
+<p>然后就是takeLatest这个辅助函数的事情了<br>Saga 辅助函数其实有两个,takeEvery也可以从import那里加上:</p>
+<ul>
+<li><strong>takeEvery</strong> :允许多个 fetchData实例同时启动。在某个特定时刻，我们可以启动一个新的 fetchData任务， 尽管之前还有一个或多个 fetchData尚未结束。我认为这个函数非常适合一次性从服务器拉取多个数据，然后放到redux保存备用。</li>
+<li><strong>takeLatest</strong> :只允许执行一个 fetchData任务。并且这个任务是最后被启动的那个。 如果之前已经有一个任务在执行，那之前的这个任务会自动被取消。</li>
+</ul>
+<p>这里唯一需要说下的takeLatest参数问题了, takeLatest接受三个参数，第一个是ReduxAction, 第二个是这个ReduxAction触发的异步函数，第三个参数是可选的。当第三个参数存在，传入这个异步函数的第一个参数是传入的第三个实参，第二个是action, 如果不存在第一个就是action。就像这样:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">function * startup (action) &#123;&#125;</span><br><span class="line">function * getUserAvatar (api, action) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里再简单分析下数据获取的问题，参考Sagas/GithubSagas.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; Sagas&#x2F;GithubSagas.js</span><br><span class="line">import &#123; call, put &#125; from &#39;redux-saga&#x2F;effects&#39;</span><br><span class="line">import &#123; path &#125; from &#39;ramda&#39;</span><br><span class="line">import GithubActions from &#39;..&#x2F;Redux&#x2F;GithubRedux&#39;</span><br><span class="line"></span><br><span class="line">export function * getUserAvatar (api, action) &#123;</span><br><span class="line">  const &#123; username &#125; &#x3D; action</span><br><span class="line">  &#x2F;&#x2F; make the call to the api</span><br><span class="line">  const response &#x3D; yield call(api.getUser, username)</span><br><span class="line"></span><br><span class="line">  if (response.ok) &#123;</span><br><span class="line">    const firstUser &#x3D; path([&#39;data&#39;, &#39;items&#39;], response)[0]</span><br><span class="line">    const avatar &#x3D; firstUser.avatar_url</span><br><span class="line">    &#x2F;&#x2F; do data conversion here if needed</span><br><span class="line">    yield put(GithubActions.userSuccess(avatar))</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    yield put(GithubActions.userFailure())</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中action是之前的state数据, 后面的则是直接根据异步获取的数据执行对应redux的Action。<br>接下来看看api.getUser相关，这里是获取数据的方法，我们看看里面是如何获取数据的。上面说过，这里获取数据有两个地方，一个是真实的一个mock的，我们先看真实的数据获取。</p>
+<h2 id="数据获取"><a href="#数据获取" class="headerlink" title="数据获取"></a>数据获取</h2><p>真实的数据获取使用apisauce包。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 实例化</span><br><span class="line">const create &#x3D; (baseURL &#x3D; &#39;https:&#x2F;&#x2F;api.github.com&#x2F;&#39;) &#x3D;&gt; &#123;  </span><br><span class="line">  const api &#x3D; apisauce.create(&#123;</span><br><span class="line">    &#x2F;&#x2F; base URL is read from the &quot;constructor&quot;</span><br><span class="line">    baseURL,</span><br><span class="line">    &#x2F;&#x2F; here are some default headers</span><br><span class="line">    headers: &#123;</span><br><span class="line">      &#39;Cache-Control&#39;: &#39;no-cache&#39;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#x2F;&#x2F; 10 second timeout...</span><br><span class="line">    timeout: 10000</span><br><span class="line">  &#125;)</span><br><span class="line">  const getRate &#x3D; () &#x3D;&gt; api.get(&#39;rate_limit’)</span><br><span class="line">  return &#123;</span><br><span class="line">    getRate</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export default &#123;</span><br><span class="line">  create</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里是不算复杂的实例化，创建一个数据获取接口，设定了url， baseURL, httpHeader, 以及超时时间。<br>一些使用例子, 更多的例子可以直接查阅<a target="_blank" rel="noopener" href="https://github.com/skellock/apisauce">apisauce文档</a>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">const api &#x3D; create(&#123;baseURL: &#39;https:&#x2F;&#x2F;api.github.com&#39;&#125;)</span><br><span class="line">const api &#x3D; create(&#123;baseURL: &#39;https:&#x2F;&#x2F;example.com&#x2F;api&#x2F;v3&#39;&#125;)</span><br><span class="line">const api &#x3D; create(&#123;</span><br><span class="line">  baseURL: &#39;...&#39;,</span><br><span class="line">  headers: &#123;</span><br><span class="line">    &#39;X-API-KEY&#39;: &#39;123&#39;,</span><br><span class="line">    &#39;X-MARKS-THE-SPOT&#39;: &#39;yarrrrr&#39;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line">const api &#x3D; create(&#123;baseURL: &#39;...&#39;, timeout: 30000&#125;) &#x2F;&#x2F; 30 seconds</span><br><span class="line">api.get(&#39;&#x2F;repos&#x2F;skellock&#x2F;apisauce&#x2F;commits&#39;)</span><br><span class="line">api.head(&#39;&#x2F;me&#39;)</span><br><span class="line">api.delete(&#39;&#x2F;users&#x2F;69&#39;)</span><br><span class="line">api.post(&#39;&#x2F;todos&#39;, &#123;note: &#39;jump around&#39;&#125;, &#123;headers: &#123;&#39;x-ray&#39;: &#39;machine&#39;&#125;&#125;)</span><br><span class="line">api.patch(&#39;&#x2F;servers&#x2F;1&#39;, &#123;live: false&#125;)</span><br><span class="line">api.put(&#39;&#x2F;servers&#x2F;1&#39;, &#123;live: true&#125;)</span><br><span class="line">api.link(&#39;&#x2F;images&#x2F;my_dog.jpg&#39;, &#123;&#125;, &#123;headers: &#123;Link: &#39;&lt;http:&#x2F;&#x2F;example.com&#x2F;profiles&#x2F;joe&gt;; rel&#x3D;&quot;tag&quot;&#39;&#125;&#125;)</span><br><span class="line">api.unlink(&#39;&#x2F;images&#x2F;my_dog.jpg&#39;, &#123;&#125;, &#123;headers: &#123;Link: &#39;&lt;http:&#x2F;&#x2F;example.com&#x2F;profiles&#x2F;joe&gt;; rel&#x3D;&quot;tag&quot;&#39;&#125;&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>而mock的就更简单了, 直接就是就是写死的对象，里面包含若干方法，返回写死的数据。</p>
+<h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>调试使用Reactotron, 为了使用它我们可以下载它的<a target="_blank" rel="noopener" href="https://github.com/infinitered/reactotron/blob/master/docs/installing.md">客户端</a>,使用它不进可以直接console数据到面板，同时可以直接修改redux状态反馈到reactNative的UI层上。关于它的使用，在startup里面有几个例子，已经足够使用了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">console.tron.log(&#39;Hello, I\&#39;m an example of how to log via Reactotron.&#39;)</span><br><span class="line">console.tron.log(&#123;</span><br><span class="line">  message: &#39;pass objects for better logging&#39;,</span><br><span class="line">  someGeneratorFunction: selectAvatar</span><br><span class="line">&#125;)</span><br><span class="line">console.tron.display(&#123;</span><br><span class="line">  name: &#39;🔥 IGNITE 🔥&#39;,</span><br><span class="line">  preview: &#39;You should totally expand this&#39;,</span><br><span class="line">  value: &#123;</span><br><span class="line">    &#39;💃&#39;: &#39;Welcome to the future!&#39;,</span><br><span class="line">    subObject,</span><br><span class="line">    someInlineFunction: () &#x3D;&gt; true,</span><br><span class="line">    someGeneratorFunction: startup,</span><br><span class="line">    someNormalFunction: selectAvatar</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h1 id="简单写个Demo-App"><a href="#简单写个Demo-App" class="headerlink" title="简单写个Demo App"></a>简单写个Demo App</h1><h2 id="LaunchScreen"><a href="#LaunchScreen" class="headerlink" title="LaunchScreen"></a>LaunchScreen</h2><p>正常app启动是这样的splash页面-&gt;LaunchPage(常见的就是滑屏简介)-&gt;主页。splash页面比较折腾，而且在很多博客都有说道，这里我们开始写一个LaunchPage页面作为开始。<br>首先我找了3个图片。放到了Images/目录备用 分别命名为launch1.png、launch2.png、launch3.png(仅项目展示使用，版权归作者所有-虽然我也不知道版权是谁的。。。)，然后安装swiper组件 <code>npm i react-native-swiper --save</code></p>
+<p>最后修改一下LaunchScreen.js和最后修改一下LaunchScreenStyle.js</p>
+<script src="https://gist.github.com/que01/bf1313201f202bd9e788c8e226d65e5f.js"></script>
+
+<p>如上, 这样我们的LaunchScreen页面就算写好了。这里唯一需要写的就是flex布局问题。我在这里留了文本的位置，如果不需要完全可以删除只显示图片。</p>
+<h2 id="基本页面"><a href="#基本页面" class="headerlink" title="基本页面"></a>基本页面</h2><p>这里打算做3个基本页面 Home OrderList MeInfo<br>Home页面这里来实践一把数据对接。不过在这之前我们需要先建立页面，然后处理一下导航, 使LaunchScreen可以跳到Home页面。</p>
+<p>建立页面并处理redux和sagas</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ignite generate screen home</span><br><span class="line">ignite generate redux home</span><br><span class="line">ignite generate saga home</span><br></pre></td></tr></table></figure>
+<p>这样，相关文件建立就结束了。接下来处理导航。常规的导航，实际上可以直接 <code>this.props.navigation.navigate('HomeScreen')</code>,不过这样的问题是返回会返回到LaunchScreen，这样就很不合理了。所以做些简要处理：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import &#123; NavigationActions &#125; from &#39;react-navigation&#39;</span><br><span class="line"></span><br><span class="line">const resetAction &#x3D; NavigationActions.reset(&#123;</span><br><span class="line">  index: 0,</span><br><span class="line">  actions: [</span><br><span class="line">    NavigationActions.navigate(&#123; routeName: &#39;HomeScreen&#39;&#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line">&#x2F;&#x2F; 执行: this.props.navigation.dispatch(resetAction)&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这样，我们就可以跳转到HomeScreen了，不过现在HomeScreen只有孤零零的’HomeScreen’字样。我们先加一下导航条。</p>
+<p>处理一下AppNavigation.js<br>主要是3个地方的修改：</p>
+<ol>
+<li>引入react 和 Icon组件</li>
+<li>将headerMode改成screen</li>
+<li>修改navigationOptions<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">navigationOptions: (&#123;navigation&#125;) &#x3D;&gt; &#123;</span><br><span class="line">  let &#123;goBack, navigate&#125; &#x3D; navigation;</span><br><span class="line">  return &#123;</span><br><span class="line">    headerStyle: styles.header,</span><br><span class="line">    headerTitleStyle: styles.headerTitleStyle,</span><br><span class="line">    headerLeft: &lt;Icon name&#x3D;&quot;chevron-left&quot; onPress&#x3D;&#123;()&#x3D;&gt;&#123;goBack()&#125;&#125; size&#x3D;&#123;24&#125; color&#x3D;&quot;#fff&quot; style&#x3D;&#123;&#123;marginLeft: 20&#125;&#125; &#x2F;&gt;,</span><br><span class="line">    headerRight: &lt;Icon name&#x3D;&quot;home&quot; onPress&#x3D;&#123;()&#x3D;&gt;&#123;navigate(&#39;HomeScreen&#39;)&#125;&#125; size&#x3D;&#123;24&#125; color&#x3D;&quot;#fff&quot; style&#x3D;&#123;&#123;marginRight: 20&#125;&#125; &#x2F;&gt;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>这样，加上headerTitleStyle样式后，此时app就可以显示顶部导航条了。<br>现在项目是这样的<br><img src="/images/reactnative-swiper.gif"><br>接下来我们给它加一个Tabbar：<code>ignite generate component TabBar</code><br>关于这个Tabbar我们使用react-native-tabs来做——当然，即使自己做一个这个也不算复杂，不过这里为了方便尽量都用现有的组件。<br>tabbar.js的主要代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">onSelect (el) &#123;</span><br><span class="line">  if (el.props.name &#x3D;&#x3D;&#x3D; this.state.page) &#123;</span><br><span class="line">    return false</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    this.setState(&#123;page: el.props.name&#125;)</span><br><span class="line">    console.tron.log(el.props.name)</span><br><span class="line">    this.props.navTo(el.props.name)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">render () &#123;</span><br><span class="line">  return (</span><br><span class="line">    &lt;Tabs selected&#x3D;&#123;this.state.page&#125; style&#x3D;&#123;&#123; backgroundColor: &#39;white&#39; &#125;&#125; selectedStyle&#x3D;&#123;&#123; color: &#39;#4F8EF7&#39; &#125;&#125; onSelect&#x3D;&#123;this.onSelect.bind(this)&#125;&gt;</span><br><span class="line">      &lt;Text name&#x3D;&#39;HomeScreen&#39; style&#x3D;&#123;styles.textAlignCenter&#125; selectedIconStyle&#x3D;&#123;TabStyles&#125;&gt;</span><br><span class="line">        &lt;Icon name&#x3D;&#39;ios-book-outline&#39; size&#x3D;&#123;30&#125; color&#x3D;&#39;#000&#39; &#x2F;&gt;&#123;&#39;\n&#39;&#125;首页</span><br><span class="line">      &lt;&#x2F;Text&gt;</span><br><span class="line">      &lt;Text name&#x3D;&#39;OrderListScreen&#39; style&#x3D;&#123;styles.textAlignCenter&#125; selectedIconStyle&#x3D;&#123;TabStyles&#125;&gt;</span><br><span class="line">        &lt;Icon name&#x3D;&#39;ios-paper-outline&#39; size&#x3D;&#123;30&#125; color&#x3D;&#39;#000&#39; &#x2F;&gt;&#123;&#39;\n&#39;&#125;订单</span><br><span class="line">      &lt;&#x2F;Text&gt;</span><br><span class="line">      &lt;Text name&#x3D;&#39;MeInfoScreen&#39; style&#x3D;&#123;styles.textAlignCenter&#125; selectedIconStyle&#x3D;&#123;TabStyles&#125;&gt;</span><br><span class="line">        &lt;Icon name&#x3D;&#39;ios-person-outline&#39; size&#x3D;&#123;30&#125; color&#x3D;&#39;#000&#39; &#x2F;&gt;&#123;&#39;\n&#39;&#125;我的</span><br><span class="line">      &lt;&#x2F;Text&gt;</span><br><span class="line">    &lt;&#x2F;Tabs&gt;</span><br><span class="line">  )</span><br></pre></td></tr></table></figure>
+<p>为了达到切换效果，我们再加两个Screen：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ignite generate screen orderList</span><br><span class="line">ignite generate screen meInfo</span><br></pre></td></tr></table></figure>
+<p>并为这两个页面添加Tabbar等操作(实际上可以直接单页tab切换，不过此处暂时不考虑那么多)，做好之后(具体代码可以直接爬git的提交记录)，现在tab切换是这样的：<br><img src="/images/reac-native-tabs.gif"></p>
+<h2 id="数据对接"><a href="#数据对接" class="headerlink" title="数据对接"></a>数据对接</h2><p>简单完善下Home, 我们来做个非常普遍的2行4列图标，效果图是这样<br><img src="/images/react-native-home.png"><br>这里主要就是flex布局，所以怎么布局这里不做讲解，只是贴出一下代码方便说数据对接这块。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">const menus &#x3D; [</span><br><span class="line">  &#123;</span><br><span class="line">    &quot;name&quot;: &#39;美食1&#39;,</span><br><span class="line">    &quot;icon&quot;: &#39;https:&#x2F;&#x2F;img.la&#x2F;333&#x2F;fff&#x2F;60x60&#39;</span><br><span class="line">  &#125;,</span><br><span class="line">  ...</span><br><span class="line">]</span><br><span class="line">&lt;View style&#x3D;&#123;styles.menuItemWrapper&#125;&gt;</span><br><span class="line">  &#123;</span><br><span class="line">    menus.map((&#123;name, icon&#125;,i)&#x3D;&gt;(</span><br><span class="line">      &lt;TouchableOpacity style&#x3D;&#123;styles.menuItem&#125; key&#x3D;&#123;&#96;icon-$&#123;i&#125;&#96;&#125;&gt;</span><br><span class="line">        &lt;Image source&#x3D;&#123;&#123;uri: icon&#125;&#125; style&#x3D;&#123;styles.menuItemIcon&#125;&#x2F;&gt;</span><br><span class="line">        &lt;Text&gt;&#123;name&#125;&lt;&#x2F;Text&gt;</span><br><span class="line">      &lt;&#x2F;TouchableOpacity&gt;</span><br><span class="line">    ))</span><br><span class="line">  &#125;</span><br><span class="line">&lt;&#x2F;View&gt;</span><br></pre></td></tr></table></figure>
+
+<p>假设最终接口返回数据格式是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  code: 200,</span><br><span class="line">  message: &#39;success&#39;,</span><br><span class="line">  data: &#123;</span><br><span class="line">    menus: [&#123;name: &quot;xxx&quot;, icon: &quot;xxx&quot;&#125;]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>修改sagas/HomeSages.js， 将 <code>response.ok</code> 改成 <code>+response.code === 200</code>, 添加Fixtrues/home.json文件，内部填写上面的数据结构。这里因为没有后端所以直接mock本地数据，修改完毕后，更改Services/FixtrueApi.js<br>添加gethome函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gethome: (data) &#x3D;&gt; &#123;</span><br><span class="line">  const initData &#x3D; require(&#39;..&#x2F;Fixtures&#x2F;home.json&#39;)</span><br><span class="line">  return &#123;...initData&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据数据结构完善一下HomeRedux.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">const &#123; Types, Creators &#125; &#x3D; createActions(&#123;</span><br><span class="line">  ...</span><br><span class="line">  homeSuccess: [&#39;data&#39;], &#x2F;&#x2F; 默认是payload</span><br><span class="line">  ...</span><br><span class="line">&#125;)</span><br><span class="line">...</span><br><span class="line">&#x2F;&#x2F; successful api lookup</span><br><span class="line">export const success &#x3D; (state, action) &#x3D;&gt; &#123;</span><br><span class="line">  const &#123; data &#125; &#x3D; action &#x2F;&#x2F; 默认是payload</span><br><span class="line">  return state.merge(&#123; fetching: false, error: null, data &#125;) &#x2F;&#x2F; 默认是payload</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>注册sagas(mapDispatchToProps需要), 修改sagas/index.js文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* ------------- Types ------------- *&#x2F;</span><br><span class="line">import &#123; HomeTypes&#125; from &#39;..&#x2F;Redux&#x2F;HomeRedux&#39;</span><br><span class="line">&#x2F;* ------------- Sagas ------------- *&#x2F;</span><br><span class="line">import &#123; getHome &#125; from &#39;.&#x2F;HomeSagas&#39;</span><br><span class="line">&#x2F;* ------------- Connect Types To Sagas ------------- *&#x2F;</span><br><span class="line">takeLatest(HomeTypes.HOME_REQUEST, getHome, api)</span><br></pre></td></tr></table></figure>
+<p>注册Redux(mapStateToProps需要), 修改redux/index.j文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">const rootReducer &#x3D; combineReducers(&#123;</span><br><span class="line">  nav: require(&#39;.&#x2F;NavigationRedux&#39;).reducer,</span><br><span class="line">  github: require(&#39;.&#x2F;GithubRedux&#39;).reducer,</span><br><span class="line">  search: require(&#39;.&#x2F;SearchRedux&#39;).reducer,</span><br><span class="line">  homeInitData: require(&#39;.&#x2F;HomeRedux&#39;).reducer,</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>引入homeRedux，并更新HomeScreen页面mapStateToProps和mapDispatchToProps，并在componentDidMount内部执行获取数据的函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import homeAction from &#39;..&#x2F;Redux&#x2F;HomeRedux&#39;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line">componentDidMount () &#123;</span><br><span class="line">  this.props.fetchData()</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">const mapStateToProps &#x3D; (&#123;homeInitData&#125;) &#x3D;&gt; &#123; &#x2F;&#x2F; 这个在redux那里定义</span><br><span class="line">  return &#123;</span><br><span class="line">    initData: homeInitData.data</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">const mapDispatchToProps &#x3D; (dispatch) &#x3D;&gt; &#123;</span><br><span class="line">  return &#123;</span><br><span class="line">    fetchData: () &#x3D;&gt; dispatch(homeAction.homeRequest())</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，将HomeScreen内部写死的menus删除，并将menus.map设为this.props.initData.menus.map, 这个流程就算结束了。</p>
+<p>当然，如果有线上的服务器，不要忘记最后联调阶段，需要关闭useFixtures选项，并在Services/Api.js里面填充对应的逻辑，例如此处，需要在这里加gethome函数并返回指定的数据。</p>
+<p>最后的成品截图<br><img src="/images/react-native-demo.gif"></p>
+<h1 id="End"><a href="#End" class="headerlink" title="End"></a>End</h1><p>到这里Ignite最基础的使用已经完毕了，作为入门我个人认为已经足够。项目代码我已传至<a target="_blank" rel="noopener" href="https://github.com/que01/reactNativeDemo">Github</a>,如果有需要可以自行检出取用。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/reactNative/" rel="tag"># reactNative</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/02/20/framework1/" rel="prev" title="js框架读书笔记和思考(一)">
+      <i class="fa fa-chevron-left"></i> js框架读书笔记和思考(一)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/15/typescript-notes/" rel="next" title="typescript笔记">
+      typescript笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Ignite%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">Ignite简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%92%8C%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%9A%84%E4%BD%BF%E7%94%A8%E4%B8%80%E7%9E%A5"><span class="nav-number">2.</span> <span class="nav-text">安装和命令行的使用一瞥</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6"><span class="nav-number">3.</span> <span class="nav-text">运行机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">项目结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEIgnite"><span class="nav-number">3.2.</span> <span class="nav-text">配置Ignite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ignite%E7%9A%84Sagas"><span class="nav-number">3.3.</span> <span class="nav-text">Ignite的Sagas</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96"><span class="nav-number">3.4.</span> <span class="nav-text">数据获取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95"><span class="nav-number">3.5.</span> <span class="nav-text">调试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%86%99%E4%B8%AADemo-App"><span class="nav-number">4.</span> <span class="nav-text">简单写个Demo App</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#LaunchScreen"><span class="nav-number">4.1.</span> <span class="nav-text">LaunchScreen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E9%A1%B5%E9%9D%A2"><span class="nav-number">4.2.</span> <span class="nav-text">基本页面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AF%B9%E6%8E%A5"><span class="nav-number">4.3.</span> <span class="nav-text">数据对接</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#End"><span class="nav-number">5.</span> <span class="nav-text">End</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

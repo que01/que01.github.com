@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="早之前写了一个基于dva的react简要入门，这里慢慢因为喜欢typescript，所以后面开始折腾新的脚手架。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="typescript在redux-react项目中的应用">
+<meta property="og:url" content="http://www.que01.top/2018/11/05/2018-11-5-typescript-redux-starter/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="早之前写了一个基于dva的react简要入门，这里慢慢因为喜欢typescript，所以后面开始折腾新的脚手架。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-11-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.640Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react redux">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2018/11/05/2018-11-5-typescript-redux-starter/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>typescript在redux-react项目中的应用 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2018/11/05/2018-11-5-typescript-redux-starter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          typescript在redux-react项目中的应用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-05 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-05T00:00:00+08:00">2018-11-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2018/11/05/2018-11-5-typescript-redux-starter/" class="post-meta-item leancloud_visitors" data-flag-title="typescript在redux-react项目中的应用" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">早之前写了一个基于dva的react简要入门，这里慢慢因为喜欢typescript，所以后面开始折腾新的脚手架。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="开头"><a href="#开头" class="headerlink" title="开头"></a>开头</h1><p>这开头呢，我只想说一句 如何过好这一生。</p>
+<p>关于React实际上早在很久很久之前写过一篇基于<a href="/2016/11/20/dva-react/">Dva方案的文章</a>，如果不考虑typecript和版本的话其实一切用起来至今也倒尚好。</p>
+<p>可能typecript自己至今尚未学好，关于react、redux、typescript三者的结合，一直碎碎念，打磨不好。</p>
+<p>这其中，有redux写起来繁琐的缘故、有typescript不到家的缘故。</p>
+<p>直到几个月前看到github上<a target="_blank" rel="noopener" href="https://github.com/rokoroku/react-redux-typescript-boilerplate"><strong>react-redux-typescript-boilerplate</strong></a>,终于觉得这是自己想要的方案，拖延好几个月，这里就简单整理一下，顺便把之前的Dva方案升级一下。</p>
+<h1 id="方案简析"><a href="#方案简析" class="headerlink" title="方案简析"></a>方案简析</h1><h2 id="Redux"><a href="#Redux" class="headerlink" title="Redux"></a>Redux</h2><p>这里redux，有很多概念，譬如Action/Reducer/Store/Middleware。在项目里面有对应的actions/reducers/store/middleware目录对应。这里不是redux的安利文所以不做特别说明。</p>
+<p>关于方案的优势这里必须提一下其使用上的便利。一般情况下，我们使用redux时候dispatch一个状态都需要经过引用，然后在mapDispatchToProps里面注册，最后再<code>this.props.dispatch(&#123;type: Action, &#123;payload: &#123;&#125;&#125;&#125;)</code>进行状态触发。</p>
+<p>在本方案中，redux和react的连接部分 代码是这样的：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@connect(</span><br><span class="line">  (state: RootState, ownProps): Pick&lt;App.Props, <span class="string">&#x27;todos&#x27;</span> | <span class="string">&#x27;filter&#x27;</span>&gt; =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> hash = ownProps.location &amp;&amp; ownProps.location.hash.replace(<span class="string">&#x27;#&#x27;</span>, <span class="string">&#x27;&#x27;</span>);</span><br><span class="line">    <span class="keyword">const</span> filter = FILTER_VALUES.find(<span class="function">(<span class="params">value</span>) =&gt;</span> value === hash) || TodoModel.Filter.SHOW_ALL;</span><br><span class="line">    <span class="keyword">return</span> &#123; <span class="attr">todos</span>: state.todos, filter &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  (dispatch: Dispatch): Pick&lt;App.Props, <span class="string">&#x27;actions&#x27;</span>&gt; =&gt; (&#123;</span><br><span class="line">    actions: bindActionCreators(omit(TodoActions, <span class="string">&#x27;Type&#x27;</span>), dispatch)</span><br><span class="line">  &#125;)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>在这个小结，这里仅仅注意到bindActionCreators这个API的便利性即可。</p>
+<h2 id="Typescript"><a href="#Typescript" class="headerlink" title="Typescript"></a>Typescript</h2><p>谈到ts，这里感觉巧妙的地方有些多。</p>
+<p>比如actions/todo.ts</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; createAction &#125; <span class="keyword">from</span> <span class="string">&#x27;redux-actions&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; TodoModel &#125; <span class="keyword">from</span> <span class="string">&#x27;app/models&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> namespace TodoActions &#123;</span><br><span class="line">  <span class="keyword">export</span> enum Type &#123;</span><br><span class="line">    ADD_TODO = <span class="string">&#x27;ADD_TODO&#x27;</span>,</span><br><span class="line">    EDIT_TODO = <span class="string">&#x27;EDIT_TODO&#x27;</span>,</span><br><span class="line">    DELETE_TODO = <span class="string">&#x27;DELETE_TODO&#x27;</span>,</span><br><span class="line">    COMPLETE_TODO = <span class="string">&#x27;COMPLETE_TODO&#x27;</span>,</span><br><span class="line">    COMPLETE_ALL = <span class="string">&#x27;COMPLETE_ALL&#x27;</span>,</span><br><span class="line">    CLEAR_COMPLETED = <span class="string">&#x27;CLEAR_COMPLETED&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">const</span> addTodo = createAction&lt;PartialPick&lt;TodoModel, <span class="string">&#x27;text&#x27;</span>&gt;&gt;(Type.ADD_TODO);</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">const</span> editTodo = createAction&lt;PartialPick&lt;TodoModel, <span class="string">&#x27;id&#x27;</span>&gt;&gt;(Type.EDIT_TODO);</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">const</span> deleteTodo = createAction&lt;TodoModel[<span class="string">&#x27;id&#x27;</span>]&gt;(Type.DELETE_TODO);</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">const</span> completeTodo = createAction&lt;TodoModel[<span class="string">&#x27;id&#x27;</span>]&gt;(Type.COMPLETE_TODO);</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">const</span> completeAll = createAction(Type.COMPLETE_ALL);</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">const</span> clearCompleted = createAction(Type.CLEAR_COMPLETED);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> type TodoActions = Omit&lt;<span class="keyword">typeof</span> TodoActions, <span class="string">&#x27;Type&#x27;</span>&gt;;</span><br></pre></td></tr></table></figure>
+
+<p>这里有一个namespace和一个type。其中type这里使用了<code>Omit = Pick&lt;T, Exclude&lt;keyof T, K&gt;&gt;</code>这个高级类型,将namespace中的enum Type进行了排除。它的作用是给Container组件设置props类型的接口。</p>
+<p>而namespace里面除了<code>addTodo</code>这些的引用，因为可以访问到Type，还可以在Reducer里面获得引用。</p>
+<p>然后我们看看namespace这里面的addTodo这些。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> addTodo = createAction&lt;PartialPick&lt;TodoModel, <span class="string">&quot;text&quot;</span>&gt;&gt;(actionType: string): ActionFunction1&lt;PartialPick&lt;TodoModel, <span class="string">&quot;text&quot;</span>&gt;, Action&lt;PartialPick&lt;TodoModel, <span class="string">&quot;text&quot;</span>&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里<code>PartialPick&lt;TodoModel, &quot;text&quot;&gt;</code>用来约束后面<code>dispatch</code>事件时候的传值。其中PartialPick是<code> Partial&lt;T&gt; &amp; Pick&lt;T, K&gt;</code>组成的联合类型。这里的意义是将TodoModel里面除了‘text’之外的属性改成选填状态。</p>
+<p>然后是App/index.js文件。这里摘录一些关键代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> namespace App &#123;</span><br><span class="line">  <span class="keyword">export</span> interface Props <span class="keyword">extends</span> RouteComponentProps&lt;<span class="keyword">void</span>&gt; &#123;</span><br><span class="line">    todos: RootState.TodoState;</span><br><span class="line">    actions: TodoActions;</span><br><span class="line">    filter: TodoModel.Filter;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">@connect(</span><br><span class="line">  (state: RootState, ownProps): Pick&lt;App.Props, <span class="string">&#x27;todos&#x27;</span> | <span class="string">&#x27;filter&#x27;</span>&gt; =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> hash = ownProps.location &amp;&amp; ownProps.location.hash.replace(<span class="string">&#x27;#&#x27;</span>, <span class="string">&#x27;&#x27;</span>);</span><br><span class="line">    <span class="keyword">const</span> filter = FILTER_VALUES.find(<span class="function">(<span class="params">value</span>) =&gt;</span> value === hash) || TodoModel.Filter.SHOW_ALL;</span><br><span class="line">    <span class="keyword">return</span> &#123; <span class="attr">todos</span>: state.todos, filter &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  (dispatch: Dispatch): Pick&lt;App.Props, <span class="string">&#x27;actions&#x27;</span>&gt; =&gt; (&#123;</span><br><span class="line">    actions: bindActionCreators(omit(TodoActions, <span class="string">&#x27;Type&#x27;</span>), dispatch)</span><br><span class="line">  &#125;)</span><br><span class="line">)</span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span>&lt;<span class="title">App</span>.<span class="title">Props</span>&gt; </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这其中，<code>type TodoActions</code>用在了<code>interface Props</code>中。</p>
+<p>然后mapDispatchToProps函数中则是使用了bindActionCreators这个API并根据之前提到的Omit构建了一个函数排除‘Type’生成了我们常见的dispatch到props的注册。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>实际上在这个方案中，并没有太多特别的地方。只不过，在这里有几个地方处理得很好。</p>
+<ul>
+<li>typescript的namespace 和 type用得巧妙，namespace内部的enum这个也用的很巧妙</li>
+<li>配合bindActionCreators方便了mapDispatchToProps函数的恼人操作</li>
+</ul>
+<h2 id="改造"><a href="#改造" class="headerlink" title="改造"></a>改造</h2><h3 id="Antd按需加载"><a href="#Antd按需加载" class="headerlink" title="Antd按需加载"></a>Antd按需加载</h3><p>官方推荐的按需加载用的是<code>babel-import-plugin</code>,不过这里因为用了Typescript，所以不推荐用它了，转而推荐其Ts版本的<code>ts-import-plugin</code>。</p>
+<p>另外，按需加载依赖less。所以也需要配置一下less-loader这些。</p>
+<p>最后就是<code>extract-text-webpack-plugin</code>在webpack4这里无法使用，所以转而使用了<code>mini-css-extract-plugin</code>,这里已经自带，不过注意不要将其和<code>style-loader</code>一同使用，这是冲突操作。</p>
+<p>首先是依赖：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i ts-<span class="keyword">import</span>-plugin less less-loader postcss-less antd --save</span><br></pre></td></tr></table></figure>
+
+<p>其次修改webpack配置</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.tsx?$/</span>,</span><br><span class="line">        use: [</span><br><span class="line">          !isProduction &amp;&amp; &#123;</span><br><span class="line">            loader: <span class="string">&#x27;babel-loader&#x27;</span>,</span><br><span class="line">            options: &#123;</span><br><span class="line">              plugins: [</span><br><span class="line">                <span class="string">&#x27;react-hot-loader/babel&#x27;</span></span><br><span class="line">              ]</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            loader: <span class="string">&#x27;ts-loader&#x27;</span>,</span><br><span class="line">            options: &#123;</span><br><span class="line">              transpileOnly: <span class="literal">true</span>,</span><br><span class="line">              getCustomTransformers: <span class="function">() =&gt;</span> (&#123;</span><br><span class="line">                before: [ tsImportPluginFactory(&#123;</span><br><span class="line">                  libraryName: <span class="string">&#x27;antd&#x27;</span>,</span><br><span class="line">                  libraryDirectory: <span class="string">&#x27;es&#x27;</span>,</span><br><span class="line">                  style: <span class="literal">true</span>,</span><br><span class="line">                &#125;) ]</span><br><span class="line">              &#125;),</span><br><span class="line">              compilerOptions: &#123;</span><br><span class="line">                <span class="built_in">module</span>: <span class="string">&#x27;es2015&#x27;</span></span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        ].filter(<span class="built_in">Boolean</span>)</span><br><span class="line">      &#125;,</span><br><span class="line">...</span><br><span class="line">      <span class="comment">// Rules for Ant-Design</span></span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.less$/</span>,</span><br><span class="line">        use: [</span><br><span class="line">          MiniCssExtractPlugin.loader, <span class="comment">// replaces extract text plugin in webpack 4</span></span><br><span class="line">          <span class="string">`css-loader`</span>,</span><br><span class="line">          &#123;<span class="attr">loader</span>: <span class="string">&#x27;postcss-loader&#x27;</span>, <span class="attr">options</span>: postcssOptions&#125;,</span><br><span class="line">          &#123;<span class="attr">loader</span>: <span class="string">&#x27;less-loader&#x27;</span>, <span class="attr">options</span>: &#123; <span class="attr">javascriptEnabled</span>: <span class="literal">true</span> &#125;&#125;,</span><br><span class="line">        ],</span><br><span class="line">        include: [<span class="regexp">/[\\/]node_modules[\\/].*antd/</span>],</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.less$/</span>,</span><br><span class="line">        use: [</span><br><span class="line">          MiniCssExtractPlugin.loader, <span class="comment">// replaces extract text plugin in webpack 4</span></span><br><span class="line">          <span class="string">`css-loader?modules&amp;importLoaders=1&amp;localIdentName=[local]_[hash:base64:5]&amp;-autoprefixer`</span>,</span><br><span class="line">          &#123;<span class="attr">loader</span>: <span class="string">&#x27;postcss-loader&#x27;</span>, <span class="attr">options</span>: postcssOptions&#125;,</span><br><span class="line">          &#123;<span class="attr">loader</span>: <span class="string">&#x27;less-loader&#x27;</span>, <span class="attr">options</span>: &#123; <span class="attr">javascriptEnabled</span>: <span class="literal">true</span> &#125;&#125;,</span><br><span class="line">        ],</span><br><span class="line">        include: [projectPath],</span><br><span class="line">      &#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这里仅仅标出代码，详细可以直接看相关代码。</p>
+<h3 id="添加异步库"><a href="#添加异步库" class="headerlink" title="添加异步库"></a>添加异步库</h3><p>这里使用redux-sagas。详细直接看代码。不作详细解说。</p>
+<h3 id="API请求处理"><a href="#API请求处理" class="headerlink" title="API请求处理"></a>API请求处理</h3><p>这里根据之前代码简单封装whatwg-fetch。</p>
+<p>不过这个请求库一般需要根据自己业务自行整体处理。这里聊作参考。</p>
+<p>另外<strong>mock服务</strong>这里暂时不做了，如果考虑要做mock实质上还是推荐直接使用<code>devServer.proxy</code>来直接对请求进行反向代理，然后是如果远程rap方案的mock这里就不消说，如果是预备本地代理那就找个mockServer配合nodemon的watch和自动重启来做(不过mockServer也可能自带这个功能)。</p>
+<h3 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h3><p>这块实质上是demo完成后补上的。</p>
+<p>用意是虽然在Typescript体验上ok了，但是每次手动写那么多代码 建立那么多文件还是过于繁琐，于是参考别的项目使用<code>plop</code>做了若干配置。这里运行<code>npm run g</code>之后会有询问框，可以自行生成component &amp;&amp; container代码，component支持es6和stateless模块。</p>
+<p>这里代码生成这里最麻烦的是container这块的redux相关配置，除了script/generators里面的配置、模版外，<strong>需要注意不要删除各个文件里面的/* PREPEND IMPORT HERE */、/* PREPEND ATTR HERE */之类</strong>，这里是插入相关引用必须的插入点。</p>
+<h3 id="按需加载"><a href="#按需加载" class="headerlink" title="按需加载"></a>按需加载</h3><p>临push时候想起还没这个生产级别的基础配置，这里简单配置了一下。主要是<code>loadable-components &amp;&amp; @babel/plugin-syntax-dynamic-import &amp;&amp; @babel/react</code>。</p>
+<p>这里集成到plop模版了，默认开启，使用<code>npm run g</code>创建container时候会默认开启这个功能。</p>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 推荐 方便看master代码</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;que01&#x2F;react-redux-typescript-boilerplate </span><br><span class="line">cd react-redux-typescript-boilerplate</span><br><span class="line">git checkout -b demo</span><br><span class="line">git branch --set-upstream-to&#x3D;origin&#x2F;demo demo</span><br><span class="line">git pull</span><br><span class="line">&#x2F;&#x2F; 直接</span><br><span class="line">git clone -b demo https:&#x2F;&#x2F;github.com&#x2F;que01&#x2F;react-redux-typescript-boilerplate</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react-redux/" rel="tag"># react redux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/06/10/react-event/" rel="prev" title="react Event">
+      <i class="fa fa-chevron-left"></i> react Event
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/04/03/react-VirtualDom/" rel="next" title="React虚拟DOM">
+      React虚拟DOM <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%80%E5%A4%B4"><span class="nav-number">1.</span> <span class="nav-text">开头</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%B9%E6%A1%88%E7%AE%80%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">方案简析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redux"><span class="nav-number">2.1.</span> <span class="nav-text">Redux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Typescript"><span class="nav-number">2.2.</span> <span class="nav-text">Typescript</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%B9%E9%80%A0"><span class="nav-number">2.4.</span> <span class="nav-text">改造</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Antd%E6%8C%89%E9%9C%80%E5%8A%A0%E8%BD%BD"><span class="nav-number">2.4.1.</span> <span class="nav-text">Antd按需加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%BC%82%E6%AD%A5%E5%BA%93"><span class="nav-number">2.4.2.</span> <span class="nav-text">添加异步库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#API%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="nav-number">2.4.3.</span> <span class="nav-text">API请求处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90"><span class="nav-number">2.4.4.</span> <span class="nav-text">代码生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%89%E9%9C%80%E5%8A%A0%E8%BD%BD"><span class="nav-number">2.4.5.</span> <span class="nav-text">按需加载</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

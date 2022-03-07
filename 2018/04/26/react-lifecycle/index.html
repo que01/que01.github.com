@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="开始读react代码。续上一篇继续分析生命周期。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react生命周期分析">
+<meta property="og:url" content="http://www.que01.top/2018/04/26/react-lifecycle/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="开始读react代码。续上一篇继续分析生命周期。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/20180825110656.png">
+<meta property="og:image" content="http://www.que01.top/images/20180823140712.png">
+<meta property="article:published_time" content="2018-04-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.634Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react lifecycle">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/20180825110656.png">
+
+<link rel="canonical" href="http://www.que01.top/2018/04/26/react-lifecycle/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react生命周期分析 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2018/04/26/react-lifecycle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react生命周期分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-26 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-26T00:00:00+08:00">2018-04-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2018/04/26/react-lifecycle/" class="post-meta-item leancloud_visitors" data-flag-title="react生命周期分析" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">开始读react代码。续上一篇继续分析生命周期。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h1><p>这一节分析一下react的声明周期</p>
+<p>这里直接引用一下现有图片,图片来自<a target="_blank" rel="noopener" href="https://hackernoon.com/reactjs-component-lifecycle-methods-a-deep-dive-38275d9d13c0">这里</a></p>
+<p><img src="/images/20180825110656.png"></p>
+<h1 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h1><p>这里需要认真思考一下的是:</p>
+<ul>
+<li>钩子函数在一个组件里是按怎样的数据形式保存的</li>
+<li>调用的时机在react内部是如何进行的</li>
+<li>钩子函数是在哪些模块内被触发调用的</li>
+<li>如何进行方便的调试和验证</li>
+</ul>
+<h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h1><p>我们还是依照测试文件直接debug。</p>
+<p>目标文件为ReactComponentLifeCycle-test.js。这是react框架自带的lifecycle测试文件，我们不需要自己去写测试用例和DEMO。</p>
+<h2 id="初始化-Initialization"><a href="#初始化-Initialization" class="headerlink" title="初始化 Initialization"></a>初始化 Initialization</h2><p>组件的props&amp;&amp;state<strong>初始化</strong>实质上和DOM无关，和更新相关生命周期也无关。</p>
+<p>这里找到了ReactES6Class-test.js。使用下面的断言进行debug查看组件初始化环节。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">&#x27;renders based on state using initial values in this.props&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params">props</span>)</span> &#123;</span><br><span class="line">      <span class="built_in">super</span>(props);</span><br><span class="line">      <span class="built_in">this</span>.state = &#123;<span class="attr">bar</span>: <span class="built_in">this</span>.props.initialValue&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">span</span> <span class="attr">className</span>=<span class="string">&#123;this.state.bar&#125;</span> /&gt;</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  test(<span class="xml"><span class="tag">&lt;<span class="name">Foo</span> <span class="attr">initialValue</span>=<span class="string">&quot;foo&quot;</span> /&gt;</span></span>, <span class="string">&#x27;SPAN&#x27;</span>, <span class="string">&#x27;foo&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我们在super(props)这里打一个断点开始debug,断点到了之后step into。然后点下一步直接跳到了src/isomorphic/modern/class/ReactBaseClasses.js。不过ES6这里定义过于简单了(直接走了构造器将props和state挂在上面了)看不出太深入的，所以我们继续向下深入render。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">function ReactComponent(props, context, updater) &#123;</span><br><span class="line">  this.props &#x3D; props;</span><br><span class="line">  this.context &#x3D; context;</span><br><span class="line">  this.refs &#x3D; emptyObject;</span><br><span class="line">  &#x2F;&#x2F; We initialize the default updater but the real one gets injected by the</span><br><span class="line">  &#x2F;&#x2F; renderer.</span><br><span class="line">  this.updater &#x3D; updater || ReactNoopUpdateQueue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里断点放在render的return这一行，到了之后step into, 然后进入了src/isomorphic/classic/element/ReactElementValidator.js，光标放到line243点run to cursor,然后step into。这样就到了src/isomorphic/classic/element/ReactElement.js。</p>
+<p>props这一块其实还是很容易理解，babel对jsx转换时候就将props传入了。</p>
+<p><img src="/images/20180823140712.png"></p>
+<p>这个图其实说得很清晰了，我们主要分析state的处理。</p>
+<p>getInitialState这个发生在组件产生之后，挂载之前。它是在mountComponentIntoNode中，具体一点的话，它的调用路径是这样的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mountComponentIntoNode</span><br><span class="line">	-&gt; ReactReconciler.mountComponent</span><br><span class="line">		-&gt; internalInstance.mountComponent</span><br><span class="line">			-&gt; ReactCompositeComponent.mountComponent</span><br><span class="line">				-&gt; ReactCompositeComponent._constructComponent</span><br></pre></td></tr></table></figure>
+
+<p>之前对这个render是如何渲染到dom有过分析，完整的流程是这样的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ReactMount.render</span><br><span class="line">	-&gt; ReactMount._renderSubtreeIntoContainer</span><br><span class="line">		-&gt;  ReactMount._renderNewRootComponent</span><br><span class="line">			-&gt; ReactUpdates.batchedUpdates</span><br><span class="line">				-&gt; ReactUpdates.batchedMountComponentIntoNode</span><br><span class="line">					-&gt; mountComponentIntoNode</span><br><span class="line">						-&gt; ReactMount._mountImageIntoNode</span><br></pre></td></tr></table></figure>
+
+<p>具体一些来说，我们的分析环节是在mountComponentIntoNode中，排除ReactMount._mountImageIntoNode调用之外的地方。</p>
+<p>回顾一下</p>
+<p>mountComponentIntoNode做了这些事:</p>
+<ul>
+<li>调用ReactReconciler.mountComponent生成markup标记内部含有{children: markup数组, node:HTMLElement}</li>
+<li>调用ReactMount._mountImageIntoNode渲染markup</li>
+</ul>
+<p>ReactReconciler.mountComponent生成markup这一节在之前分析过，详细看之前的分析，这里只就关键的引用代码<a href="/2019/06/17/react-instantiateReactComponent/">instantiateReactComponent</a>做说明。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">instantiateReactComponent</span>(<span class="params">node, shouldHaveDebugID</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> instance;</span><br><span class="line">  <span class="keyword">if</span> (node === <span class="literal">null</span> || node === <span class="literal">false</span>) &#123;</span><br><span class="line">    instance = ReactEmptyComponent.create(instantiateReactComponent);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> node === <span class="string">&#x27;object&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> element = node;</span><br><span class="line">    <span class="keyword">var</span> type = element.type;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> type !== <span class="string">&#x27;function&#x27;</span> &amp;&amp; <span class="keyword">typeof</span> type !== <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> info = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">      info += getDeclarationErrorAddendum(element._owner);</span><br><span class="line">      invariant(</span><br><span class="line">        <span class="literal">false</span>,</span><br><span class="line">        <span class="string">&#x27;Element type is invalid: expected a string (for built-in components) &#x27;</span> +</span><br><span class="line">          <span class="string">&#x27;or a class/function (for composite components) but got: %s.%s&#x27;</span>,</span><br><span class="line">        type == <span class="literal">null</span> ? type : <span class="keyword">typeof</span> type,</span><br><span class="line">        info,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Special case string values</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> element.type === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">      instance = ReactHostComponent.createInternalComponent(element);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isInternalComponentType(element.type)) &#123;</span><br><span class="line">      instance = <span class="keyword">new</span> element.type(element);</span><br><span class="line">      <span class="keyword">if</span> (!instance.getHostNode) &#123;</span><br><span class="line">        instance.getHostNode = instance.getNativeNode;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      instance = <span class="keyword">new</span> ReactCompositeComponentWrapper(element);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> node === <span class="string">&#x27;string&#x27;</span> || <span class="keyword">typeof</span> node === <span class="string">&#x27;number&#x27;</span>) &#123;</span><br><span class="line">    instance = ReactHostComponent.createInstanceForText(node);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    invariant(<span class="literal">false</span>, <span class="string">&#x27;Encountered invalid React node of type %s&#x27;</span>, <span class="keyword">typeof</span> node);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  instance._mountIndex = <span class="number">0</span>;</span><br><span class="line">  instance._mountImage = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之前我们说到过<code>instance = ReactHostComponent.createInternalComponent(element);</code>的情况，然而我们关注的getInitialState，事情恰好发生在<code>instance = new ReactCompositeComponentWrapper(element);</code></p>
+<p>回顾instantiateReactComponent，看看ReactCompositeComponentWrapper的定义</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactCompositeComponentWrapper = <span class="function"><span class="keyword">function</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.construct(element);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">Object</span>.assign(</span><br><span class="line">  ReactCompositeComponentWrapper.prototype,</span><br><span class="line">  ReactCompositeComponent,</span><br><span class="line">  &#123;</span><br><span class="line">    _instantiateReactComponent: instantiateReactComponent,</span><br><span class="line">  &#125;,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>此时，生成markup的代码实质上是调用ReactCompositeComponent.mountComponent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> markup = internalInstance.mountComponent(</span><br><span class="line">    transaction,</span><br><span class="line">    hostParent,</span><br><span class="line">    hostContainerInfo,</span><br><span class="line">    context,</span><br><span class="line">    parentDebugID,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>然而这个例子这里存在internalInstance.mountComponent被调用了两次的问题</p>
+<h3 id="第一次渲染"><a href="#第一次渲染" class="headerlink" title="第一次渲染"></a>第一次渲染</h3><p>第一次渲染是TopLevelWrapper组件的渲染</p>
+<p>在ReactCompositeComponent.mountComponent节点的函数中,可以看到<code>inst.state = initialState = null</code></p>
+<p>而这个inst是_constructComponent的返回值，所以最终的定义就在这个函数内部了，重点跟踪一下这个引用好了。</p>
+<p>这个函数内部引用了ReactCompositeComponent._constructComponentWithoutOwner,这里核心代码引用到了<code>Component(publicProps, publicContext, updateQueue)</code> ,<br>这里的Component是_currentElement.type的引用，debugger断点打过来，最简单的元素初始渲染这里是TopLevelWrapper实例(同时也是Component实例)。<br>可以看到此时initialState === undefined,所以它最后被赋值为null了。</p>
+<p>第一次定义state这里 仅仅相当于是一个初始化流程。最终定义还是看后面的定义</p>
+<h3 id="第二次渲染"><a href="#第二次渲染" class="headerlink" title="第二次渲染"></a>第二次渲染</h3><p>到了第二次时候 也就是performInitialMount内执行到</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> markup = ReactReconciler.mountComponent(</span><br><span class="line">    child,</span><br><span class="line">    transaction,</span><br><span class="line">    hostParent,</span><br><span class="line">    hostContainerInfo,</span><br><span class="line">    <span class="built_in">this</span>._processChildContext(context),</span><br><span class="line">    debugID,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>这一块代码时候触发的(关于这个第一次和第二次这个，可以参考后面提到的『jsx到js的转换 』)。</p>
+<p>此时child是ReactCompositeComponentWrapper实例所以markup生成还是调用ReactCompositeComponent.mountComponent。</p>
+<p>这时候就是我们的Foo组件了。这里获取实例使用了ReactReconciler._constructComponent,它又调用了_constructComponentWithoutOwner。它大致代码如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">_constructComponentWithoutOwner: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  doConstruct,</span></span></span><br><span class="line"><span class="function"><span class="params">  publicProps,</span></span></span><br><span class="line"><span class="function"><span class="params">  publicContext,</span></span></span><br><span class="line"><span class="function"><span class="params">  updateQueue,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> Component = <span class="built_in">this</span>._currentElement.type;</span><br><span class="line">  <span class="keyword">if</span> (doConstruct) &#123;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">	  <span class="comment">// ... 略</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> Component(publicProps, publicContext, updateQueue);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>我们在之前代码里面可以找到<code>this._currentElement = element</code>,所以它实质上调用的是ReactElement实例的<strong>type</strong>属性。这个属性在这里对应的是我们的Foo函数。而Foo在构造器里面对state做了定义。<strong>这里就是state数据被录入的根源环节</strong>。</p>
+<p>但是Initialization此刻还没有完毕。继续往下走，直到ReactCompositeComponent.js line252-320这几行都执行完毕，我们的<strong>Initialization环节才正式完毕</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">inst.props = publicProps;</span><br><span class="line">inst.context = publicContext;</span><br><span class="line">inst.refs = emptyObject;</span><br><span class="line">inst.updater = updateQueue;</span><br><span class="line"></span><br><span class="line"><span class="built_in">this</span>._instance = inst;</span><br><span class="line"></span><br><span class="line">ReactInstanceMap.set(inst, <span class="built_in">this</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> initialState = inst.state;</span><br><span class="line"><span class="keyword">if</span> (initialState === <span class="literal">undefined</span>) &#123;</span><br><span class="line">  inst.state = initialState = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>by the way,我们再往下走一些，可以看到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if (inst.componentDidMount) &#123;</span><br><span class="line">  if (__DEV__) &#123;</span><br><span class="line">	&#x2F;&#x2F; 略略略...</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    transaction.getReactMountReady().enqueue(inst.componentDidMount, inst);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是的<strong>componentDidMount</strong>在初始化完毕后就接着被调用了。</p>
+<p>PS:上面提到了type属性，这里再次温习一下jsx到js的转换防止一知半解。</p>
+<h4 id="jsx到js的转换"><a href="#jsx到js的转换" class="headerlink" title="jsx到js的转换"></a>jsx到js的转换</h4><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">props</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(props);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>&#123;this.props.name&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">props</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(props);</span><br><span class="line">    <span class="built_in">this</span>.state = &#123;<span class="attr">bar</span>: <span class="built_in">this</span>.props.initialValue&#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">span</span> <span class="attr">className</span>=<span class="string">&#123;this.state.bar&#125;</span>&gt;</span></span></span><br><span class="line"><span class="xml">      <span class="tag">&lt;<span class="name">Bar</span> <span class="attr">name</span>=<span class="string">&quot;test&quot;</span>/&gt;</span></span></span><br><span class="line"><span class="xml">    <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ReactDOM.render(</span><br><span class="line">  &lt;Foo className=<span class="string">&quot;test&quot;</span> /&gt;, </span><br><span class="line">  mountNode</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 此时&lt;Foo className=&#123;this.state.bar&#125; /&gt;在大体的结构上会转换成:</span></span><br><span class="line">React.createElement( <span class="comment">// a</span></span><br><span class="line">	React.createElement( <span class="comment">// b</span></span><br><span class="line">        <span class="string">&quot;span&quot;</span>,</span><br><span class="line">        &#123; <span class="attr">className</span>: <span class="built_in">this</span>.state.bar &#125;,</span><br><span class="line">        React.createElement( <span class="comment">// c</span></span><br><span class="line">            React.createElement( <span class="comment">// d</span></span><br><span class="line">                <span class="string">&quot;div&quot;</span>,</span><br><span class="line">                <span class="literal">null</span>,</span><br><span class="line">                <span class="built_in">this</span>.props.name</span><br><span class="line">      		)</span><br><span class="line">        , &#123; <span class="attr">name</span>: <span class="string">&quot;test&quot;</span> &#125;)</span><br><span class="line">    ),</span><br><span class="line">	&#123; <span class="attr">className</span>: <span class="string">&quot;test&quot;</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里需要注意的是:</p>
+<ul>
+<li>React.createElement返回值是一个ReactElement对象, 但是它本身则是一个Function</li>
+<li>对 a|b|c标记的createElement来说，他们的返回值的type是一个Function，对应的是组件的定义函数</li>
+<li>对 a|b|c标记的createElement来说，<strong>他们的第一个参数并不真的就是直接传入React.createElement这个函数</strong>，而是组件的定义函数的转译(bable处理),它里面一定会有一个render，render里面会调用React.createElement()返回一个ReactElement对象</li>
+<li>而对于d标记的createElement来说，它的返回值是一个ReactElement对象。</li>
+</ul>
+<p>关于这个render的调用。参见ReactCompositeComponent.performInitialMount</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If not a stateless component, we now render</span></span><br><span class="line"><span class="keyword">if</span> (renderedElement === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    renderedElement = <span class="built_in">this</span>._renderValidatedComponent();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>一路跟进引用最终你会发现render在这里被调用了。</p>
+<h2 id="挂载-Mounting"><a href="#挂载-Mounting" class="headerlink" title="挂载 Mounting"></a>挂载 Mounting</h2><h3 id="componentWillMount"><a href="#componentWillMount" class="headerlink" title="componentWillMount"></a>componentWillMount</h3><p>这个函数在ReactCompositeComponent.performInitialMount中</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (inst.componentWillMount) &#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">	<span class="comment">// 略略略...</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    inst.componentWillMount();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// When mounting, calls to `setState` by `componentWillMount` will set</span></span><br><span class="line">  <span class="comment">// `this._pendingStateQueue` without triggering a re-render.</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">this</span>._pendingStateQueue) &#123;</span><br><span class="line">    inst.state = <span class="built_in">this</span>._processPendingState(inst.props, inst.context);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="componentDidMount"><a href="#componentDidMount" class="headerlink" title="componentDidMount"></a>componentDidMount</h3><p>这个不再废话,参见上文的『第二次渲染』。ReactCompositeComponent.mountComponent中</p>
+<h3 id="render"><a href="#render" class="headerlink" title="render"></a>render</h3><p>render这个也不再说了,参见『 jsx到js的转换』。ReactCompositeComponent.performInitialMount中，更细致一些，那就是在ReactCompositeComponent._renderValidatedComponent中。</p>
+<h1 id="更新-Updation"><a href="#更新-Updation" class="headerlink" title="更新 Updation"></a>更新 Updation</h1><p>更新这个环节的钩子函数需要配合分析: 当收到新的props、state时，会发生什么？</p>
+<p>不然就会发生这些<strong>钩子函数好找，但是何时会被触发却不明确</strong>的问题。</p>
+<p>我们之前分析过render的流程，所以这里顺便也分析一下，update的流程。</p>
+<h2 id="State更新"><a href="#State更新" class="headerlink" title="State更新"></a>State更新</h2><p>观察State更新需要对这个更新是怎样被唤起的，所以会分为之前和之后两个环节。</p>
+<h3 id="Before-更新之前"><a href="#Before-更新之前" class="headerlink" title="Before 更新之前"></a>Before 更新之前</h3><p>这里使用这个测试用例(ReactES6Class-test.js里面)来测试观察state更新环节来对整体逻辑做初步概览。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">&#x27;setState through an event handler&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params">props</span>)</span> &#123;</span><br><span class="line">      <span class="built_in">super</span>(props);</span><br><span class="line">      <span class="built_in">this</span>.state = &#123;<span class="attr">bar</span>: props.initialValue&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="title">handleClick</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">      <span class="built_in">this</span>.setState(&#123;<span class="attr">bar</span>: <span class="string">&#x27;bar&#x27;</span>&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        &lt;Inner name=&#123;<span class="built_in">this</span>.state.bar&#125; onClick=&#123;<span class="built_in">this</span>.handleClick.bind(<span class="built_in">this</span>)&#125; /&gt;</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  test(<span class="xml"><span class="tag">&lt;<span class="name">Foo</span> <span class="attr">initialValue</span>=<span class="string">&quot;foo&quot;</span> /&gt;</span></span>, <span class="string">&#x27;DIV&#x27;</span>, <span class="string">&#x27;foo&#x27;</span>);</span><br><span class="line">  attachedListener();</span><br><span class="line">  expect(renderedName).toBe(<span class="string">&#x27;bar&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这个setState的调用的定义在：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ReactComponent.prototype.setState = <span class="function"><span class="keyword">function</span>(<span class="params">partialState, callback</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 略略略...</span></span><br><span class="line">  <span class="built_in">this</span>.updater.enqueueSetState(<span class="built_in">this</span>, partialState);</span><br><span class="line">  <span class="keyword">if</span> (callback) &#123;</span><br><span class="line">    <span class="built_in">this</span>.updater.enqueueCallback(<span class="built_in">this</span>, callback, <span class="string">&#x27;setState&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>step in方式进入了ReactUpdateQueue.enqueueSetState，进行了一些验证后，将这个state纯对象push进入了internalInstance._pendingStateQueue数组，然后调用ReactUpdates.enqueueUpdate(internalInstance)来更新这个组件。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueUpdate</span>(<span class="params">component</span>) </span>&#123;</span><br><span class="line">  ensureInjected();</span><br><span class="line">  <span class="keyword">if</span> (!batchingStrategy.isBatchingUpdates) &#123;</span><br><span class="line">    batchingStrategy.batchedUpdates(enqueueUpdate, component);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  dirtyComponents.push(component);</span><br><span class="line">  <span class="keyword">if</span> (component._updateBatchNumber == <span class="literal">null</span>) &#123;</span><br><span class="line">    component._updateBatchNumber = updateBatchNumber + <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数的调用有些绕而且看起来必要性不高因为ReactDefaultBatchingStrategy.batchedUpdates在此时必然会执行到<code>transaction.perform(callback, null, a, b, c, d, e)</code>——实质上它是<code>callback(a, b, c, d, e)</code>的事务版本，执行有前后置条件。<strong>最后调用自身将component推到dirtyComponents进行更新标记</strong>。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">batchedUpdates: <span class="function"><span class="keyword">function</span>(<span class="params">callback, a, b, c, d, e</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> alreadyBatchingUpdates = ReactDefaultBatchingStrategy.isBatchingUpdates;</span><br><span class="line">  ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">true</span>;</span><br><span class="line">  <span class="comment">// The code is written this way to avoid extra allocations</span></span><br><span class="line">  <span class="keyword">if</span> (alreadyBatchingUpdates) &#123;</span><br><span class="line">    <span class="keyword">return</span> callback(a, b, c, d, e);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> transaction.perform(callback, <span class="literal">null</span>, a, b, c, d, e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个debug环节，transaction.perform基本就是一个大体的调用终点了。But,这个更新Component的调用去哪儿了？</p>
+<p>这里不得不说事务概念了，ReactDefaultBatchingStrategy的事物实例是有两个事务注册的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> RESET_BATCHED_UPDATES = &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">false</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> FLUSH_BATCHED_UPDATES = &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: ReactUpdates.flushBatchedUpdates.bind(ReactUpdates),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>我们都更新环节就是在ReactUpdates.flushBatchedUpdates.bind(ReactUpdates)这里。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> flushBatchedUpdates = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (dirtyComponents.length || asapEnqueued) &#123;</span><br><span class="line">    <span class="keyword">if</span> (dirtyComponents.length) &#123;</span><br><span class="line">      <span class="keyword">var</span> transaction = ReactUpdatesFlushTransaction.getPooled();</span><br><span class="line">      transaction.perform(runBatchedUpdates, <span class="literal">null</span>, transaction);</span><br><span class="line">      ReactUpdatesFlushTransaction.release(transaction);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 略略略...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这样，当我们处理好了函数执行之后，组件也会随之被runBatchedUpdates更新。这其中还有很多细节，但是这里仅仅做好整理逻辑梳理即可，暂时不做细致分析(但是很显然，相关更新的钩子函数会在里面)。</p>
+<h3 id="After-正式开始"><a href="#After-正式开始" class="headerlink" title="After 正式开始"></a>After 正式开始</h3><p>继续上一步分析。在这个例子中，执行到runBatchedUpdates后，这里的更新最终会执行到ReactCompositeComponent.updateComponent。所以后面的生命周期函数都会在这里一一展现。这里回顾一下更新环节生命周期的顺序。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">shouldComponentUpdate</span><br><span class="line">	-&gt; componentWillUpdate</span><br><span class="line">		-&gt; render</span><br><span class="line">			-&gt; componentDidUpdate</span><br></pre></td></tr></table></figure>
+
+<h4 id="shouldComponentUpdate"><a href="#shouldComponentUpdate" class="headerlink" title="shouldComponentUpdate"></a>shouldComponentUpdate</h4><p>ReactCompositeComponent line 838-860</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="built_in">this</span>._pendingForceUpdate) &#123;</span><br><span class="line">  <span class="keyword">if</span> (inst.shouldComponentUpdate) &#123;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">		<span class="comment">// 略略略...</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      shouldUpdate = inst.shouldComponentUpdate(</span><br><span class="line">        nextProps,</span><br><span class="line">        nextState,</span><br><span class="line">        nextContext,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>._compositeType === CompositeTypes.PureClass) &#123;</span><br><span class="line">      shouldUpdate =</span><br><span class="line">        !shallowEqual(prevProps, nextProps) ||</span><br><span class="line">        !shallowEqual(inst.state, nextState);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这一步生命周期完成之后我们进入了<strong>ReactCompositeComponent._performComponentUpdate</strong>(具体流程参见ReactCompositeComponent.updateComponent)</p>
+<h4 id="componentWillUpdate"><a href="#componentWillUpdate" class="headerlink" title="componentWillUpdate"></a>componentWillUpdate</h4><p>ReactCompositeComponent line 955-965</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (inst.componentWillUpdate) &#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">    <span class="comment">// 略略略...</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    inst.componentWillUpdate(nextProps, nextState, nextContext);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="render-1"><a href="#render-1" class="headerlink" title="render"></a>render</h4><p>ReactCompositeComponent line 973</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>._updateRenderedComponent(transaction, unmaskedContext);</span><br></pre></td></tr></table></figure>
+
+<h4 id="componentDidUpdate"><a href="#componentDidUpdate" class="headerlink" title="componentDidUpdate"></a>componentDidUpdate</h4><p>ReactCompositeComponent line 975-1002</p>
+<p>这一步还是很好理解，如果有定义这个函数，那么就通过事务机制再render完成之后执行componentDidUpdate。至此State更新环节的流程就完整、畅通了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (hasComponentDidUpdate) &#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">    <span class="comment">// 略略略...</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    transaction</span><br><span class="line">      .getReactMountReady()</span><br><span class="line">      .enqueue(</span><br><span class="line">        inst.componentDidUpdate.bind(</span><br><span class="line">          inst,</span><br><span class="line">          prevProps,</span><br><span class="line">          prevState,</span><br><span class="line">          prevContext,</span><br><span class="line">        ),</span><br><span class="line">        inst,</span><br><span class="line">      );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Props更新"><a href="#Props更新" class="headerlink" title="Props更新"></a>Props更新</h2><p>props引起的更新可能会不太容易理解。</p>
+<p>setState这个是一个函数理解它的触发没有太大难度。这里回顾一下props和state的区别: state是组件内部的状态，是可以修改；而props是父组件上传下来的，他不能在组件内部被修改。</p>
+<h3 id="Before-更新之前-1"><a href="#Before-更新之前-1" class="headerlink" title="Before 更新之前"></a>Before 更新之前</h3><p>为了辅助说明，这里还是使用上面提到过的测试用例，但是我们这里换个角度来看这个用例。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">&#x27;setState through an event handler&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params">props</span>)</span> &#123;</span><br><span class="line">      <span class="built_in">super</span>(props);</span><br><span class="line">      <span class="built_in">this</span>.state = &#123;<span class="attr">bar</span>: props.initialValue&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="title">handleClick</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">      <span class="built_in">this</span>.setState(&#123;<span class="attr">bar</span>: <span class="string">&#x27;bar&#x27;</span>&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        &lt;Inner name=&#123;<span class="built_in">this</span>.state.bar&#125; onClick=&#123;<span class="built_in">this</span>.handleClick.bind(<span class="built_in">this</span>)&#125; /&gt;</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  test(<span class="xml"><span class="tag">&lt;<span class="name">Foo</span> <span class="attr">initialValue</span>=<span class="string">&quot;foo&quot;</span> /&gt;</span></span>, <span class="string">&#x27;DIV&#x27;</span>, <span class="string">&#x27;foo&#x27;</span>);</span><br><span class="line">  attachedListener();</span><br><span class="line">  expect(renderedName).toBe(<span class="string">&#x27;bar&#x27;</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>稍微分析一下这个测试用例，可以看到Inner组件在handleClick被触发以后，它的this.props.name的值从foo变为了bar。所以我们这里重点分析一下，这个变化是如何最终反应到DOM上的。</p>
+<p>在一切开始之前，我们还是得回顾，这个this.props.name到底是如何传递到Inner组件上的——this.setState，是的，就是this.setState。</p>
+<p>回顾一下state的钩子函数触发顺序:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">shouldComponentUpdate</span><br><span class="line">	-&gt; componentWillMount</span><br><span class="line">		-&gt; render</span><br><span class="line">			-&gt; componentDidUpdate</span><br></pre></td></tr></table></figure>
+
+<p>实际上此时，对于Inner来讲，<strong>它在State钩子函数的render环节，我们就开始了一轮Props的更新生命周期函数</strong>。</p>
+<p><strong>在这个环节中，有几个特别关键的地方值得深思(理解它有助于深入理解React)。</strong></p>
+<ul>
+<li>『jsx到js的转换』 环节里面jsx 转换为React.createElement的结构，和提到的相关的注意项</li>
+<li>React.createElement嵌套的层级问题，它不仅仅可以从TopLevelWrapper开始渲染，实际上，他可以从任意中间的任何一个React.createElement开始渲染</li>
+<li>为什么说React是最小局部更新？除了调度和算法的作用，React.createElement嵌套结构可以从任何环节开始向下级渲染，是一个非常关键的机制，它极大程度上缩小了需要更新到DOM的数据。</li>
+</ul>
+<p><strong>以上可能是最重要的，如果没有理解上面的那么值得卡在这里琢磨。</strong></p>
+<h3 id="After-正式开始-1"><a href="#After-正式开始-1" class="headerlink" title="After 正式开始"></a>After 正式开始</h3><p>如果上面的准备就绪了可以继续下面的了。回顾一下，当state触发的生命周期开始render环节的时候，会执行ReactCompositeComponent line 973的代码这里仅仅是比State多一个componentWillReceiveProps。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>._updateRenderedComponent(transaction, unmaskedContext);</span><br></pre></td></tr></table></figure>
+
+<p>这里直接在测试用例的attachedListener()这一行打一个断点,待它停住以后，在render里面打一个断点，最后点执行。当它再次停住以后，这样我们就捕获了state之后的render环节。最后将光标定位到ReactCompositeComponent line 973，点run to corsur，我们就对程序进行了精准的捕获。</p>
+<p>接下来它的调用栈:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ReactCompositeComponent._updateRenderedComponent</span><br><span class="line">	-&gt; ReactReconciler.receiveComponent</span><br><span class="line">		-&gt; internalInstance.receiveComponent</span><br><span class="line">			-&gt; ReactCompositeComponent.updateComponent</span><br></pre></td></tr></table></figure>
+
+<p>到这个环节生命周期函数的调用就简单多了。先看整体的生命周期:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">componentWillReceiveProps</span><br><span class="line">	-&gt;shouldComponentUpdate</span><br><span class="line">		-&gt; componentWillUpdate</span><br><span class="line">			-&gt; render</span><br><span class="line">				-&gt; componentDidUpdate</span><br></pre></td></tr></table></figure>
+
+<h4 id="componentWillReceiveProps"><a href="#componentWillReceiveProps" class="headerlink" title="componentWillReceiveProps"></a>componentWillReceiveProps</h4><p>ReactCompositeComponent.updateComponent内, ReactCompositeComponent.js line 823-833</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (willReceive &amp;&amp; inst.componentWillReceiveProps) &#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">	<span class="comment">// 略</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    inst.componentWillReceiveProps(nextProps, nextContext);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="shouldComponentUpdate-1"><a href="#shouldComponentUpdate-1" class="headerlink" title="shouldComponentUpdate"></a>shouldComponentUpdate</h4><p>ReactCompositeComponent.updateComponent内, ReactCompositeComponent.js line 838-860</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="built_in">this</span>._pendingForceUpdate) &#123;</span><br><span class="line">  <span class="keyword">if</span> (inst.shouldComponentUpdate) &#123;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">	  <span class="comment">// 略</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      shouldUpdate = inst.shouldComponentUpdate(</span><br><span class="line">        nextProps,</span><br><span class="line">        nextState,</span><br><span class="line">        nextContext,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>._compositeType === CompositeTypes.PureClass) &#123;</span><br><span class="line">      shouldUpdate =</span><br><span class="line">        !shallowEqual(prevProps, nextProps) ||</span><br><span class="line">        !shallowEqual(inst.state, nextState);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="componentWillUpdate-1"><a href="#componentWillUpdate-1" class="headerlink" title="componentWillUpdate"></a>componentWillUpdate</h4><p>ReactCompositeComponent.updateComponent 调用了ReactCompositeComponent._performComponentUpdate。</p>
+<p>这个生命周期执行在这个函数内, 代码定位line955-965</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (inst.componentWillUpdate) &#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    inst.componentWillUpdate(nextProps, nextState, nextContext);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="render-2"><a href="#render-2" class="headerlink" title="render"></a>render</h4><p>ReactCompositeComponent._performComponentUpdate内</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>._updateRenderedComponent(transaction, unmaskedContext);</span><br></pre></td></tr></table></figure>
+
+<h4 id="componentDidUpdate-1"><a href="#componentDidUpdate-1" class="headerlink" title="componentDidUpdate"></a>componentDidUpdate</h4><p>ReactCompositeComponent._performComponentUpdate内</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (hasComponentDidUpdate) &#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">	<span class="comment">// 略</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    transaction</span><br><span class="line">      .getReactMountReady()</span><br><span class="line">      .enqueue(</span><br><span class="line">        inst.componentDidUpdate.bind(</span><br><span class="line">          inst,</span><br><span class="line">          prevProps,</span><br><span class="line">          prevState,</span><br><span class="line">          prevContext,</span><br><span class="line">        ),</span><br><span class="line">        inst,</span><br><span class="line">      );</span><br><span class="line">  &#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<h1 id="卸载"><a href="#卸载" class="headerlink" title="卸载"></a>卸载</h1><p>卸载这个环节的生命周期就比较好理解了。</p>
+<p>我们的render环节会调用一个ReactCompositeComponent._updateRenderedComponent。</p>
+<p>这个函数又一个非常显眼的逻辑分支。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) &#123;</span><br><span class="line">    ReactReconciler.receiveComponent(</span><br><span class="line">        prevComponentInstance,</span><br><span class="line">        nextRenderedElement,</span><br><span class="line">        transaction,</span><br><span class="line">        <span class="built_in">this</span>._processChildContext(context),</span><br><span class="line">    );</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> oldHostNode = ReactReconciler.getHostNode(prevComponentInstance);</span><br><span class="line">    ReactReconciler.unmountComponent(prevComponentInstance, <span class="literal">false</span>);</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ReactReconciler.receiveComponent这个方法里面调用了<code>internalInstance.unmountComponent(safely)</code>,它可以对各种组件实例的unmountComponent进行调用。</p>
+<p>常规来说，我们最常用到的是是ReactCompositeComponent.unmountComponent。其中内容不再赘述。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此整个React的声明周期分析也算完整了。我们整体的分析了初次渲染、更新、卸载过程中的生命周期函数式如何被调用、在哪里调用，以及涉及到相关知识点，乃至如何进行方便的调试。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react-lifecycle/" rel="tag"># react lifecycle</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/20/react-render/" rel="prev" title="react render环节分析">
+      <i class="fa fa-chevron-left"></i> react render环节分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/05/01/react-domComponent/" rel="next" title="react ReactDOMComponent分析">
+      react ReactDOMComponent分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87"><span class="nav-number">1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">2.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.</span> <span class="nav-text">步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-Initialization"><span class="nav-number">3.1.</span> <span class="nav-text">初始化 Initialization</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%B8%B2%E6%9F%93"><span class="nav-number">3.1.1.</span> <span class="nav-text">第一次渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AC%A1%E6%B8%B2%E6%9F%93"><span class="nav-number">3.1.2.</span> <span class="nav-text">第二次渲染</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#jsx%E5%88%B0js%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">jsx到js的转换</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%82%E8%BD%BD-Mounting"><span class="nav-number">3.2.</span> <span class="nav-text">挂载 Mounting</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#componentWillMount"><span class="nav-number">3.2.1.</span> <span class="nav-text">componentWillMount</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#componentDidMount"><span class="nav-number">3.2.2.</span> <span class="nav-text">componentDidMount</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#render"><span class="nav-number">3.2.3.</span> <span class="nav-text">render</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0-Updation"><span class="nav-number">4.</span> <span class="nav-text">更新 Updation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#State%E6%9B%B4%E6%96%B0"><span class="nav-number">4.1.</span> <span class="nav-text">State更新</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Before-%E6%9B%B4%E6%96%B0%E4%B9%8B%E5%89%8D"><span class="nav-number">4.1.1.</span> <span class="nav-text">Before 更新之前</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#After-%E6%AD%A3%E5%BC%8F%E5%BC%80%E5%A7%8B"><span class="nav-number">4.1.2.</span> <span class="nav-text">After 正式开始</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#shouldComponentUpdate"><span class="nav-number">4.1.2.1.</span> <span class="nav-text">shouldComponentUpdate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillUpdate"><span class="nav-number">4.1.2.2.</span> <span class="nav-text">componentWillUpdate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#render-1"><span class="nav-number">4.1.2.3.</span> <span class="nav-text">render</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentDidUpdate"><span class="nav-number">4.1.2.4.</span> <span class="nav-text">componentDidUpdate</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Props%E6%9B%B4%E6%96%B0"><span class="nav-number">4.2.</span> <span class="nav-text">Props更新</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Before-%E6%9B%B4%E6%96%B0%E4%B9%8B%E5%89%8D-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">Before 更新之前</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#After-%E6%AD%A3%E5%BC%8F%E5%BC%80%E5%A7%8B-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">After 正式开始</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillReceiveProps"><span class="nav-number">4.2.2.1.</span> <span class="nav-text">componentWillReceiveProps</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#shouldComponentUpdate-1"><span class="nav-number">4.2.2.2.</span> <span class="nav-text">shouldComponentUpdate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentWillUpdate-1"><span class="nav-number">4.2.2.3.</span> <span class="nav-text">componentWillUpdate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#render-2"><span class="nav-number">4.2.2.4.</span> <span class="nav-text">render</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#componentDidUpdate-1"><span class="nav-number">4.2.2.5.</span> <span class="nav-text">componentDidUpdate</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%B8%E8%BD%BD"><span class="nav-number">5.</span> <span class="nav-text">卸载</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="关于这个调度篇，感觉真的超级费时间。花了很多时间去理解，走不通的地方参考了很多人的文章，所幸是大致弄明白了。这里做一下记录，以备哪天又忘完了能捡起来吧。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React的调度-v16">
+<meta property="og:url" content="http://www.que01.top/2019/08/28/v16-Scheduling-in-React/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="关于这个调度篇，感觉真的超级费时间。花了很多时间去理解，走不通的地方参考了很多人的文章，所幸是大致弄明白了。这里做一下记录，以备哪天又忘完了能捡起来吧。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/1_ad-k5hYKQnRQJF8tv8BIqg.png">
+<meta property="og:image" content="http://www.que01.top/images/1_atEwskfs0gtIryRrgnAPkw.png">
+<meta property="og:image" content="http://www.que01.top/images/1566444717989.png">
+<meta property="article:published_time" content="2019-08-28T06:26:48.000Z">
+<meta property="article:modified_time" content="2021-10-13T10:12:03.490Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="React Scheduling">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/1_ad-k5hYKQnRQJF8tv8BIqg.png">
+
+<link rel="canonical" href="http://www.que01.top/2019/08/28/v16-Scheduling-in-React/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React的调度-v16 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/08/28/v16-Scheduling-in-React/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React的调度-v16
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-28 14:26:48" itemprop="dateCreated datePublished" datetime="2019-08-28T14:26:48+08:00">2019-08-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-13 18:12:03" itemprop="dateModified" datetime="2021-10-13T18:12:03+08:00">2021-10-13</time>
+              </span>
+
+          
+            <span id="/2019/08/28/v16-Scheduling-in-React/" class="post-meta-item leancloud_visitors" data-flag-title="React的调度-v16" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">关于这个调度篇，感觉真的超级费时间。花了很多时间去理解，走不通的地方参考了很多人的文章，所幸是大致弄明白了。这里做一下记录，以备哪天又忘完了能捡起来吧。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本来看到<a target="_blank" rel="noopener" href="https://philippspiess.com/scheduling-in-react/">《Scheduling in React》</a>有想法将其翻译一下。不过既然有掘金大佬捷足先登，我就不再做这事了，转过来看看React里面的调度的使用和原理。</p>
+<p>这里也就结合自己理解和原文做一些小总结和阐发。主要是归总学习性质，这篇探索性的东西不多。</p>
+<blockquote>
+<p>文章写到一半的时候, 因为一些疑问查资料，又看到了<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/60307571">《深入剖析 React Concurrent》</a>。索性对结构有大修了。所以这里把Concurrent放在了前面。</p>
+</blockquote>
+<h1 id="并发-amp-调度"><a href="#并发-amp-调度" class="headerlink" title="并发 &amp; 调度"></a>并发 &amp; 调度</h1><h2 id="并发-Concurrent-React"><a href="#并发-Concurrent-React" class="headerlink" title="并发: Concurrent React"></a>并发: Concurrent React</h2><p>Concurrent React 或者叫Time Slicing，实际上对个人而言，是一个很艰难的话题。在之前文章里，面对它我都采取了略过的态度。</p>
+<p>一则同步都没搞明白，更何况异步的处理？二则实际上直到16.9.0，关于它的特性也依然没有正式发布。</p>
+<p>后来慢慢一步步深入之后大抵也有了继续探寻的基础。</p>
+<p>不过这之前，先得说明白，为什么需要Time Slicing。</p>
+<ul>
+<li>动画的流畅性原理。一个动画如果想在人眼中显得『流畅』,那么起码需要24帧每秒(React这里默认是按30帧算)，现在显示屏一般技术规格是60Hz(相当于每秒60帧)，这足以保证流畅了。算下来就是1000/60≈16.67ms。<strong>但是，这里要求的是每个帧是变化运动的。</strong>如果一个帧占用多个帧的时间，看起来就是卡顿。</li>
+<li>浏览器Event Loop &amp;&amp; requestAnimationFrame &amp;&amp; requestIdleCallback。<strong>这里需要重点理解，读不懂它们，就读不懂全文。</strong></li>
+</ul>
+<h3 id="rAF"><a href="#rAF" class="headerlink" title="rAF"></a>rAF</h3><p>首先是requestAnimationFrame(简称rAF)。在一个帧里面，它的生命周期如下，每一帧都包含了 用户交互、js执行、rAF调用，布局计算以及页面重绘 等工作。在这个过程中rAF是一个必须执行完成的过程，如果它耗时长，那么帧就会一直等它技术然后再进行 布局计算和重绘。这个过程中可能会超过理想值16.67ms。</p>
+<p><img src="/images/1_ad-k5hYKQnRQJF8tv8BIqg.png" alt="1_ad-k5hYKQnRQJF8tv8BIqg"></p>
+<blockquote>
+<ul>
+<li>这里的参考路径：<a target="_blank" rel="noopener" href="https://medium.com/@paul_irish/requestanimationframe-scheduling-for-nerds-9c57f7438ef4">requestAnimationFrame Scheduling For Nerds</a>。主要提及是requestAnimationFrame的调度。文章中也提到了帧之间的调度。</li>
+</ul>
+<p><img src="/images/1_atEwskfs0gtIryRrgnAPkw.png" alt="1_atEwskfs0gtIryRrgnAPkw"></p>
+<ul>
+<li>关于rAf,这里还有一篇参考，个人认为很值得看看<a target="_blank" rel="noopener" href="https://www.404forest.com/2016/08/15/%E4%BD%BF%E7%94%A8%20requestAnimationFrame%20%E5%AE%9E%E7%8E%B0%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B8%8E%E6%87%92%E6%89%A7%E8%A1%8C/">使用 requestAnimationFrame 实现性能优化与懒执行</a></li>
+<li>rAF有个特点，它必须在页面TAB激活情况下才能运行，如果切换到其他页面TAB它会暂停，返回后又重新开始。</li>
+</ul>
+</blockquote>
+<h4 id="pollyfill"><a href="#pollyfill" class="headerlink" title="pollyfill"></a>pollyfill</h4><p>因为提到的rAF会在页面切换时候进行冻结的问题，这里React做了一个pollyfill。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> requestAnimationFrameWithTimeout = <span class="function"><span class="keyword">function</span>(<span class="params">callback</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// schedule rAF and also a setTimeout</span></span><br><span class="line">  rAFID = localRequestAnimationFrame(<span class="function"><span class="keyword">function</span>(<span class="params">timestamp</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// cancel the setTimeout</span></span><br><span class="line">    localClearTimeout(rAFTimeoutID);</span><br><span class="line">    callback(timestamp);</span><br><span class="line">  &#125;);</span><br><span class="line">  rAFTimeoutID = localSetTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// cancel the requestAnimationFrame</span></span><br><span class="line">    localCancelAnimationFrame(rAFID);</span><br><span class="line">    callback(getCurrentTime());</span><br><span class="line">  &#125;, ANIMATION_FRAME_TIMEOUT);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>核心是rAF优先级高于setTimeout。如果页面正在显示那么和rAF没区别，因为setTimeout会被rAF取消，但是如果在页面被隐藏时候，此时rAF就不会运行了，此时setTimeout会接替它的工作。</p>
+<h3 id="requestIdleCallback"><a href="#requestIdleCallback" class="headerlink" title="requestIdleCallback"></a>requestIdleCallback</h3><p><strong>其次是requestIdleCallback。</strong>如果说rAF是每一帧必须执行的话，那么requestIdleCallback相反。它是选择性执行的。如果一个帧执行完毕时候耗时不到16.67ms，那么此时浏览器就处于空闲状态，此时它完成了它的任务，下个任务有没有开始。</p>
+<p>此时就可以执行requestIdleCallback的任务了。注意的是，requestIdleCallback执行的时候，整个帧都已经完成了，收尾了，处于可以无缝交接给下一个帧的情况。如果在这个任务里面有改变布局、处理DOM、触发Promise.resolve的情况，会导致下一个帧开头就需要重新计算，或者干脆因为Promise异步导致这个帧重新开始处理拉长耗时下个帧无法开始工作。</p>
+<p>这里流程的图片是:</p>
+<p><img src="/images/1566444717989.png" alt="1566444717989"></p>
+<p>当然，如果多个帧一直没有空闲，那么requestIdleCallback就无法开始执行，为了保障它的执行，它有第二个参数可以设置一个timeout。规定它最迟执行的时间(当然限于浏览器eventLopp也不可能完全准)。</p>
+<blockquote>
+<p>这里参考<a target="_blank" rel="noopener" href="https://juejin.im/post/5ad71f39f265da239f07e862">你应该知道的requestIdleCallback</a>。</p>
+</blockquote>
+<h4 id="pollyfill-1"><a href="#pollyfill-1" class="headerlink" title="pollyfill"></a>pollyfill</h4><p>requestIdleCallback兼容性很差。所以这里还是需要进行pollyfill。<br>这里找到的hack办法是<code>window.MessageChannel</code>。这个api可以创建一个新的消息通道，实现sub/pub模式。最关键的地方是，响应订阅的函数，执行时机是Paint之后的空余时间。</p>
+<p><strong>小总结</strong></p>
+<p>将这些归纳起来说，就可以明白这个Time Slicing的含义了。它的意义在于，将大量耗时js操作打碎，将通过类似rAF来实现分帧进行必须的渲染，避免阻塞UI。</p>
+<p>但是这带来一个问题就是优先级问题。一个任务，究竟该如何确定是放到rAF，还是放到requestIdleCallback？——所以这里有了调度器，通过它可以对任务进行优先级划分。</p>
+<h2 id="调度-调度器的意义"><a href="#调度-调度器的意义" class="headerlink" title="调度:调度器的意义"></a>调度:调度器的意义</h2><p>这里我们继续上一小结的话题继续伸延。</p>
+<p>在旧版本(v16之前)的里面，render是一个递归的调用，一个组件的更新会引起下级所有组件的重新计算和渲染。</p>
+<p>由于渲染会占据主线程(这是宏任务和微任务的范畴了)，当这个计算时间超过一定长度(60Hz显示器上是16.67ms)时候，用户就会有卡顿的感觉。</p>
+<p>这在需要即时响应用户输入并输出到屏幕的场景特别明显。</p>
+<p>针对这个问题，有两个难题需要去解决</p>
+<ul>
+<li>一是受制于微任务(render|update)长时间占据主线程，使得浏览器无法对页面进行重新渲染，导致页面卡顿。</li>
+<li>二是优先级。微任务耗时可以通过任务分解的方式解决，但是分解之后，任务之间优先级如何安排则是一个问题。 </li>
+</ul>
+<h3 id="React的解决方案"><a href="#React的解决方案" class="headerlink" title="React的解决方案"></a>React的解决方案</h3><ul>
+<li>**Concurrent React (或Time Slicing)**。上一小节介绍过它了。</li>
+<li>**Scheduler(调度器)**。它将任务优先级设定了优先级。<ul>
+<li><strong>Immediate</strong>。立刻执行</li>
+<li><strong>UserBlocking</strong>。250ms timeout，响应用户界面。</li>
+<li><strong>Normal</strong>。5s timeout，不是必须立刻响应用户的更新</li>
+<li><strong>Low</strong>。10s timeout，可以延迟执行，但是最终必须执行的更新。</li>
+<li><strong>Idle</strong>。这个任务优先级不是很好描述，它是那种视情况进行更新的那种优先级，不是所有场景下都需要执行。比如屏幕之外的内容的更新。</li>
+</ul>
+</li>
+</ul>
+<h1 id="常规调用"><a href="#常规调用" class="headerlink" title="常规调用"></a>常规调用</h1><p>我们知道这些其实远远不够。所以这里需要看看更深入一些的东西。</p>
+<p>这里首当其冲的，是React在更新阶段链表的构建、更新的标记。所以这里看看事件触发之后，这一块发生的事情。</p>
+<h2 id="调用入口"><a href="#调用入口" class="headerlink" title="调用入口"></a>调用入口</h2><p>我们回顾一下之前Reconciler文章提到的事件调用栈。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dispatchInteractiveEvent</span><br><span class="line">-&gt;interactiveUpdates</span><br><span class="line">--&gt;dispatchEvent</span><br><span class="line">---&gt;performSyncWork</span><br><span class="line">----&gt;performWork</span><br><span class="line">-----&gt;performWorkOnRoot -&gt; renderRoot &amp; completeRoot</span><br></pre></td></tr></table></figure>
+
+<p>然后展开一下performWork函数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">performWork () &#123;</span><br><span class="line">    findHighestPriorityRoot()</span><br><span class="line">    performWorkOnRoot -&gt; renderRoot &amp; completeRoot</span><br><span class="line">    findHighestPriorityRoot()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这其中findHighestPriorityRoot能确保fiberRoot在调度中(或者是null)。</p>
+<p>当然，这里是对FiberRoot上的东西进行遍历然后对比差异。</p>
+<p><strong>我们还需要看看如何标记一个节点有变更。</strong></p>
+<h2 id="标记变更"><a href="#标记变更" class="headerlink" title="标记变更"></a>标记变更</h2><p>这里仔细思考，实际上变更大多情况下是setState引起的。</p>
+<p>不管是一个粒度非常小的组件更新内部text，还是通过redux的dispatch来更新App组件的props。实际上都是通过setState标记本身变更，然后由它进行的下级children进行的变更。</p>
+<p>这里归总一下<a href="/2019/08/07/react-v16-Update-renderPhase/">《react-v16-Update renderPhase篇》</a>里面提到的setState相关。这里关联的是<code>classComponentUpdater.enqueueSetState</code>。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">enqueueSetState</span>(<span class="params">inst, payload, callback</span>)</span> &#123;</span><br><span class="line">  <span class="comment">// 此时inst为App实例 payload=&#123;text: &#x27;Hello World&#x27;&#125; callback=undefined或setState第二参数</span></span><br><span class="line">  <span class="keyword">const</span> fiber = getInstance(inst);</span><br><span class="line">  <span class="keyword">const</span> currentTime = requestCurrentTime();</span><br><span class="line">  <span class="keyword">const</span> expirationTime = computeExpirationForFiber(currentTime, fiber);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> update = createUpdate(expirationTime);</span><br><span class="line">  update.payload = payload;</span><br><span class="line">  <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">    update.callback = callback;</span><br><span class="line">  &#125;</span><br><span class="line">  flushPassiveEffects(); <span class="comment">// 这个例子中这个函数什么也没做</span></span><br><span class="line">  enqueueUpdate(fiber, update);</span><br><span class="line">  scheduleWork(fiber, expirationTime);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这里很容易可以观察到update对象里面会赋值新的state值(payload参数)，如果setState传入第二参数，也会赋值给updata.callback。</p>
+<p>完成之后，使用enqueueUpdate将update放到对应fiberNode上。这个函数核心部分:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (queue2 === <span class="literal">null</span> || queue1 === queue2) &#123;</span><br><span class="line">  <span class="comment">// There&#x27;s only a single queue.</span></span><br><span class="line">  <span class="comment">// 此时只有一个queue</span></span><br><span class="line">  appendUpdateToQueue(queue1, update);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// There are two queues. We need to append the update to both queues,</span></span><br><span class="line">  <span class="comment">// while accounting for the persistent structure of the list — we don&#x27;t</span></span><br><span class="line">  <span class="comment">// want the same update to be added multiple times.</span></span><br><span class="line">  <span class="comment">// 此时有两个更新队列。我们需要将update操作同时添加到每个队列上</span></span><br><span class="line">  <span class="comment">// 但是考虑到更新队列的持久化结构 我们不希望相同的update被添加多次</span></span><br><span class="line">  <span class="keyword">if</span> (queue1.lastUpdate === <span class="literal">null</span> || queue2.lastUpdate === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// One of the queues is not empty. We must add the update to both queues.</span></span><br><span class="line">    <span class="comment">// 如果两个queue钟有其中一个队列是空的 那么将这个update加到两个queue队列上</span></span><br><span class="line">    appendUpdateToQueue(queue1, update);</span><br><span class="line">    appendUpdateToQueue(queue2, update);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Both queues are non-empty. The last update is the same in both lists,</span></span><br><span class="line">    <span class="comment">// because of structural sharing. So, only append to one of the lists.</span></span><br><span class="line">    <span class="comment">// 如果他们都不是空的。最后一个update在两个队列中则是相同的 因为structural sharing</span></span><br><span class="line">    <span class="comment">// 所以将update加入到其中一个队列就可以了。这里将update加入到了queue1 但是却将queue2.lastUpdate指向了update</span></span><br><span class="line">    appendUpdateToQueue(queue1, update);</span><br><span class="line">    <span class="comment">// But we still need to update the `lastUpdate` pointer of queue2.</span></span><br><span class="line">    queue2.lastUpdate = update;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说白了核心调用是appendUpdateToQueue。主要就是讲update添加到fiber.updateQueue或者fiber.alternate。updateQueue两个链表上。</p>
+<p>当这些处理完毕之后，使用scheduleWork(fiber, expirationTime)进行任务调度，开始遍历fiberNode链表。</p>
+<p>但是这里我们假设setState进而引发了一个新的组件的props变化。它会发生什么？这里往下走一走逻辑，观察调用栈:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scheduleWork</span><br><span class="line">-&gt;requestWork(fiberNode, rootExpirationTime)</span><br></pre></td></tr></table></figure>
+
+<p>这里requestWork有三个调用分支</p>
+<ul>
+<li>performWorkOnRoot(root, Sync, false)</li>
+<li>performSyncWork() === performWork(Sync, false) </li>
+<li>scheduleCallbackWithExpirationTime(root, expirationTime)</li>
+</ul>
+<p>这里performSyncWork这个和开头提到的『调用入口一致』，最终还是到了performWorkOnRoot。前面两个都是同步的处理。</p>
+<p>scheduleCallbackWithExpirationTime则是异步的处理，核心是对<code>scheduleDeferredCallback(performAsyncWork, &#123;timeout&#125;)</code>的调用。这个函数指向<code>Scheduler.unstable_scheduleWork</code>,他根据回调和超时时间生成了一个callbackNode,加入到链表并返回。</p>
+<p>所以分为同步和异步两种情况来讲。</p>
+<h3 id="同步路径"><a href="#同步路径" class="headerlink" title="同步路径"></a>同步路径</h3><p>这里performWorkOnRoot的宏观理解需要理解链表是如何模拟树遍历的，这必须优先理解。这块着重理解之前的render篇里面的『遍历理论』就可以了。</p>
+<blockquote>
+<p>但是不要忽略，performWorkOnRoot必然从fiberRoot开始。</p>
+</blockquote>
+<p>微观上来讲的话，就必须看<code>workLoop -&gt; beginWork + completeUnitOfWork</code>。他负责每个fiberNode节点具体处理。</p>
+<p>因为这里关注点主要是调度，所以就不考虑初始渲染情况下根据全新VDOM节点构建fiberNode链表的情况。这里需要关注再更新环节它的处理。</p>
+<h4 id="beginWork"><a href="#beginWork" class="headerlink" title="beginWork"></a>beginWork</h4><p>beginWork要操作的组件类型过多，这里仅仅就HostRoot(fiberRoot) &amp; HostComponent &amp; ClassComponent做一些共性说明。</p>
+<ul>
+<li><p>HostComponent处理的入口函数是updateHostComponent，它主要执行<code>reconcileChildren(args) &amp;&amp; return workInProgress.child</code>。</p>
+</li>
+<li><p>ClassComponent的入口函数式updateClassComponent，它在这里场景下，主要通过updateClassInstance判断是否更新，在这场判断过程中，它调用了componentWillReceiveProps，根据workInProgress上的updateQueue、props、lifecyclesHooks更新了stateNode属性，也就是组件实例 新的props之类都在这个stateNode上保存起来了。当然最重要的，是更新了updateQueue链表。</p>
+</li>
+</ul>
+<p>完毕之后返回finishClassComponent返回值。finishClassComponent检测到变化后，主要调用则如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> instance = workInProgress.stateNode;</span><br><span class="line">nextChildren = instance.render(); <span class="comment">// 更新后的实例，render执行会返回一个VDOM树</span></span><br><span class="line">reconcileChildren( <span class="comment">// reconcileChildren等价于ChildReconciler(true)</span></span><br><span class="line">    current,</span><br><span class="line">    workInProgress,</span><br><span class="line">    nextChildren,</span><br><span class="line">    renderExpirationTime,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>这里的reconcileChildren实际上就是和HostComponent分支这里的处理事同一个入口了。</p>
+<p>这里更细致的细节，参见之前提到的文章<a href="/2019/08/07/react-v16-ChildReconciler/">《react-v16-ChildReconciler》</a>。这里不再做赘述，但是有一些基于它的细节却必须说一下。</p>
+<p>reconcileChildren这里实质上只有两种处理逻辑，当它的child是单节点时候按单节点处begininWork + completeUnitOfWork，他负责单个fiberNode节点具体处理，如果有多个节点，那么它就按数组方式处理。但是无论怎样，它只处理自己VDOM树结构下一层对应fiberNode。</p>
+<p>更深层次的fiberNode，自然有workLoop函数继续调用beginWork处理。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">completeUnitOfWork</span>(<span class="params">workInProgress: Fiber</span>): <span class="title">Fiber</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 尝试完成当前的工作单元，然后转到下一个兄弟fiberNode。</span></span><br><span class="line">  <span class="comment">// 如果没有兄弟姐妹，请返回父fiberNode。</span></span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> current = workInProgress.alternate;</span><br><span class="line">    <span class="keyword">const</span> returnFiber = workInProgress.return;</span><br><span class="line">    <span class="keyword">const</span> siblingFiber = workInProgress.sibling;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((workInProgress.effectTag &amp; Incomplete) === NoEffect) &#123;</span><br><span class="line">      <span class="comment">// 只会返回Suspense 或者 null</span></span><br><span class="line">      nextUnitOfWork = completeWork(</span><br><span class="line">        current,</span><br><span class="line">        workInProgress,</span><br><span class="line">        nextRenderExpirationTime,</span><br><span class="line">      );</span><br><span class="line">      <span class="keyword">if</span> (nextUnitOfWork !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// Completing this fiber spawned new work. Work on that next.</span></span><br><span class="line">        <span class="keyword">return</span> nextUnitOfWork;</span><br><span class="line">      &#125; </span><br><span class="line">      <span class="comment">// 注意此时nextUnitOfWork === null</span></span><br><span class="line">      <span class="keyword">if</span> (</span><br><span class="line">        returnFiber !== <span class="literal">null</span> &amp;&amp; (returnFiber.effectTag &amp; Incomplete) === NoEffect</span><br><span class="line">      ) &#123;</span><br><span class="line">        <span class="comment">// 将workInProgress 挂到父节点的side-effect链表上</span></span><br><span class="line">        <span class="keyword">if</span> (returnFiber.firstEffect === <span class="literal">null</span>) &#123;</span><br><span class="line">          returnFiber.firstEffect = workInProgress.firstEffect;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (workInProgress.lastEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (returnFiber.lastEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">            returnFiber.lastEffect.nextEffect = workInProgress.firstEffect;</span><br><span class="line">          &#125;</span><br><span class="line">          returnFiber.lastEffect = workInProgress.lastEffect;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 按siblingFiber、returnFiber、null顺序返回。如果returnFiber 重新开始前面任务</span></span><br><span class="line">      <span class="comment">// 这意味着: 任务在不断往上伸展，节点上的effects都挂载到父fiberNode上了。</span></span><br><span class="line">      <span class="keyword">if</span> (siblingFiber !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// If there is more work to do in this returnFiber, do that next.</span></span><br><span class="line">        <span class="keyword">return</span> siblingFiber;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (returnFiber !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// If there&#x27;s no more work in this returnFiber. Complete the returnFiber.</span></span><br><span class="line">        workInProgress = returnFiber;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// We&#x27;ve reached the root.</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="completeUnitOfWork-标记变更"><a href="#completeUnitOfWork-标记变更" class="headerlink" title="completeUnitOfWork: 标记变更"></a>completeUnitOfWork: 标记变更</h4><p>这个函数在beginWork强大的功能面前可能容易被忽略。但是它做的事情却并非那么容易让人忽视。<br>我们已经知道，v16的更新统一从FiberRoot起，那么问题来了，如果全部从头到尾的进行遍历，岂不是太费劲而且不必要？所以我们需要一个变更节点列表，以便进行更新时候只更新它们。<br>这就是这个函数的作用。它里面有一些核心的调用。这里做一些说明。</p>
+<ul>
+<li>首先是处理完毕后对fiberNode做一些属性更新，捕获boundary错误之类。</li>
+<li>其次，从底部往上遍历，将子节点上的effects链到父节点上，这样，最终我们到fiberRoot节点就有一个完整的side-effects链表了。</li>
+</ul>
+<h4 id="变更引用"><a href="#变更引用" class="headerlink" title="变更引用"></a>变更引用</h4><p>这里直接上之前提到的代码吧：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">workLoop</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (nextUnitOfWork !== <span class="literal">null</span>) &#123;</span><br><span class="line">        nextUnitOfWork = performUnitOfWork(nextUnitOfWork);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">performUnitOfWork</span>(<span class="params">workInProgress: Fiber</span>): <span class="title">Fiber</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 略    </span></span><br><span class="line">  next = beginWork(current, workInProgress, nextRenderExpirationTime);</span><br><span class="line">  workInProgress.memoizedProps = workInProgress.pendingProps;</span><br><span class="line">  <span class="keyword">if</span> (next === <span class="literal">null</span>) &#123;</span><br><span class="line">    next = completeUnitOfWork(workInProgress);</span><br><span class="line">  &#125;</span><br><span class="line">  ReactCurrentOwner.current = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">return</span> next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每次当beginWork结束，都会执行一个<code>completeUnitOfWork(workInProgress)</code>。在这个函数中，有一个引用：</p>
+<p><code>resetChildExpirationTime(workInProgress, nextRenderExpirationTime)</code>。</p>
+<p>这个函数批量更新了后续所有fiberNode的child节点上的ExpirationTime。</p>
+<p>再往上一点说，workLoop上面是renderRoot,renderRoot上面还有performWorkOnRoot，而在这个函数里面，renderRoot结束之后，会执行completeRoot函数。<br>这个函数就是render commitphase环节的入口级调用。<br>然后这里就到了之前Update篇之commitPhase环节了。这里直接上代码了(commitRoot)。主要是side-effects的遍历处理。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// commit tree中所有的side-effects。这里分两个步骤</span></span><br><span class="line"><span class="comment">// 这里是第一个步骤:执行所有host的插入、更新、删除和ref卸载(注意后面第二个步骤)</span></span><br><span class="line">nextEffect = firstEffect;</span><br><span class="line">startCommitHostEffectsTimer();</span><br><span class="line"><span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> didError = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> error;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123; &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            commitAllHostEffects();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">            didError = <span class="literal">true</span>;</span><br><span class="line">            error = e;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (didError) &#123; <span class="comment">/* 错误捕获并将指针移动到下一个Effect */</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="异步逻辑"><a href="#异步逻辑" class="headerlink" title="异步逻辑"></a>异步逻辑</h3><h4 id="scheduleCallbackWithExpirationTime"><a href="#scheduleCallbackWithExpirationTime" class="headerlink" title="scheduleCallbackWithExpirationTime"></a>scheduleCallbackWithExpirationTime</h4><p>这里的异步处理，实际上上面已经简单提到过了。</p>
+<p>scheduleCallbackWithExpirationTime是异步的处理，核心是对<code>scheduleDeferredCallback(performAsyncWork, &#123;timeout&#125;)</code>的调用。这个函数指向<code>Scheduler.unstable_scheduleCallback</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unstable_scheduleCallback</span>(<span class="params">callback, deprecated_options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> startTime =</span><br><span class="line">    currentEventStartTime !== -<span class="number">1</span> ? currentEventStartTime : getCurrentTime();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> expirationTime;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    <span class="keyword">typeof</span> deprecated_options === <span class="string">&#x27;object&#x27;</span> &amp;&amp;</span><br><span class="line">    deprecated_options !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">    <span class="keyword">typeof</span> deprecated_options.timeout === <span class="string">&#x27;number&#x27;</span></span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">FIXME:</span> Remove this branch once we lift expiration times out of React.</span></span><br><span class="line">    expirationTime = startTime + deprecated_options.timeout;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (currentPriorityLevel) &#123;</span><br><span class="line">      <span class="keyword">case</span> ImmediatePriority:</span><br><span class="line">        expirationTime = startTime + IMMEDIATE_PRIORITY_TIMEOUT;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> UserBlockingPriority:</span><br><span class="line">        expirationTime = startTime + USER_BLOCKING_PRIORITY;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> IdlePriority:</span><br><span class="line">        expirationTime = startTime + IDLE_PRIORITY;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> LowPriority:</span><br><span class="line">        expirationTime = startTime + LOW_PRIORITY_TIMEOUT;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> NormalPriority:</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">        expirationTime = startTime + NORMAL_PRIORITY_TIMEOUT;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 生成一个节点， 存储回调函数和超时时间</span></span><br><span class="line">  <span class="keyword">var</span> newNode = &#123;</span><br><span class="line">    callback,</span><br><span class="line">    priorityLevel: currentPriorityLevel,</span><br><span class="line">    expirationTime,</span><br><span class="line">    next: <span class="literal">null</span>,</span><br><span class="line">    previous: <span class="literal">null</span>,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 排序插入</span></span><br><span class="line">  <span class="keyword">return</span> newNode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里核心地方就2个，第一个，根据任务优先级获取不同的expirationTime，第二个，根据expirationTime生成任务节点，排序插入链表。</p>
+<p>我们这里忽略了排序细节，不过需要说的是，当我们排序完毕，会有一个<code>ensureHostCallbackIsScheduled</code>函数会被执行。这个函数用来对任务进行执行。</p>
+<p>这里的调用在排序逻辑中有两种情况:</p>
+<ul>
+<li>原链表为空，所加入的节点为唯一节点，此时立即执行</li>
+<li>新节点取代旧的firstNode节点成为新的firstNode节点时候，此时立即执行</li>
+</ul>
+<p>它对应着两个分支逻辑: 只有一个节点的情况，执行任务；新节点有最高优先级，需要停止继续执行任务转而重新执行任务。它的意义在于，在合适的时候，开始执行任务。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ensureHostCallbackIsScheduled</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (isExecutingCallback) &#123;</span><br><span class="line">    <span class="comment">// Don&#x27;t schedule work yet; wait until the next time we yield.</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> expirationTime = firstCallbackNode.expirationTime;</span><br><span class="line">  <span class="keyword">if</span> (!isHostCallbackScheduled) &#123; <span class="comment">// 此时仅有一个节点</span></span><br><span class="line">    isHostCallbackScheduled = <span class="literal">true</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123; <span class="comment">// 新节点有最高优先级，需要停止继续执行任务</span></span><br><span class="line">    <span class="comment">// Cancel the existing host callback.</span></span><br><span class="line">    cancelHostCallback();</span><br><span class="line">  &#125;</span><br><span class="line">  requestHostCallback(flushWork, expirationTime);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于这个requestHostCallback函数，源码里面做了好几个环境分支，比如jest分支，jscore分支，最后才是常规的浏览器环境分支。我们来看看里面大致细节：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> channel = <span class="keyword">new</span> MessageChannel();</span><br><span class="line"><span class="keyword">var</span> port = channel.port2;</span><br><span class="line">channel.port1.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 细节略</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> animationTick = <span class="function"><span class="keyword">function</span>(<span class="params">rafTime</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 细节略</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">requestHostCallback = <span class="function"><span class="keyword">function</span>(<span class="params">callback, absoluteTimeout</span>) </span>&#123;</span><br><span class="line">  scheduledHostCallback = callback;</span><br><span class="line">  timeoutTime = absoluteTimeout;</span><br><span class="line">  <span class="keyword">if</span> (isFlushingHostCallback || absoluteTimeout &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    port.postMessage(<span class="literal">undefined</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!isAnimationFrameScheduled) &#123;</span><br><span class="line">    isAnimationFrameScheduled = <span class="literal">true</span>;</span><br><span class="line">    requestAnimationFrameWithTimeout(animationTick);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>代码有点长，删了细节，只保留了主干。它其实就是requestIdleCallback的的pollyfill而已。这里原理环节可参考前面。</p>
+<p><strong>但是这里有一些相互的调用，还是得说明白。</strong></p>
+<p>首先是<code>animationTick</code>函数。这个函数在每一帧开始的rAF里面的回调，当有任务时候，需要进行递归执行<code>requestAnimationFrameWithTimeout(animationTick)</code>。它核心的作用是对frameDeadline变量进行累加，计算出当前帧的截止时间: 截止时间 = 开始时间 + 渲染时间。</p>
+<blockquote>
+<p>渲染时间默认为33ms，这是为了保证每秒30帧(30Hz)的计算出来的(1000/30)。源码里面有一个对这个值进行优化的逻辑，因为不是重点，这里且就认为它是33ms。</p>
+</blockquote>
+<p>当<code>animationTick</code>执行到尾部，会执行</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// isMessageEventScheduled默认为false。进入animationTick后设为true</span></span><br><span class="line"><span class="comment">// 所以不会连续两次rAF调用port.postMessage。</span></span><br><span class="line"><span class="comment">// 后面port1.onmessage进入后其值为false，可以重新rAF进来。</span></span><br><span class="line"><span class="comment">// 保证了rAF和requestIdleCallback的间歇调用</span></span><br><span class="line"><span class="keyword">if</span> (!isMessageEventScheduled) &#123;</span><br><span class="line">    isMessageEventScheduled = <span class="literal">true</span>;</span><br><span class="line">    port.postMessage(<span class="literal">undefined</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来是onmessage的内容。这个函数主要是对剩余时间的利用。</p>
+<ol>
+<li>如果当前帧还有时间空余-&gt;当前任务已经过期-&gt;didTimeout = true立刻执行任务</li>
+<li>如果当前帧还有时间空余-&gt;当前任务没过期-&gt;执行flushWork &amp;&amp; 递归调用rAF</li>
+</ol>
+<p>onmessage在上面两个分支处理完毕后针对这两种情况调用scheduledHostCallback函数，里面会针对这两种情况进行分支处理。</p>
+<p>这个scheduledHostCallback函数呢，本质上，就是flushWork。</p>
+<blockquote>
+<p>isAnimationFrameScheduled变量本质上和isMessageEventScheduled变量是同一回事。</p>
+</blockquote>
+<h4 id="callback-flushWork"><a href="#callback-flushWork" class="headerlink" title="callback: flushWork"></a>callback: flushWork</h4><p><code>flushWork</code>函数是异步流程里面的实质上的执行者。</p>
+<p>我们之前讨论了rAF-&gt;requestIdleCallback-&gt;rAF-&gt;requestIdleCallback不间断直到完成任务的流程里面，实质上就是这个这个函数在执行异步任务。</p>
+<p>这个函数处理三种情况下的逻辑：</p>
+<ol>
+<li>任务已经超时 此时走同步逻辑，遍历执行所有已经过期任务</li>
+<li>任务没过期，当前帧有时间富余 那么从队列首部以类似数组pop方法的形式挨个执行未过期的任务。</li>
+<li>异步任务经过上面逻辑还有剩余，那么新开新一轮调度 &amp;&amp; 立即执行最高优先级任务</li>
+</ol>
+<p>逻辑一:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这里明白这个队列是根据过期时间从小打大排列就可以了</span></span><br><span class="line"><span class="keyword">if</span> (didTimeout) &#123; <span class="comment">// 任务过期</span></span><br><span class="line">    <span class="comment">// Flush all the expired callbacks without yielding.</span></span><br><span class="line">    <span class="comment">// 如果任务已经过期遍历回调链表全部执行 无中断、异步</span></span><br><span class="line">    <span class="keyword">while</span> (</span><br><span class="line">        firstCallbackNode !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">        !(enableSchedulerDebugging &amp;&amp; isSchedulerPaused)</span><br><span class="line">    ) &#123;</span><br><span class="line">        <span class="keyword">var</span> currentTime = getCurrentTime();</span><br><span class="line">        <span class="keyword">if</span> (firstCallbackNode.expirationTime &lt;= currentTime) &#123;</span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                flushFirstCallback();</span><br><span class="line">            &#125; <span class="keyword">while</span> (</span><br><span class="line">                firstCallbackNode !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">                firstCallbackNode.expirationTime &lt;= currentTime &amp;&amp; <span class="comment">// 要求任务已过期</span></span><br><span class="line">                !(enableSchedulerDebugging &amp;&amp; isSchedulerPaused)</span><br><span class="line">            );</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;&#125; <span class="comment">// rAF时间富余</span></span><br></pre></td></tr></table></figure>
+
+<p>逻辑二:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (firstCallbackNode !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (enableSchedulerDebugging &amp;&amp; isSchedulerPaused) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        flushFirstCallback();</span><br><span class="line">    &#125; <span class="keyword">while</span> (firstCallbackNode !== <span class="literal">null</span> &amp;&amp; !shouldYieldToHost());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// shouldYieldToHost</span></span><br><span class="line">shouldYieldToHost = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> frameDeadline &lt;= getCurrentTime();</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里shouldYieldToHost函数计算的，rAF deadLine时间戳是否有剩余。如果有剩余就继续执行callback链表上的节点。其他和逻辑一雷同。</p>
+<p>逻辑三:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">isExecutingCallback = <span class="literal">false</span>;</span><br><span class="line">currentDidTimeout = previousDidTimeout;</span><br><span class="line"><span class="keyword">if</span> (firstCallbackNode !== <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="comment">// There&#x27;s still work remaining. Request another callback.</span></span><br><span class="line">  ensureHostCallbackIsScheduled();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  isHostCallbackScheduled = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Before exiting, flush all the immediate work that was scheduled.</span></span><br><span class="line">flushImmediateWork();</span><br></pre></td></tr></table></figure>
+
+<p>这里ensureHostCallbackIsScheduled函数在上一小节里面有，他用来唤起一个新的调度。重新走rAF-&gt;requestIdleCallback-&gt;rAF-&gt;requestIdleCallback这个流程。</p>
+<p>flushImmediateWork函数则是直接把剩余的最高优先级任务一口气执行完毕。但是这里要注意到，它执行完毕之后，又开始执行ensureHostCallbackIsScheduled了。</p>
+<p>考虑到函数里面这样一个调用</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (firstCallbackNode !== <span class="literal">null</span>) &#123;</span><br><span class="line">        ensureHostCallbackIsScheduled();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        isHostCallbackScheduled = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当所有的异步任务都执行完毕，<code>isHostCallbackScheduled = false</code>。</p>
+<h4 id="异步的贯通"><a href="#异步的贯通" class="headerlink" title="异步的贯通"></a>异步的贯通</h4><p>和同步不同，异步本身更加复杂。前面讨论了很多很多东西，但是都没有把整个逻辑贯通成环，这样也就无法在宏观上理解这个环节。</p>
+<p>所以这一小节的目标是：基于之前的诠释，贯通这个流程。</p>
+<p>但是这里必须知道，脱离实际使用去讲原理是不可能的事情，我们说同步可以默认看之前都知道，但是异步这块不行，所以有后面的案例和分析。</p>
+<h1 id="异步案例-amp-分析"><a href="#异步案例-amp-分析" class="headerlink" title="异步案例&amp;分析"></a>异步案例&amp;分析</h1><p>注意，这里我在使用用例上根据v16.9做了部分更新。但是实际分析暂时还是使用的16.8.6的源码。</p>
+<h2 id="基础使用"><a href="#基础使用" class="headerlink" title="基础使用"></a>基础使用</h2><p>首先是外部容器的处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; v16.8是这种写法 但是注意 16.9有更新</span><br><span class="line">ReactDOM.render((</span><br><span class="line">&lt;React.unstable_ConcurrentMode&gt;</span><br><span class="line">	&lt;App &#x2F;&gt;</span><br><span class="line">&lt;&#x2F;React.unstable_ConcurrentMode&gt;</span><br><span class="line">), document.getElementById(&quot;root&quot;))</span><br><span class="line">&#x2F;&#x2F; v16.9的写法 这里废弃了unstable_ConcurrentMode</span><br><span class="line">const root &#x3D; ReactDOM.unstable_createRoot(container);</span><br><span class="line">root.render(&lt;App &#x2F;&gt;, container);</span><br></pre></td></tr></table></figure>
+
+<p>这里是加了一个<code>React.unstable_ConcurrentMode</code>容器。</p>
+<blockquote>
+<p>关于v16.8这个容器，根据Fiber链表结构，它是第二个FiberNode。它是走的createFiberFromMode函数创建的。不过我看了一下v16.9的逻辑，它这里直接将第一个和第二个节点直接融合为一个了。操作办法就是将FiberRoot的mode设为 ConcurrentRoot。</p>
+</blockquote>
+<p>其次是api调用。</p>
+<p>初步的优化，是使用unstable_next将用户交互的优先级保障起来，将后续更新优先级降低，相当于强制提升了用户交互的优先级。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; unstable_next &#125; <span class="keyword">from</span> <span class="string">&quot;scheduler&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">SearchBox</span>(<span class="params">props</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> [inputValue, setInputValue] = React.useState();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">handleChange</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> value = event.target.value;</span><br><span class="line"></span><br><span class="line">    setInputValue(value);</span><br><span class="line">    unstable_next(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      props.onChange(value);</span><br><span class="line">      sendAnalyticsNotification(value);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">value</span>=<span class="string">&#123;inputValue&#125;</span> <span class="attr">onChange</span>=<span class="string">&#123;handleChange&#125;</span> /&gt;</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里看看这个函数是怎样做的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unstable_next</span>(<span class="params">eventHandler</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> priorityLevel;</span><br><span class="line">  <span class="keyword">switch</span> (currentPriorityLevel) &#123;</span><br><span class="line">    <span class="keyword">case</span> ImmediatePriority:</span><br><span class="line">    <span class="keyword">case</span> UserBlockingPriority:</span><br><span class="line">    <span class="keyword">case</span> NormalPriority:</span><br><span class="line">      <span class="comment">// Shift down to normal priority</span></span><br><span class="line">      priorityLevel = NormalPriority;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="comment">// Anything lower than normal priority should remain at the current level.</span></span><br><span class="line">      priorityLevel = currentPriorityLevel;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> previousPriorityLevel = currentPriorityLevel;</span><br><span class="line">  <span class="keyword">var</span> previousEventStartTime = currentEventStartTime;</span><br><span class="line">  currentPriorityLevel = priorityLevel;</span><br><span class="line">  currentEventStartTime = getCurrentTime();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> eventHandler();</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    currentPriorityLevel = previousPriorityLevel;</span><br><span class="line">    currentEventStartTime = previousEventStartTime;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Before exiting, flush all the immediate work that was scheduled.</span></span><br><span class="line">    flushImmediateWork();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="优先级的处理"><a href="#优先级的处理" class="headerlink" title="优先级的处理"></a>优先级的处理</h2><p>关于currentPriorityLevel。我们彻底追踪一下调用栈。这个调用起于dispatchInteractiveEvent函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dispatchInteractiveEvent</span><br><span class="line">-&gt;dispatchEvent</span><br><span class="line">--&gt;interactiveUpdates</span><br><span class="line">---&gt;dispatchEvent</span><br><span class="line">...</span><br><span class="line">-----&gt;unstabel_next</span><br></pre></td></tr></table></figure>
+
+<p>这里初始的定义是在interactiveUpdates函数里面(packages/react-reconciler/src/ReactFiberScheduler.js:)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">interactiveUpdates</span>&lt;<span class="title">A</span>, <span class="title">B</span>, <span class="title">R</span>&gt;(<span class="params">fn: (A, B) =&gt; R, a: A, b: B</span>): <span class="title">R</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    !isBatchingUpdates &amp;&amp;</span><br><span class="line">    !isRendering &amp;&amp;</span><br><span class="line">    lowestPriorityPendingInteractiveExpirationTime !== NoWork</span><br><span class="line">  ) &#123;</span><br><span class="line">    performWork(lowestPriorityPendingInteractiveExpirationTime, <span class="literal">false</span>);</span><br><span class="line">    lowestPriorityPendingInteractiveExpirationTime = NoWork;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> previousIsBatchingUpdates = isBatchingUpdates;</span><br><span class="line">  isBatchingUpdates = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> runWithPriority(UserBlockingPriority, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> fn(a, b);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    isBatchingUpdates = previousIsBatchingUpdates;</span><br><span class="line">    <span class="keyword">if</span> (!isBatchingUpdates &amp;&amp; !isRendering) &#123;</span><br><span class="line">      performSyncWork();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简而言之，有runWithPriority这个调用在，这里事件相关的回调优先级都是UserBlockingPriority。</p>
+<p>所以当我们运行到unstable_next，这里priorityLevel会被强制调整为UserBlockingPriority。这和<a target="_blank" rel="noopener" href="https://philippspiess.com/scheduling-in-react/">《Scheduling in React》</a>里面提到的一样。</p>
+<h2 id="执行"><a href="#执行" class="headerlink" title="执行"></a>执行</h2><p>当我们标记完成了优先级，就要开始干活了，这里运行的是<code>flushImmediateWork()</code>。这是从unstable_next函数中try…finally的finally代码块里面来的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">flushImmediateWork</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    <span class="comment">// Confirm we&#x27;ve exited the outer most event handler</span></span><br><span class="line">    currentEventStartTime === -<span class="number">1</span> &amp;&amp;</span><br><span class="line">    firstCallbackNode !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">    firstCallbackNode.priorityLevel === ImmediatePriority</span><br><span class="line">  ) &#123;</span><br><span class="line">    isExecutingCallback = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">do</span> &#123;</span><br><span class="line">        flushFirstCallback(); <span class="comment">// 执行第一个回调</span></span><br><span class="line">      &#125; <span class="keyword">while</span> (</span><br><span class="line">        <span class="comment">// 如果回调链表第一个不是null 且优先级为ImmediatePriority</span></span><br><span class="line">        firstCallbackNode !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">        firstCallbackNode.priorityLevel === ImmediatePriority</span><br><span class="line">      );</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      isExecutingCallback = <span class="literal">false</span>;</span><br><span class="line">      <span class="keyword">if</span> (firstCallbackNode !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// There&#x27;s still work remaining. Request another callback.</span></span><br><span class="line">        ensureHostCallbackIsScheduled();</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        isHostCallbackScheduled = <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 执行第一个回调</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">flushFirstCallback</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> flushedNode = firstCallbackNode;</span><br><span class="line">  <span class="comment">// 将回调节点从链表中拿出来。这样即时出错了也能保持一致。否则结束再移除会导致不一致问题</span></span><br><span class="line">  <span class="keyword">var</span> next = firstCallbackNode.next;</span><br><span class="line">  <span class="keyword">if</span> (firstCallbackNode === next) &#123;</span><br><span class="line">    firstCallbackNode = <span class="literal">null</span>;</span><br><span class="line">    next = <span class="literal">null</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> lastCallbackNode = firstCallbackNode.previous;</span><br><span class="line">    firstCallbackNode = lastCallbackNode.next = next;</span><br><span class="line">    next.previous = lastCallbackNode;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  flushedNode.next = flushedNode.previous = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 可以安全执行回调了</span></span><br><span class="line">  <span class="keyword">var</span> callback = flushedNode.callback;</span><br><span class="line">  <span class="keyword">var</span> expirationTime = flushedNode.expirationTime;</span><br><span class="line">  <span class="keyword">var</span> priorityLevel = flushedNode.priorityLevel;</span><br><span class="line">  <span class="keyword">var</span> previousPriorityLevel = currentPriorityLevel;</span><br><span class="line">  <span class="keyword">var</span> previousExpirationTime = currentExpirationTime;</span><br><span class="line">  currentPriorityLevel = priorityLevel;</span><br><span class="line">  currentExpirationTime = expirationTime;</span><br><span class="line">  <span class="keyword">var</span> continuationCallback;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    continuationCallback = callback();</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    currentPriorityLevel = previousPriorityLevel;</span><br><span class="line">    currentExpirationTime = previousExpirationTime;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 回调执行后可能返回的还是一个函数，此时继续以相同优先级调用它 </span></span><br><span class="line">  <span class="comment">// 代码略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我们必须注意，优先调用并不会引起最终结果的变化。</p>
+<p>倘若我们正常的更新顺序是A-&gt;B-&gt;C-&gt;D。优化之后，我们的B变成优先级最高了之后，B会被最先执行一次。到了后面再执行时候，我们的firstUpdate会指向A，A的next指向B，所以会重复执行ABCD。</p>
+<p>这也是为什么componentWillMount现在会被调用多次。</p>
+<blockquote>
+<p>例子: 正常流程A-&gt;B-&gt;C-&gt;D。优化后更高优先级A&amp;C。当优先执行完毕再次开始新的流程时候，firstUpdate指向B, 会执行BCD。 </p>
+</blockquote>
+<p>当我们将最高优先级ImmediatePriority弄完之后，我们可以开始执行低它一级的优先级任务(UserBlockingPriority)了。这个任务流的启动，由ImmediatePriority来启动。这源于之前我们已经提到的一段结论。这里直接引用一下，如果忘了可以回头看看唤起回忆。</p>
+<blockquote>
+<p>flushImmediateWork函数则是直接把剩余的最高优先级任务一口气执行完毕。但是这里要注意到，它执行完毕之后，又开始执行ensureHostCallbackIsScheduled了。</p>
+</blockquote>
+<p>结合之前提到的，我们可以明白这里就开始进行rAF-&gt;requestIdleCallback-&gt;rAF-&gt;requestIdleCallback流程了，直到callback链表为空。</p>
+<h2 id="最高优先级之后"><a href="#最高优先级之后" class="headerlink" title="最高优先级之后"></a>最高优先级之后</h2><p>这里接着上面说最高优先级之后发生的事情。</p>
+<p>当我们走出了这个rAF-&gt;requestIdleCallback-&gt;rAF-&gt;requestIdleCallback互相调用直至回调列表为空的流程。此时核心就是requestIdleCallback函数的执行，rAF相当于一个足够敏感的定时器。</p>
+<p>这个requestIdleCallback函数主要是对剩余时间的利用(这里不明白可以继续回头看之前的小结)。</p>
+<ol>
+<li>如果当前帧还有时间空余-&gt;当前任务已经过期-&gt;didTimeout = true立刻执行任务</li>
+<li>如果当前帧还有时间空余-&gt;当前任务没过期-&gt;执行flushWork &amp;&amp; 递归调用rAF</li>
+</ol>
+<p>所以这里核心还是在flushWork函数上。</p>
+<p>这个函数处理三种情况下的逻辑：</p>
+<ol>
+<li>任务已经超时 此时走同步逻辑，遍历执行所有已经过期任务</li>
+<li>任务没过期，当前帧有时间富余 那么从队列首部以类似数组pop方法的形式挨个执行未过期的任务。</li>
+<li>异步任务经过上面逻辑还有剩余，那么新开新一轮调度 &amp;&amp; 立即执行最高优先级任务</li>
+</ol>
+<p>这里我们例子中的代码是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setInputValue(value);</span><br><span class="line">unstable_next(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    props.onChange(value);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>意思是对更新做了切割，先将Input里面的东西渲染好。然后开始更新ListItem高亮情况，这里的更新就是异步的更新了。当任务进入回调队列(由<code>props.onChange(value)</code>引起)，整个长耗时的渲染会被React分帧走renderPhase &amp; commitPhase,整个页面可以保持流畅帧率而不卡顿。</p>
+<h2 id="更低的优先级"><a href="#更低的优先级" class="headerlink" title="更低的优先级"></a>更低的优先级</h2><p>我们上面分析时候已经有了提及。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">runWithPriority(UserBlockingPriority, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> fn(a, b);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>如果想要更低的优先级，则可以参考这个写法。再之前提到的文章中，它是这样操作的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sendDeferredAnalyticsPing</span>(<span class="params">value</span>) </span>&#123;</span><br><span class="line">  unstable_runWithPriority(unstable_LowPriority, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    unstable_scheduleCallback(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      sendAnalyticsPing(value);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>和React内部调用比较一致。不过个人感觉这个API等正式发布，可能后面会单独有个封装的API，不然这样使用相对麻烦，而且暴露内部API可能不像React的风格。</p>
+<p>结合我们之前的代码(完整例子参见<a target="_blank" rel="noopener" href="https://github.com/philipp-spiess/scheduletron3000">scheduletron3000</a>)。这里输入关键词之后，随后要将很多个ListItem符合关键词的全部高亮。当我们输入一个关键词，首先要将输入到关键词显示到Input中，这是一个unstable_LowPriority执行优先级任务，会被优先执行。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章:"></a>参考文章:</h1><p>这一篇从开头到结尾实在挺不容易，参考了众多的文章去弥补自己未知的地方。</p>
+<p>这里至以诚挚谢意。</p>
+<p><a target="_blank" rel="noopener" href="https://philippspiess.com/scheduling-in-react/">Scheduling in React</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/60307571">深入剖析 React Concurrent</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.404forest.com/2016/08/15/%E4%BD%BF%E7%94%A8%20requestAnimationFrame%20%E5%AE%9E%E7%8E%B0%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B8%8E%E6%87%92%E6%89%A7%E8%A1%8C/">使用 requestAnimationFrame 实现性能优化与懒执行</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/post/5ad71f39f265da239f07e862">你应该知道的requestIdleCallback</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/post/5c32c0c86fb9a049b7808665">React Scheduler 源码详解（1）</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/post/5c61197ff265da2d9e173337">React Scheduler 源码详解（2）</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/React-Scheduling/" rel="tag"># React Scheduling</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/14/react-v16-Reconciler-Diff/" rel="prev" title="react-v16-Reconciler和Diff算法">
+      <i class="fa fa-chevron-left"></i> react-v16-Reconciler和Diff算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/09/what-are-you-doing/" rel="next" title="what-are-you-doing">
+      what-are-you-doing <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91-amp-%E8%B0%83%E5%BA%A6"><span class="nav-number">1.</span> <span class="nav-text">并发 &amp; 调度</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E5%8F%91-Concurrent-React"><span class="nav-number">1.1.</span> <span class="nav-text">并发: Concurrent React</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#rAF"><span class="nav-number">1.1.1.</span> <span class="nav-text">rAF</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pollyfill"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">pollyfill</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#requestIdleCallback"><span class="nav-number">1.1.2.</span> <span class="nav-text">requestIdleCallback</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pollyfill-1"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">pollyfill</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6-%E8%B0%83%E5%BA%A6%E5%99%A8%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">1.2.</span> <span class="nav-text">调度:调度器的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#React%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">1.2.1.</span> <span class="nav-text">React的解决方案</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E8%A7%84%E8%B0%83%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">常规调用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E7%94%A8%E5%85%A5%E5%8F%A3"><span class="nav-number">2.1.</span> <span class="nav-text">调用入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E5%8F%98%E6%9B%B4"><span class="nav-number">2.2.</span> <span class="nav-text">标记变更</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E8%B7%AF%E5%BE%84"><span class="nav-number">2.2.1.</span> <span class="nav-text">同步路径</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#beginWork"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">beginWork</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#completeUnitOfWork-%E6%A0%87%E8%AE%B0%E5%8F%98%E6%9B%B4"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">completeUnitOfWork: 标记变更</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%98%E6%9B%B4%E5%BC%95%E7%94%A8"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">变更引用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E9%80%BB%E8%BE%91"><span class="nav-number">2.2.2.</span> <span class="nav-text">异步逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scheduleCallbackWithExpirationTime"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">scheduleCallbackWithExpirationTime</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#callback-flushWork"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">callback: flushWork</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E7%9A%84%E8%B4%AF%E9%80%9A"><span class="nav-number">2.2.2.3.</span> <span class="nav-text">异步的贯通</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E6%A1%88%E4%BE%8B-amp-%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">异步案例&amp;分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8"><span class="nav-number">3.1.</span> <span class="nav-text">基础使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%85%88%E7%BA%A7%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">3.2.</span> <span class="nav-text">优先级的处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C"><span class="nav-number">3.3.</span> <span class="nav-text">执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E9%AB%98%E4%BC%98%E5%85%88%E7%BA%A7%E4%B9%8B%E5%90%8E"><span class="nav-number">3.4.</span> <span class="nav-text">最高优先级之后</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E4%BD%8E%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">3.5.</span> <span class="nav-text">更低的优先级</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">4.</span> <span class="nav-text">参考文章:</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

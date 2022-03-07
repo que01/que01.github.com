@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前面几篇重点分析了Render &amp; Update, 乃至Fiber链的构建细节。这里就有余地去分析V16的Diff算法是如何实现了。根据之前的Update两篇分析，可以很容易知道这个Diff集中在了render phase, 而随后的commit phase实际上就是patch这个diff的过程。因为Diff实际上是由Reconciler来实现的，所以这里也把它整理一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-v16-Reconciler和Diff算法">
+<meta property="og:url" content="http://www.que01.top/2019/08/14/react-v16-Reconciler-Diff/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="前面几篇重点分析了Render &amp; Update, 乃至Fiber链的构建细节。这里就有余地去分析V16的Diff算法是如何实现了。根据之前的Update两篇分析，可以很容易知道这个Diff集中在了render phase, 而随后的commit phase实际上就是patch这个diff的过程。因为Diff实际上是由Reconciler来实现的，所以这里也把它整理一下。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-14T03:05:28.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.685Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="React v16">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/08/14/react-v16-Reconciler-Diff/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-v16-Reconciler和Diff算法 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/08/14/react-v16-Reconciler-Diff/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-v16-Reconciler和Diff算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-14 11:05:28" itemprop="dateCreated datePublished" datetime="2019-08-14T11:05:28+08:00">2019-08-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/08/14/react-v16-Reconciler-Diff/" class="post-meta-item leancloud_visitors" data-flag-title="react-v16-Reconciler和Diff算法" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">前面几篇重点分析了Render & Update, 乃至Fiber链的构建细节。这里就有余地去分析V16的Diff算法是如何实现了。根据之前的Update两篇分析，可以很容易知道这个Diff集中在了render phase, 而随后的commit phase实际上就是patch这个diff的过程。因为Diff实际上是由Reconciler来实现的，所以这里也把它整理一下。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>前面几篇重点分析了Render &amp; Update, 乃至Fiber链的构建细节。这里就有余地去分析V16的Diff算法是如何实现了。根据之前的Update两篇分析，可以很容易知道这个Diff集中在了render phase, 而随后的commit phase实际上就是patch这个Diff的过程。</p>
+<p>回顾之前v15的diff算法，因为其Tree结构的缘故，一旦理解了之后，对其Component Diff、Tree Diff、Element Diff算是印象深刻。这里需要循着它的思路，参考更新的render phase来深入理解这个Diff有什么变化。</p>
+<p>但是之前的例子也相对简单，为了Diff分析的全面，也不能简单直接循着它的思路，总之这是一个入乎其内，又出其外的过程。相应的，<strong>这篇主要是关注Diff流程</strong>，对Update的分析，一切以它为目标。</p>
+<p>所以这里每个函数的分析，都要和Diff有联系，但是又要在之前Update篇上有进一步的深度。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>这里还是顺着前文的Event调用栈来说。以下是触发事件过程中的调用栈</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dispatchInteractiveEvent</span><br><span class="line">-&gt;interactiveUpdates</span><br><span class="line">--&gt;dispatchEvent</span><br><span class="line">---&gt;performSyncWork</span><br><span class="line">----&gt;performWork</span><br><span class="line">-----&gt;performWorkOnRoot -&gt; renderRoot &amp; completeRoot</span><br></pre></td></tr></table></figure>
+
+<p>这里对performWork做点扩展</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">performWork () &#123;</span><br><span class="line">    findHighestPriorityRoot()</span><br><span class="line">    performWorkOnRoot -&gt; renderRoot &amp; completeRoot</span><br><span class="line">    findHighestPriorityRoot()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="findHighestPriorityRoot"><a href="#findHighestPriorityRoot" class="headerlink" title="findHighestPriorityRoot"></a>findHighestPriorityRoot</h2><p>这个函数有两个作用，一个是无效节点从链表移除，再一个是返回最终优先节点。</p>
+<blockquote>
+<p>Tips: 这一小节在ReactDom环境下，其实偏废话，不愿意看可以直接拉到小结。</p>
+</blockquote>
+<h3 id="无效节点清除"><a href="#无效节点清除" class="headerlink" title="无效节点清除"></a>无效节点清除</h3><p>这个findHighestPriorityRoot函数需要比照之前的Update-RenderPhase来看。因为它这里涉及了firstScheduledRoot、lastScheduledRoot、root.nextScheduledRoot的赋值。所以简述一下它内部逻辑。但是这之前必须先看看另外一个函数addRootToSchedule:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">addRootToSchedule</span>(<span class="params">root: FiberRoot, expirationTime: ExpirationTime</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 检查这个fiber节点是否已经是schedule的一部分: </span></span><br><span class="line">  <span class="keyword">if</span> (root.nextScheduledRoot === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// root.nextScheduledRoot === null 说明还没有加入 这里加入它</span></span><br><span class="line">    root.expirationTime = expirationTime;</span><br><span class="line">    <span class="keyword">if</span> (lastScheduledRoot === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// lastScheduledRoot为空 将这个fiber设为[first|last]ScheduledRoot</span></span><br><span class="line">      <span class="comment">// root.nextScheduledRoot也设为自身 这只在仅有一个更新fiber发生</span></span><br><span class="line">      firstScheduledRoot = lastScheduledRoot = root;</span><br><span class="line">      root.nextScheduledRoot = root;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 否则 将lastScheduledRoot下一个链表设为这个root 然后将root设为最后一个(实质是添加一个元素到链表尾部)</span></span><br><span class="line">      <span class="comment">// 并将这个root的nextScheduledRoot设置到firstScheduledRoot</span></span><br><span class="line">      lastScheduledRoot.nextScheduledRoot = root;</span><br><span class="line">      lastScheduledRoot = root;</span><br><span class="line">      lastScheduledRoot.nextScheduledRoot = firstScheduledRoot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 这个root已经在schedule里面 但是可能有属性变化</span></span><br><span class="line">    <span class="keyword">const</span> remainingExpirationTime = root.expirationTime;</span><br><span class="line">    <span class="keyword">if</span> (expirationTime &gt; remainingExpirationTime) &#123;</span><br><span class="line">      <span class="comment">// 更新时间 以便后面它能被更新</span></span><br><span class="line">      root.expirationTime = expirationTime;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们继续下面的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">findHighestPriorityRoot</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> highestPriorityWork = NoWork;</span><br><span class="line">  <span class="keyword">let</span> highestPriorityRoot = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// 这说明之前至少已经有个更新了 所以至少有一个需要操作的fiber节点</span></span><br><span class="line">  <span class="comment">// 这里配合addRootToSchedule函数要去理解</span></span><br><span class="line">  <span class="keyword">if</span> (lastScheduledRoot !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> previousScheduledRoot = lastScheduledRoot;</span><br><span class="line">    <span class="keyword">let</span> root = firstScheduledRoot;</span><br><span class="line">    <span class="comment">// 这里是一个循环 它会遍历所有root.nextScheduledRoot</span></span><br><span class="line">    <span class="comment">// 直到nextFlushedRoot &amp; nextFlushedExpirationTime得到合理赋值</span></span><br><span class="line">    <span class="keyword">while</span> (root !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> remainingExpirationTime = root.expirationTime;</span><br><span class="line">      <span class="keyword">if</span> (remainingExpirationTime === NoWork) &#123;</span><br><span class="line">        <span class="comment">// 进入这个分支 说明这个fiber节点没有事情要做了 将其从scheduler里面移除</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 这里配合addRootToSchedule函数要去理解</span></span><br><span class="line">        <span class="keyword">if</span> (root === root.nextScheduledRoot) &#123;</span><br><span class="line">          <span class="comment">// 判断是否仅有的 第一个 初始 更新 然后跳出while</span></span><br><span class="line">          <span class="comment">// 因为只有一个更新就不需要考虑后面还有更高优先级 这个fiberNode本身就是</span></span><br><span class="line">          <span class="comment">// 因为此时是要移除 所以仅仅将其赋值null就完事了 可以break了</span></span><br><span class="line">          root.nextScheduledRoot = <span class="literal">null</span>;</span><br><span class="line">          firstScheduledRoot = lastScheduledRoot = <span class="literal">null</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (root === firstScheduledRoot) &#123;</span><br><span class="line">          <span class="comment">// 将第一个元素从链表顶部移除 并设定root.nextScheduledRoot = null</span></span><br><span class="line">          <span class="comment">// 这个操作会因为while继续循环 直到 lastScheduledRoot.nextScheduledRoot!== null</span></span><br><span class="line">          <span class="keyword">const</span> next = root.nextScheduledRoot;</span><br><span class="line">          firstScheduledRoot = next;</span><br><span class="line">          lastScheduledRoot.nextScheduledRoot = next;</span><br><span class="line">          root.nextScheduledRoot = <span class="literal">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (root === lastScheduledRoot) &#123;</span><br><span class="line">          <span class="comment">// 此时遍历到尾部了 而且并非唯一节点(因为没有进入第一个分支) 此时是这里最后一次进while</span></span><br><span class="line">          <span class="comment">// 将lastScheduledRoot.nextScheduledRoot重置为firstScheduledRoot完成圆形闭环</span></span><br><span class="line">          lastScheduledRoot = previousScheduledRoot;</span><br><span class="line">          lastScheduledRoot.nextScheduledRoot = firstScheduledRoot;</span><br><span class="line">          root.nextScheduledRoot = <span class="literal">null</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">// 这是链表中间节点的操作 从链表中移除一个中间节点 </span></span><br><span class="line">          <span class="comment">// 此时给previousScheduledRoot.next赋值root.next,实质上是在为while里面</span></span><br><span class="line">          <span class="comment">// 的root赋值(root = previousScheduledRoot.nextScheduledRoot)</span></span><br><span class="line">          previousScheduledRoot.nextScheduledRoot = root.nextScheduledRoot;</span><br><span class="line">          root.nextScheduledRoot = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        root = previousScheduledRoot.nextScheduledRoot;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (remainingExpirationTime &gt; highestPriorityWork) &#123;</span><br><span class="line">          <span class="comment">// 如果expirationTime大于之前缓存的最大值 把这个root相关数据设为最高优先级</span></span><br><span class="line">          highestPriorityWork = remainingExpirationTime;</span><br><span class="line">          highestPriorityRoot = root;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (root === lastScheduledRoot) &#123;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (highestPriorityWork === Sync) &#123;</span><br><span class="line">          <span class="comment">// Sync is highest priority by definition so</span></span><br><span class="line">          <span class="comment">// we can stop searching.</span></span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        previousScheduledRoot = root;</span><br><span class="line">        root = root.nextScheduledRoot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  nextFlushedRoot = highestPriorityRoot;</span><br><span class="line">  nextFlushedExpirationTime = highestPriorityWork;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>findHighestPriorityRoot其中一个作用就是清除所有<code>fibler.expirationTime === NoWork</code>的节点。根据addRootToSchedule定义 仔细体味，我们可以知道这个链表是圆环。</p>
+<p>接下来就是相对精彩的链表清空环节。这里我们还是来举例配合代码注释来理解。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+---+      +---+      +---+</span><br><span class="line">| A +-----&gt;+ B +-----&gt;+ C |</span><br><span class="line">+-+-+      +---+      +-+-+</span><br><span class="line">  ^                     |</span><br><span class="line">  |                     v</span><br><span class="line">+-+-+      +---+      +-+-+</span><br><span class="line">| F +&lt;-----+ E +&lt;---+ | D |</span><br><span class="line">+---+      +---+      +---+</span><br></pre></td></tr></table></figure>
+
+<p>这里A为first，F为last。然后看看<code>remainingExpirationTime === NoWork</code>里面的分支。</p>
+<ul>
+<li><p>只有root为last才会break跳出，其他的不会</p>
+</li>
+<li><p>当root为A(此时A为first)，且<code>A.expirationTime === NoWork</code>。此时：</p>
+<ul>
+<li><code>first = A.next = B</code></li>
+<li><code>last.next = B</code></li>
+<li><code>A.next = null</code></li>
+</ul>
+</li>
+<li><p>当root为中间节点时候， 比如为<code>B.expirationTime === NoWork</code>。此时:</p>
+<ul>
+<li><code>previousScheduledRoot = F.next === A</code> 但是F节点还是F节点(<strong>这个需要重点理解</strong>)</li>
+<li>previousScheduledRoot(A.next) = B.next = C</li>
+<li>上面两步实质上就是将B从链表上丢掉了，链接了上一个和下一个链表元素</li>
+<li>B.next 赋值为null</li>
+</ul>
+</li>
+<li><p>当遍历到最终的last也就是F节点，且为无效节点时候。此时:</p>
+<ul>
+<li>将last赋值为E(previousScheduledRoot)</li>
+<li>将E.next重新赋值first 完成圆形闭环。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>这一步其实其实就是链表元素的的移除操作。掌握这个数据结构还是很重要。但是其实归根结底还是逆向解读相对折腾，自己写大家应该都能写出来，然而一旦复杂起来，过几个月估计就只有上帝直到写的什么了😂</p>
+</blockquote>
+<blockquote>
+<p>这里要注意addRootToSchedule上游调用函数scheduleWork会给他传入fiberRoot参数。所以nextFlushedRoot其实一般就是fiberRoot(一些情况下是null)。</p>
+</blockquote>
+<h3 id="返回优先节点"><a href="#返回优先节点" class="headerlink" title="返回优先节点"></a>返回优先节点</h3><p>相比上面复杂度链表移除操作。这个返回操作就格外简单。就是找出expirationTime最大的fiber节点。然后返回，如果遇到expirationTime === Sync的停止继续比较直接返回之前计算结果。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>这个函数在Scheduled列表上清掉了无效节点，关联的核心是每个节点的nextScheduledRoot属性。通过它可以快速对多个FiberRoot进行调度，它将优先级最高的FiberRoot设为nextFlushedRoot。</p>
+<p>这个nextFlushedRoot，将会在下一步中被使用。</p>
+<p>关于FiberRoot这点，代码里面对类型有很明显的类型限定。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Linked-list of roots</span></span><br><span class="line"><span class="keyword">let</span> firstScheduledRoot: FiberRoot | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">let</span> lastScheduledRoot: FiberRoot | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">let</span> nextFlushedRoot: FiberRoot | <span class="literal">null</span> = <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+
+<p>这里很容易有一个问题是，如果都是FiberRoot为什么需要一个链表(ReactDOM仅有唯一一个FiberRoot)。</p>
+<p>这是因为React不仅仅服务于ReactDOM，它还会服务于ReactNative。在ReactNative中它可能会使用不同的root scheduler, 这和ReactDom仅仅使用一个root scheduler有所不同。</p>
+<p>这实质上是renderer(渲染器)和 scheduler(调度器)的分离。不过这个显然超出本篇的范围了，这里不做深入了。</p>
+<p>唯一可以说的，是这一小节在ReactDom里面可能其实都是废话，它这里做的就是设nextFlushedRoot为FiberRoot而已。</p>
+<h2 id="performWork"><a href="#performWork" class="headerlink" title="performWork"></a>performWork</h2><p>这个函数我们暂时关注在它同步的逻辑分支里面。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">performWork</span>(<span class="params">minExpirationTime: ExpirationTime, isYieldy: boolean</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 确保nextFlushedRoot是scheduled链表中的最高优先级fiberNode</span></span><br><span class="line">  findHighestPriorityRoot();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isYieldy) &#123;</span><br><span class="line">	<span class="comment">// 异步逻辑暂时不管</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (</span><br><span class="line">      nextFlushedRoot !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">      nextFlushedExpirationTime !== NoWork &amp;&amp;</span><br><span class="line">      minExpirationTime &lt;= nextFlushedExpirationTime</span><br><span class="line">    ) &#123;</span><br><span class="line">      performWorkOnRoot(nextFlushedRoot, nextFlushedExpirationTime, <span class="literal">false</span>);</span><br><span class="line">      findHighestPriorityRoot();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>配合上文对findHighestPriorityRoot的理解加上之前文章对performWorkOnRoot的分析。立刻就可以发现很多有意思的地方了。</p>
+<ul>
+<li>performWorkOnRoot会调用workLoop对nextFlushedRoot节点进行遍历</li>
+<li>findHighestPriorityRoot移除完成的fiberNode，然后如果还有有效值 继续performWorkOnRoot</li>
+<li>直到nextFlushedRoot再无有效值</li>
+</ul>
+<p><strong>所以说 这里对于performWork函数这里有进一步的认知。它是对scheduled链表完整的遍历。而performWorkOnRoot只是针对指定的root节点来进行遍历。</strong></p>
+<h2 id="performWorkOnRoot"><a href="#performWorkOnRoot" class="headerlink" title="performWorkOnRoot"></a>performWorkOnRoot</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">performWorkOnRoot</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  root: FiberRoot,</span></span></span><br><span class="line"><span class="function"><span class="params">  expirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params">  isYieldy: boolean,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  isRendering = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!isYieldy) &#123;</span><br><span class="line">    <span class="keyword">let</span> finishedWork = root.finishedWork;</span><br><span class="line">    <span class="keyword">if</span> (finishedWork !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// finishedWork有非null值说明一切就绪可以进入commit phase</span></span><br><span class="line">      completeRoot(root, finishedWork, expirationTime);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      root.finishedWork = <span class="literal">null</span>;</span><br><span class="line">	  <span class="comment">// 如果之前暂停了任务 需要清除root.timeoutHandle。cancelTimeout实质上是clearTimeout</span></span><br><span class="line">      <span class="comment">// 这里单独包装一个是因为一些环境 比如ssr下没有clearTimeout</span></span><br><span class="line">      <span class="comment">// 这里暂时没看到异步暂停这块 可以忽略 不是必经路径</span></span><br><span class="line">      <span class="keyword">const</span> timeoutHandle = root.timeoutHandle;</span><br><span class="line">      <span class="keyword">if</span> (timeoutHandle !== noTimeout) &#123;</span><br><span class="line">        root.timeoutHandle = noTimeout;</span><br><span class="line">        cancelTimeout(timeoutHandle);</span><br><span class="line">      &#125;</span><br><span class="line">      renderRoot(root, isYieldy);</span><br><span class="line">      finishedWork = root.finishedWork;</span><br><span class="line">      <span class="keyword">if</span> (finishedWork !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// We&#x27;ve completed the root. Commit it.</span></span><br><span class="line">        completeRoot(root, finishedWork, expirationTime);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Flush async work. 异步任务 暂时略</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  isRendering = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里核心路径是:</p>
+<ul>
+<li>如果root.finishedWork有非空值 进入commit phase</li>
+<li>否则执行renderRoot</li>
+<li>renderRoot会更新root.finishedWork值，接下来进入commit phase(completeRoot)</li>
+</ul>
+<h2 id="renderRoot"><a href="#renderRoot" class="headerlink" title="renderRoot"></a>renderRoot</h2><p>renderRoot是一个很复杂的函数。但是随着相关细节理解深入。可以做很多精简了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">renderRoot</span>(<span class="params">root: FiberRoot, isYieldy: boolean</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  flushPassiveEffects(); <span class="comment">// 这个函数暂时没搞懂 和effect有关 但是不一定会进去 故可略过</span></span><br><span class="line"></span><br><span class="line">  isWorking = <span class="literal">true</span>; <span class="comment">// 作为禁止被递归调用的Flag</span></span><br><span class="line">  <span class="keyword">const</span> previousDispatcher = ReactCurrentDispatcher.current;</span><br><span class="line">  ReactCurrentDispatcher.current = ContextOnlyDispatcher;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> expirationTime = root.nextExpirationTimeToWorkOn;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断是一个新的stack开始，还是从之前被中断的地方开始 这里不理会</span></span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    expirationTime !== nextRenderExpirationTime ||</span><br><span class="line">    root !== nextRoot ||</span><br><span class="line">    nextUnitOfWork === <span class="literal">null</span></span><br><span class="line">  ) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (enableSchedulerTracing) &#123; &#125; <span class="comment">// 给开发工具用的 略</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> didFatal = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">  startWorkLoopTimer(nextUnitOfWork);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      workLoop(isYieldy);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (thrownValue) &#123;&#125; <span class="comment">// 错误捕获用的 这里也不管</span></span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125; <span class="keyword">while</span> (<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (enableSchedulerTracing) &#123; &#125; <span class="comment">// 给开发工具用的 略</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// We&#x27;re done performing work. Time to clean up.</span></span><br><span class="line">  isWorking = <span class="literal">false</span>;</span><br><span class="line">  ReactCurrentDispatcher.current = previousDispatcher;</span><br><span class="line">  resetContextDependences();</span><br><span class="line">  resetHooks();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Yield back to main thread.</span></span><br><span class="line">  <span class="keyword">if</span> (didFatal) &#123;&#125; <span class="comment">// workLoop的catch里面会定义为true 这里忽略</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (nextUnitOfWork !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// tree里面仍有异步任务 但是没时间继续完成任务了 先返回渲染主线程 代码略</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// We completed the whole tree.</span></span><br><span class="line">  <span class="keyword">const</span> didCompleteRoot = <span class="literal">true</span>;</span><br><span class="line">  stopWorkLoopTimer(interruptedBy, didCompleteRoot);</span><br><span class="line">  <span class="keyword">const</span> rootWorkInProgress = root.current.alternate;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// `nextRoot`指向正在进行的根。非空值意味着我们正处于异步渲染的过程中</span></span><br><span class="line">  <span class="comment">// 将其设置为null则表示 在当前批次中没有更多的工作要做。</span></span><br><span class="line">  nextRoot = <span class="literal">null</span>;</span><br><span class="line">  interruptedBy = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (nextRenderDidError) &#123;&#125; <span class="comment">// workLoop的catch里面会调用throwException()</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isYieldy &amp;&amp; nextLatestAbsoluteTimeoutMs !== -<span class="number">1</span>) &#123;&#125; <span class="comment">// 异步相关 不管</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Ready to commit.</span></span><br><span class="line">  onComplete(root, rootWorkInProgress, expirationTime);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里认真分析了一下，清除了大部分干扰代码，最终还是确认移除了异步处理、错误处理、追踪(开发工具)处理之后。它核心地方是workLoop &amp; onComplete。onComplete相关到commit Phase,我们再update的commit phase里面确认了Diff和它无关。所以核心就是workLoop了。</p>
+<h2 id="workLoop"><a href="#workLoop" class="headerlink" title="workLoop"></a>workLoop</h2><p>这个函数的核心是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (nextUnitOfWork !== <span class="literal">null</span>) &#123;</span><br><span class="line">    nextUnitOfWork = performUnitOfWork(nextUnitOfWork);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">performUnitOfWork</span>(<span class="params">workInProgress: Fiber</span>): <span class="title">Fiber</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> current = workInProgress.alternate;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// See if beginning this work spawns more work.</span></span><br><span class="line">  startWorkTimer(workInProgress);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> next;</span><br><span class="line">  <span class="keyword">if</span> (enableProfilerTimer) &#123;&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    next = beginWork(current, workInProgress, nextRenderExpirationTime);</span><br><span class="line">    workInProgress.memoizedProps = workInProgress.pendingProps;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (next === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// If this doesn&#x27;t spawn new work, complete the current work.</span></span><br><span class="line">    next = completeUnitOfWork(workInProgress);</span><br><span class="line">  &#125;</span><br><span class="line">  ReactCurrentOwner.current = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">return</span> next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里就是Diff算法核心入口了，因为fiberNode遍历在这里得到提现。</p>
+<p>beginWork返回fiber的child，performUnitOfWork返回fiber的next，而completeUnitOfWork返回fiber的return。</p>
+<p>所谓大胆推测，小心求证。这里我们可以做一些推测，然后小心验证它。</p>
+<p>这里大胆又保守的推测，我们在v15里面的用到的CompoentDiff、Tree Diff、Element Diff依然存在。因为所有的Diff实质上都是和child相关，所以可以大胆猜测，Diff相关逻辑，实质上都存在于beginWork——这也比较符合beginWork的命名。</p>
+<h2 id="beginWork"><a href="#beginWork" class="headerlink" title="beginWork"></a>beginWork</h2><p>这里略去大多数干扰代码，仅仅保留常见的IndeterminateComponent、FunctionComponent、ClassComponent之类。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">beginWork</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  current: Fiber | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  workInProgress: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  renderExpirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">Fiber</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> updateExpirationTime = workInProgress.expirationTime;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (current !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> oldProps = current.memoizedProps;</span><br><span class="line">    <span class="keyword">const</span> newProps = workInProgress.pendingProps;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (oldProps !== newProps || hasLegacyContextChanged()) &#123;</span><br><span class="line">      didReceiveUpdate = <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (updateExpirationTime &lt; renderExpirationTime) &#123;</span><br><span class="line">      didReceiveUpdate = <span class="literal">false</span>;</span><br><span class="line">      <span class="comment">// 这里和diff无关 先不管了</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    didReceiveUpdate = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Before entering the begin phase, clear the expiration time.</span></span><br><span class="line">  workInProgress.expirationTime = NoWork;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (workInProgress.tag) &#123;</span><br><span class="line">    <span class="keyword">case</span> IndeterminateComponent: &#123;</span><br><span class="line">      <span class="keyword">const</span> elementType = workInProgress.elementType;</span><br><span class="line">      <span class="keyword">return</span> mountIndeterminateComponent(</span><br><span class="line">        current,</span><br><span class="line">        workInProgress,</span><br><span class="line">        elementType,</span><br><span class="line">        renderExpirationTime,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> LazyComponent: : &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> FunctionComponent: &#123;</span><br><span class="line">      <span class="keyword">const</span> Component = workInProgress.type;</span><br><span class="line">      <span class="keyword">const</span> unresolvedProps = workInProgress.pendingProps;</span><br><span class="line">      <span class="keyword">const</span> resolvedProps =</span><br><span class="line">        workInProgress.elementType === Component</span><br><span class="line">          ? unresolvedProps</span><br><span class="line">          : resolveDefaultProps(Component, unresolvedProps);</span><br><span class="line">      <span class="keyword">return</span> updateFunctionComponent(</span><br><span class="line">        current,</span><br><span class="line">        workInProgress,</span><br><span class="line">        Component,</span><br><span class="line">        resolvedProps,</span><br><span class="line">        renderExpirationTime,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> ClassComponent: &#123;</span><br><span class="line">      <span class="keyword">const</span> Component = workInProgress.type;</span><br><span class="line">      <span class="keyword">const</span> unresolvedProps = workInProgress.pendingProps;</span><br><span class="line">      <span class="keyword">const</span> resolvedProps =</span><br><span class="line">        workInProgress.elementType === Component</span><br><span class="line">          ? unresolvedProps</span><br><span class="line">          : resolveDefaultProps(Component, unresolvedProps);</span><br><span class="line">      <span class="keyword">return</span> updateClassComponent(</span><br><span class="line">        current,</span><br><span class="line">        workInProgress,</span><br><span class="line">        Component,</span><br><span class="line">        resolvedProps,</span><br><span class="line">        renderExpirationTime,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostRoot:</span><br><span class="line">      <span class="keyword">return</span> updateHostRoot(current, workInProgress, renderExpirationTime);</span><br><span class="line">    <span class="keyword">case</span> HostComponent: &#123; </span><br><span class="line">      <span class="keyword">return</span> updateHostComponent(current$$1, workInProgress, renderExpirationTime)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostText: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> SuspenseComponent: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> HostPortal: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> ForwardRef: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> Fragment: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> Mode: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> Profiler: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> ContextProvider: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> ContextConsumer: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> MemoComponent: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> SimpleMemoComponent: &#123; &#125;</span><br><span class="line">    <span class="keyword">case</span> IncompleteClassComponent: &#123;&#125;</span><br><span class="line">    <span class="keyword">case</span> DehydratedSuspenseComponent: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ClassComponent"><a href="#ClassComponent" class="headerlink" title="ClassComponent"></a>ClassComponent</h3><p>这里重点关注ClassComponent，毕竟v15还是以它为主的分析，方便参照。</p>
+<p>这里updateClassComponent函数正常更新的话，主要是两个调用。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个函数根据workInProgress上的updateQueue、props、lifecyclesHooks更新了stateNode属性</span></span><br><span class="line"><span class="comment">// 也就是组件实例 新的props之类都在这个stateNode上保存起来了</span></span><br><span class="line">shouldUpdate = updateClassInstance(</span><br><span class="line">    current,</span><br><span class="line">    workInProgress,</span><br><span class="line">    Component,</span><br><span class="line">    nextProps,</span><br><span class="line">    renderExpirationTime,</span><br><span class="line">);</span><br><span class="line"><span class="keyword">const</span> nextUnitOfWork = finishClassComponent( <span class="comment">// 看下面 单独分析</span></span><br><span class="line">    current,</span><br><span class="line">    workInProgress,</span><br><span class="line">    Component,</span><br><span class="line">    shouldUpdate,</span><br><span class="line">    hasContext,</span><br><span class="line">    renderExpirationTime,</span><br><span class="line">);</span><br><span class="line"><span class="keyword">return</span> nextUnitOfWork;</span><br></pre></td></tr></table></figure>
+
+<p>finishClassComponent检测到变化后，主要调用则如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> instance = workInProgress.stateNode;</span><br><span class="line">nextChildren = instance.render(); <span class="comment">// 更新后的实例，render执行会返回一个VDOM树</span></span><br><span class="line">reconcileChildren( <span class="comment">// reconcileChildren等价于ChildReconciler(true)</span></span><br><span class="line">    current,</span><br><span class="line">    workInProgress,</span><br><span class="line">    nextChildren,</span><br><span class="line">    renderExpirationTime,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>ChildReconciler在React中的注释说到这个函数以后可能单独抽出进行手动或者编译器自动优化。这个函数里面helpers辅助函数太多。总之它执行后返回的是内部函数reconcileChildFibers。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reconcileChildFibers</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  returnFiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  currentFirstChild: Fiber | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  newChild: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  expirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">Fiber</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理&lt;React.Fragment&gt;&lt;/React.Fragment&gt;语法 对其采用数组一样的处理逻辑</span></span><br><span class="line">  <span class="keyword">const</span> isUnkeyedTopLevelFragment =</span><br><span class="line">    <span class="keyword">typeof</span> newChild === <span class="string">&#x27;object&#x27;</span> &amp;&amp;</span><br><span class="line">    newChild !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">    newChild.type === REACT_FRAGMENT_TYPE &amp;&amp;</span><br><span class="line">    newChild.key === <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">if</span> (isUnkeyedTopLevelFragment) &#123;</span><br><span class="line">    newChild = newChild.props.children;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Handle object types</span></span><br><span class="line">  <span class="keyword">const</span> isObject = <span class="keyword">typeof</span> newChild === <span class="string">&#x27;object&#x27;</span> &amp;&amp; newChild !== <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isObject) &#123; <span class="comment">// 正常的VDOM处理流程</span></span><br><span class="line">    <span class="keyword">switch</span> (newChild.$$typeof) &#123;</span><br><span class="line">      <span class="keyword">case</span> REACT_ELEMENT_TYPE:</span><br><span class="line">        <span class="keyword">return</span> placeSingleChild( <span class="comment">// ★ 这里是我们的核心关注点</span></span><br><span class="line">          reconcileSingleElement(</span><br><span class="line">            returnFiber,</span><br><span class="line">            currentFirstChild,</span><br><span class="line">            newChild,</span><br><span class="line">            expirationTime,</span><br><span class="line">          ),</span><br><span class="line">        );</span><br><span class="line">      <span class="keyword">case</span> REACT_PORTAL_TYPE: &#123;&#125; <span class="comment">// 略</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> newChild === <span class="string">&#x27;string&#x27;</span> || <span class="keyword">typeof</span> newChild === <span class="string">&#x27;number&#x27;</span>) &#123; <span class="comment">// 处理文本 &amp; 数字</span></span><br><span class="line">    <span class="keyword">return</span> placeSingleChild(</span><br><span class="line">      reconcileSingleTextNode(</span><br><span class="line">        returnFiber,</span><br><span class="line">        currentFirstChild,</span><br><span class="line">        <span class="string">&#x27;&#x27;</span> + newChild,</span><br><span class="line">        expirationTime,</span><br><span class="line">      ),</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isArray(newChild)) &#123;</span><br><span class="line">    <span class="keyword">return</span> reconcileChildrenArray(</span><br><span class="line">      returnFiber,</span><br><span class="line">      currentFirstChild,</span><br><span class="line">      newChild,</span><br><span class="line">      expirationTime,</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 迭代器处理 暂时还没听过render里面可以返回一个generator函数得。是否有一天我们可以这样做？</span></span><br><span class="line">  <span class="comment">// 还是有其他考虑？</span></span><br><span class="line">  <span class="keyword">if</span> (getIteratorFn(newChild)) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isObject) &#123; &#125; <span class="comment">// 针对上级节点是textarea的抛错</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> newChild === <span class="string">&#x27;undefined&#x27;</span> &amp;&amp; !isUnkeyedTopLevelFragment) &#123; &#125; <span class="comment">// 抛出错误</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Remaining cases are all treated as empty.</span></span><br><span class="line">  <span class="keyword">return</span> deleteRemainingChildren(returnFiber, currentFirstChild);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="单节点Children"><a href="#单节点Children" class="headerlink" title="单节点Children"></a>单节点Children</h4><p>单节点的children个人实质上就是ComponentDiff的践行。但是这里也对Tree Diff有了部分实践，因为它同时承担了一部分的删除操作，维护了FiberNode的siblings。</p>
+<p>这里看看placeSingleChild函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">placeSingleChild</span>(<span class="params">newFiber: Fiber</span>): <span class="title">Fiber</span> </span>&#123;</span><br><span class="line">    <span class="comment">// This is simpler for the single child case. We only need to do a</span></span><br><span class="line">    <span class="comment">// placement for inserting new children.</span></span><br><span class="line">    <span class="comment">// 对于单root节点的VDOM树。我们只需要使用新的children替换即可</span></span><br><span class="line">    <span class="comment">// shouldTrackSideEffects = true -&gt; reconcileChildren等价于ChildReconciler(true)</span></span><br><span class="line">    <span class="comment">// 这个shouldTrackSideEffects就是传入的写死的true参数</span></span><br><span class="line">    <span class="keyword">if</span> (shouldTrackSideEffects &amp;&amp; newFiber.alternate === <span class="literal">null</span>) &#123;</span><br><span class="line">        newFiber.effectTag = Placement;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newFiber;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里面注释很明了，我们的Component Diff就这样轻描淡写的做好了标记，有些措不及防。。。</p>
+<p>另外就是，既然这里说了: 如果是single child case，那么自然就会有multiple child case。那么，可以很自然的做出推测，这里的multiple child case，其实质就是ElementDiff或者TreeDiff——我们继续分析验证reconcileSingleElement函数。</p>
+<p>但是这之前，根据placeSingleChild传参类型和返回类型，我们可以确认reconcileSingleElement返回的是一个FiberNode。另外要额外对它的alternate属性追踪和关注，以完成Component Diff分析闭环。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reconcileSingleElement</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  returnFiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  currentFirstChild: Fiber | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  element: ReactElement,</span></span></span><br><span class="line"><span class="function"><span class="params">  expirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">Fiber</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> key = element.key;</span><br><span class="line">  <span class="keyword">let</span> child = currentFirstChild;</span><br><span class="line">  <span class="keyword">while</span> (child !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (child.key === key) &#123; <span class="comment">// 如果是单节点 这里相等，那么需要进行后续对比</span></span><br><span class="line">      <span class="comment">// 判断Fragment还是常规HostComponent、ClassComponent的合法性</span></span><br><span class="line">      <span class="keyword">if</span> (</span><br><span class="line">        child.tag === Fragment</span><br><span class="line">          ? element.type === REACT_FRAGMENT_TYPE</span><br><span class="line">          : child.elementType === element.type</span><br><span class="line">      ) &#123;</span><br><span class="line">        deleteRemainingChildren(returnFiber, child.sibling);</span><br><span class="line">        <span class="keyword">const</span> existing = useFiber(</span><br><span class="line">          child,</span><br><span class="line">          element.type === REACT_FRAGMENT_TYPE</span><br><span class="line">            ? element.props.children</span><br><span class="line">            : element.props,</span><br><span class="line">          expirationTime,</span><br><span class="line">        );</span><br><span class="line">        existing.ref = coerceRef(returnFiber, child, element);</span><br><span class="line">        existing.return = returnFiber;</span><br><span class="line">        <span class="keyword">return</span> existing;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        deleteRemainingChildren(returnFiber, child);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 否则直接标记删除 并将child放到nextEffect上以备递归删除下级节点</span></span><br><span class="line">      deleteChild(returnFiber, child); </span><br><span class="line">    &#125;</span><br><span class="line">    child = child.sibling;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (element.type === REACT_FRAGMENT_TYPE) &#123; <span class="comment">// 保持简洁和关注 这里分支不理会了</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123; <span class="comment">// 正常VDOM逻辑</span></span><br><span class="line">    <span class="keyword">const</span> created = createFiberFromElement(</span><br><span class="line">      element,</span><br><span class="line">      returnFiber.mode,</span><br><span class="line">      expirationTime,</span><br><span class="line">    );</span><br><span class="line">    created.ref = coerceRef(returnFiber, currentFirstChild, element);</span><br><span class="line">    created.return = returnFiber;</span><br><span class="line">    <span class="keyword">return</span> created;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里由一个while循环。但是分析这个循环之前，草草扫过这个代码，基本已经可以确认它是Tree Diff的核心了。言归正传，返回这个while的分析。</p>
+<p>这个while实质上是做的fiberNode链表和VDOM树的对比。它从给定的一个FiberNode遍历到它后面所有的FiberNode节点。</p>
+<p>这个循环，实质是上单层的循环，它只是针对同一层级的VDOM对应的FiberNode进行了标记。<code>child = child.sibling</code>说明了这一点。</p>
+<p>这里主要是删除的逻辑。分析一下相关函数:</p>
+<p>deleteChild函数直接标记删除(effectTag = Deletion) 并将child放到nextEffect上以备递归删除下级节点。</p>
+<p>而deleteRemainingChildren则是做一些遍历然后调用deleteChild标记删除。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">deleteRemainingChildren</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  returnFiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  currentFirstChild: Fiber | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!shouldTrackSideEffects) &#123;</span><br><span class="line">    <span class="comment">// Noop.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> For the shouldClone case, this could be micro-optimized a bit by</span></span><br><span class="line">  <span class="comment">// assuming that after the first child we&#x27;ve already added everything.</span></span><br><span class="line">  <span class="keyword">let</span> childToDelete = currentFirstChild;</span><br><span class="line">  <span class="keyword">while</span> (childToDelete !== <span class="literal">null</span>) &#123;</span><br><span class="line">    deleteChild(returnFiber, childToDelete);</span><br><span class="line">    childToDelete = childToDelete.sibling;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>综合deleteChild、deleteRemainingChildren、reconcileSingleElement成一个整体来看。</p>
+<ul>
+<li>当children为一个单独的VDOM，此时FiberNode此时可能存在多个同级的FiberNode(通过sibling进行链接)，所以要对这些多出来的FiberNode进行删除</li>
+<li>当key对应完毕。直接使用deleteRemainingChildren标记删除剩余后面所有fiber.sibling及其子节点</li>
+<li>关于第二条的key对应。当key在中间时候，key前面的使用deleteChild当个删除。找到key之后，批量deleteChild删除。</li>
+</ul>
+<p>所以，总的来讲，这里是Tree Diff没错，但是更多的同时ComponentDiff的替换行为，一旦ClassComponent&amp;HostComponent这些做了修改，那么直接用新的替换它(这里它是FiberNode)。</p>
+<p>这里再看看key对应完毕后创建新的fiber的函数useFiber。这个函数主要是创建一个workInProgress节点。当current.alternate有值，直接修改更新它，如果没值的话则创建一个，并将创建的fiber的alternate设为current。</p>
+<h4 id="多节点children"><a href="#多节点children" class="headerlink" title="多节点children"></a>多节点children</h4><p>如果说单节点是其他两种Diff算法多一些。那么多节点children则是侧重了ElementDiff。同级多节点的更新，必然会伴随着节点的删除、移动、插入，ElementDiff算法在这里将会是主角。</p>
+<p>它对应的<code>reconcileChildrenArray</code>函数。如果对ElementDiff实现没有了解的。可以参考之前的<a href="/2019/06/25/react-diff/#Element-Diff">&lt;<React Diff>&gt;</a>篇。当然，这是v15版本的分析。</p>
+<p>对这个分析里面的ElementDiff分析做简述，就是<strong>新Index&gt;旧Index，那么需要将旧的节点移动到新的Index</strong>。理解这个非常重要，因为思路和v15版本一致，这里不再描述这个过程。</p>
+<p>反过来讲,<strong>如果旧Index&gt;新Index，那么原节点可以考虑原地不动</strong>。</p>
+<blockquote>
+<p>Tips: 关于这个大于小于，当ABCD转换成BACD也就是0123变成1023时候，只需要对A进行删除+创建+插入。ABCD对应的是旧index，而BACD则是新index。所以考虑到大于等于和小于等于这种符号的严谨性。这里需要说明一下，它的严谨说法是: <strong>如果旧Index&gt;新Index，那么原节点可以考虑原地不动,否则旧index ≤ 新 index, 则需要进行标记移动</strong>。</p>
+</blockquote>
+<p>以下是源码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reconcileChildrenArray</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  returnFiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  currentFirstChild: Fiber | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  newChildren: <span class="built_in">Array</span>&lt;*&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  expirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">Fiber</span> | <span class="title">null</span> </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> resultingFirstChild: Fiber | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">let</span> previousNewFiber: Fiber | <span class="literal">null</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> oldFiber = currentFirstChild;</span><br><span class="line">  <span class="keyword">let</span> lastPlacedIndex = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">let</span> newIdx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">let</span> nextOldFiber = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// 第一道循环</span></span><br><span class="line">  <span class="keyword">for</span> (; oldFiber !== <span class="literal">null</span> &amp;&amp; newIdx &lt; newChildren.length; newIdx++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (oldFiber.index &gt; newIdx) &#123;</span><br><span class="line">      <span class="comment">// 旧index &gt; 新index nextOldFiber不会变化 循环尾部有:oldFiber = nextOldFiber;</span></span><br><span class="line">      <span class="comment">// 设为null，fiberNode会走createFiberFromElement</span></span><br><span class="line">      nextOldFiber = oldFiber;</span><br><span class="line">      oldFiber = <span class="literal">null</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 否则指向oldFiber.sibling</span></span><br><span class="line">      nextOldFiber = oldFiber.sibling;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> newFiber = updateSlot(</span><br><span class="line">      returnFiber,</span><br><span class="line">      oldFiber,</span><br><span class="line">      newChildren[newIdx],</span><br><span class="line">      expirationTime,</span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">if</span> (newFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (oldFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">            oldFiber = nextOldFiber;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);</span><br><span class="line">    <span class="keyword">if</span> (previousNewFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">      resultingFirstChild = newFiber;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      previousNewFiber.sibling = newFiber;</span><br><span class="line">    &#125;</span><br><span class="line">    previousNewFiber = newFiber;</span><br><span class="line">    oldFiber = nextOldFiber;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (newIdx === newChildren.length) &#123;</span><br><span class="line">    deleteRemainingChildren(returnFiber, oldFiber);</span><br><span class="line">    <span class="keyword">return</span> resultingFirstChild;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (oldFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// 第二道循环</span></span><br><span class="line">    <span class="keyword">for</span> (; newIdx &lt; newChildren.length; newIdx++) &#123;</span><br><span class="line">      <span class="keyword">const</span> newFiber = createChild(</span><br><span class="line">        returnFiber,</span><br><span class="line">        newChildren[newIdx],</span><br><span class="line">        expirationTime,</span><br><span class="line">      );</span><br><span class="line">      <span class="keyword">if</span> (!newFiber) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);</span><br><span class="line">      <span class="keyword">if</span> (previousNewFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Move out of the loop. This only happens for the first run.</span></span><br><span class="line">        resultingFirstChild = newFiber;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        previousNewFiber.sibling = newFiber;</span><br><span class="line">      &#125;</span><br><span class="line">      previousNewFiber = newFiber;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resultingFirstChild;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> existingChildren = mapRemainingChildren(returnFiber, oldFiber);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Keep scanning and use the map to restore deleted items as moves.</span></span><br><span class="line">  <span class="comment">// 第三道循环</span></span><br><span class="line">  <span class="keyword">for</span> (; newIdx &lt; newChildren.length; newIdx++) &#123;</span><br><span class="line">    <span class="keyword">const</span> newFiber = updateFromMap(</span><br><span class="line">      existingChildren,</span><br><span class="line">      returnFiber,</span><br><span class="line">      newIdx,</span><br><span class="line">      newChildren[newIdx],</span><br><span class="line">      expirationTime,</span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">if</span> (newFiber) &#123;</span><br><span class="line">      <span class="keyword">if</span> (shouldTrackSideEffects) &#123;</span><br><span class="line">        <span class="keyword">if</span> (newFiber.alternate !== <span class="literal">null</span>) &#123;</span><br><span class="line">          existingChildren.delete(</span><br><span class="line">            newFiber.key === <span class="literal">null</span> ? newIdx : newFiber.key,</span><br><span class="line">          );</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);</span><br><span class="line">      <span class="keyword">if</span> (previousNewFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">        resultingFirstChild = newFiber;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        previousNewFiber.sibling = newFiber;</span><br><span class="line">      &#125;</span><br><span class="line">      previousNewFiber = newFiber;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (shouldTrackSideEffects) &#123;</span><br><span class="line">    existingChildren.forEach(<span class="function"><span class="params">child</span> =&gt;</span> deleteChild(returnFiber, child));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> resultingFirstChild;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这里首先要理解的是nextOldFiber。</p>
+<p>这里nextOldFiber实际上就是一个缓存作用，它的意义是将oldFiber最后赋值为<code>oldFiber || oldFiber.sibling</code>。</p>
+<p>假设我们变更前元素是ABCD，变更后是BADC。</p>
+<p>如果你认为这个循环是按BADC顺序，就容易走入误区。</p>
+<p>这是因为这个循环实质上是以newChildren(VDOM)为长度进行自增遍历(4)，oldFiber实质上确是从ABCD的顺序遍历，如果你理解是以newChildren(BADC)来开头(不管你认为相关值也好索引也好)，那么就容易陷入逻辑陷阱——**但实质上，要理解这一段，必须以ABCD的顺序来(nextOldFiber)**，如果你能理解这一块，就能理解它的目的了。</p>
+<p>而newIdx除了不得大于newChildren.length, 实质上和newChildren和一毛钱关系没有。他就是一个自增变量而已。</p>
+<p>大多数情况下，我们这里</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (oldFiber.index &gt; newIdx) &#123;</span><br><span class="line">    nextOldFiber = oldFiber;</span><br><span class="line">    oldFiber = <span class="literal">null</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    nextOldFiber = oldFiber.sibling;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>都不会走到第一个分支。接下来我们用案例佐证算法。</p>
+<h5 id="例子一"><a href="#例子一" class="headerlink" title="例子一"></a>例子一</h5><p>假设我们有一个组件Test</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span></span>&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">const</span> text = <span class="built_in">this</span>.props.children;</span><br><span class="line">    <span class="keyword">return</span> text === <span class="string">&#x27;Text&#x27;</span> ? </span><br><span class="line">        [<span class="string">&#x27;A&#x27;</span>,<span class="string">&#x27;B&#x27;</span>,<span class="string">&#x27;C&#x27;</span>,<span class="string">&#x27;D&#x27;</span>].map(<span class="function"><span class="params">v</span> =&gt;</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">key</span>=<span class="string">&#123;v&#125;</span>&gt;</span>&#123;v&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>) </span><br><span class="line">    	: [<span class="string">&#x27;B&#x27;</span>,<span class="string">&#x27;A&#x27;</span>,<span class="string">&#x27;D&#x27;</span>,<span class="string">&#x27;C&#x27;</span>].map(<span class="function"><span class="params">v</span> =&gt;</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">key</span>=<span class="string">&#123;v&#125;</span>&gt;</span>&#123;v&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>并且this.props.children从’Text’变成’Number’。此时它在第一个循环里面遇到updateSlot会直接返回null，然后循环被跳出。</p>
+<p>接下来路径是使用mapRemainingChildren生成Map结构, 这里key为key，而value为对应fiberNode。这个Map数据，其实和newChildren数组类似。</p>
+<p><strong>然后进入第三道循环</strong>，这个循环里面，会遍历newChildren,然后挨个获取newChildrenItem,获取key然后从mapRemainingChildren找到对应的旧fiberNode。</p>
+<ul>
+<li>如果能找到对应key相同的。updateElement会走move逻辑，复用fiberNode</li>
+<li>如果找不到。updateElement走insert逻辑，使用newChildrenItem创建新的fiberNode</li>
+</ul>
+<p>接下来，根据这个updateElement生成的fiberNode，查看其是否有alternate属性。如果是复用fiberNode，也就是Map里面能找到旧fiberNode的情况下，这种情况只需要做排序，此时找到了就要从原来Map里面删除它，然后使用placeChild执行排序。</p>
+<p>最后，如果Map结构里面还有多余的Item，直接删除它，新的children里面没有他们，所以全部标记删除。</p>
+<h5 id="例子二"><a href="#例子二" class="headerlink" title="例子二"></a>例子二</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class Test extends React.Component&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    const text &#x3D; this.props.children;</span><br><span class="line">    return text &#x3D;&#x3D;&#x3D; &#39;Text&#39; ? &lt;div&gt;</span><br><span class="line">          &lt;div&gt;1&lt;&#x2F;div&gt;</span><br><span class="line">          &lt;span&gt;4&lt;&#x2F;span&gt;</span><br><span class="line">        &lt;&#x2F;div&gt; : &lt;div&gt;</span><br><span class="line">          &lt;span&gt;4&lt;&#x2F;span&gt;</span><br><span class="line">          &lt;div&gt;1&lt;&#x2F;div&gt;</span><br><span class="line">        &lt;&#x2F;div&gt;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要说它和例子又什么区别，那就是它没有key了。此时它会直接在第一道循环的完成div和span对应fiberNode的遍历(对HostComponent来说，updateSlot会返回updateElement执行结果而不是null)。这两道流程里面都是走的创建新的，替换旧的处理，完毕之后将创建出来的fiberNode使用sibling连接起来，因为其遍历到底了，所以以下分支会被执行。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (newIdx === newChildren.length) &#123;</span><br><span class="line">  deleteRemainingChildren(returnFiber, oldFiber);</span><br><span class="line">  <span class="keyword">return</span> resultingFirstChild;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终，workInProgress.child会被赋值为resultingFirstChild。</p>
+<h5 id="重要补充-placeChild"><a href="#重要补充-placeChild" class="headerlink" title="重要补充: placeChild"></a>重要补充: placeChild</h5><p>一旦我们通过updateSlot获得一个fiberNode。下一步可能就是一个重头戏了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);</span><br></pre></td></tr></table></figure>
+
+<p>这个函数内容如下，另外lastPlacedIndex的初始值是0。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">placeChild</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  newFiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  lastPlacedIndex: number,</span></span></span><br><span class="line"><span class="function"><span class="params">  newIndex: number,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">  newFiber.index = newIndex;</span><br><span class="line">  <span class="keyword">if</span> (!shouldTrackSideEffects) &#123;</span><br><span class="line">    <span class="comment">// Noop.</span></span><br><span class="line">    <span class="keyword">return</span> lastPlacedIndex;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> current = newFiber.alternate;</span><br><span class="line">  <span class="keyword">if</span> (current !== <span class="literal">null</span>) &#123; <span class="comment">// 如果newFiber.alternate有值 那么判定是移动还是不管</span></span><br><span class="line">    <span class="keyword">const</span> oldIndex = current.index;</span><br><span class="line">    <span class="keyword">if</span> (oldIndex &lt; lastPlacedIndex) &#123;</span><br><span class="line">      <span class="comment">// This is a move.</span></span><br><span class="line">      newFiber.effectTag = Placement;</span><br><span class="line">      <span class="keyword">return</span> lastPlacedIndex;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;	<span class="comment">// 原地不动</span></span><br><span class="line">      <span class="comment">// This item can stay in place.</span></span><br><span class="line">      <span class="keyword">return</span> oldIndex;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123; <span class="comment">// 否则这是一个插入动作</span></span><br><span class="line">    <span class="comment">// This is an insertion.</span></span><br><span class="line">    newFiber.effectTag = Placement;</span><br><span class="line">    <span class="keyword">return</span> lastPlacedIndex;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于这个函数，有几点要明确。</p>
+<ul>
+<li>首先是alternate，fiberNode上的alternate实质上是newTree节点对oldTree或者叫做currentTree树的节点的链接。这里newFiber则是与前面提到的Tree相对应的workInProgress(newTree)树上的节点。</li>
+<li>所以这里oldIndex就真的是oldIndex, 但是lastPlacedIndex却并不能说是新Index。我们这里没有newIndex的概念，但是可以很自然的推测它肯定也有类似逻辑，这里需要推演出来。</li>
+<li>如果alternate不为空说明可以进行移动、保持、更新等处理，否则说明是一个新节点，要标记插入</li>
+</ul>
+<p>它这里逻辑是怎样的, 还是假设ABCD(0123-旧)到BADC(1032-新)进行变化(例子一)。因为这里是对newChildren(reconcileChildrenArray中)进行遍历，所以这个遍历对比流程顺序是: B-A-D-C。</p>
+<p>第一遍:</p>
+<p>​    B: 此时oldIndex = 1, lastPlacedIndex = 0; 此时B不动，lastPlacedIndex赋值为1</p>
+<p>第二遍</p>
+<p>​    A:此时oldIndex = 0, lastPlacedIndex = 1; 此时A标记移动，lastPlacedIndex赋值为1</p>
+<p>第三遍:</p>
+<p>​    D:此时oldIndex = 3 , lastPlacedIndex = 1; 此时D不动，lastPlacedIndex赋值为3</p>
+<p>第四遍:</p>
+<p>​    C:此时oldIndex = 2 , lastPlacedIndex = 3; 此时C标记，lastPlacedIndex赋值为3</p>
+<p>原理:</p>
+<p>这里有必要将alternate对新旧fiberNode的链接深入理解。这里进行处理时候将第一个元素B作为了初始基准，基准值取其旧index: 1, 此后A因为原来位置比靠前(旧index &lt; 基准值)，但是新顺序却靠后，所以按照从左往后的顺序，它必须移动，完毕后基准还是B，继续处理D，此时D.index大于基准值，在新的顺序里面也在B后面，所以它不动，改变基准值为D.index: 3。继续处理C, 它和A一样，原来位置靠前(旧index &lt; 基准值)，但是却在D后面，所以需要标记移动。</p>
+<p><strong>但是这里仅仅是标记了操作办法，索引还没处理。</strong>它的索引，则是通过resultingFirstChild变量实现的。每次得到新的值，它会挂载上一个获取到的fiberNode的sibling属性上，这个sibling一路链下来，就是实质性的index。</p>
+<h5 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h5><p>这里算法和v15有了很多变化。实现细节上已经几乎没有相同地方了。</p>
+<p>针对key的tree对比这里还是有，思路一致，不过已经改用Map结构来保存了，然后移动计算上基于updateFromMap-&gt;updateElement的方式来实现了。</p>
+<p>而索引，这里的调和算法上，实质已经没有这个东西了，它依托fiberNode的sibling就实现了。</p>
+<p>一套遍历走下来，如果Map数据里面还有多余，就是补足了之前v15 Tree Diff过程中对Delete的标记，直接遍历Map进行删除标记即可。</p>
+<p>其他情况，Fragment都是走的直接创建新的然后标记插入，最后标记移除旧的。</p>
+<h3 id="HostComponent"><a href="#HostComponent" class="headerlink" title="HostComponent"></a>HostComponent</h3><p>出了常见的ClassComponent，HostComponent在浏览器环境显然是更加基础的组件表示形式，实际上所有的ClassComponent，都是对HostComponent组件的引用和扩展。</p>
+<p>v16将v15里面的ReactDomComponent称之为HostComponent，常见的div、span都会转换为HostComponent。</p>
+<p>在beginWork里面可以看到，面对HostComponent。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> HostComponent: &#123; </span><br><span class="line">    <span class="keyword">return</span> updateHostComponent(current$$1, workInProgress, renderExpirationTime)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>updateHostComponent函数里面包含了context、ref和expirationTime之类的处理。但是最核心的还是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">reconcileChildren(</span><br><span class="line">    current,</span><br><span class="line">    workInProgress,</span><br><span class="line">    nextChildren,</span><br><span class="line">    renderExpirationTime,</span><br><span class="line">);</span><br><span class="line"><span class="keyword">return</span> workInProgress.child;</span><br></pre></td></tr></table></figure>
+
+<p>所以事实上，我们这里又走了ClassComponent的调用栈。其中细节这里不再复述。</p>
+<h3 id="FunctionComponent"><a href="#FunctionComponent" class="headerlink" title="FunctionComponent"></a>FunctionComponent</h3><p>几乎等同HostComponent情况。核心调用都是一致的。</p>
+<h1 id="Diff算法小总结"><a href="#Diff算法小总结" class="headerlink" title="Diff算法小总结"></a>Diff算法小总结</h1><p>实质上在beginWork里面对算法已经有了很明显的说明了。但是这里还是要单独抽出来讲一讲。</p>
+<p>我们的ComponentDiff、TreeDiff和ElementDiff实际上这里仍然适用。</p>
+<h2 id="Component-Diff"><a href="#Component-Diff" class="headerlink" title="Component Diff"></a>Component Diff</h2><p>这个算法的意义在于，当ClassComponent没有变化时候，不更新，变化了，就整体替换。</p>
+<p>placeSingleChild函数为所有的SingleChild做了替换标记。</p>
+<ul>
+<li>当判定不需要更新，且没有抛出错误的时候，那么这个SingleChild会将它自身的child全部递归做一个副本(副本之前保持fiberNode链接)，并返回child。</li>
+<li>否则，适用reconcileChildren处理后面逻辑</li>
+</ul>
+<h2 id="Tree-Diff"><a href="#Tree-Diff" class="headerlink" title="Tree Diff"></a>Tree Diff</h2><p>这里实质是同层级的元素的key对比。核心逻辑在reconcileChildrenArray函数里面。</p>
+<p>它是这样做的。如果这个ChildrenArray上Item有key props。那么newFiber = updateSlot(args) = null。然后跳出循环将旧的FiberNode全部放到Map结构里面，遍历新的children查找对应key的FiberNode。</p>
+<p>没找到一个，就从Map里面删除一个，遍历完成后，还在Map里面的就全部标记删除。</p>
+<h2 id="Element-Diff"><a href="#Element-Diff" class="headerlink" title="Element Diff"></a>Element Diff</h2><p>这里主要是上面reconcileChildrenArray函数里面，第三道循环里面处理的。</p>
+<p>如果key存在，那么复用之前FiberNode，否则根据新的children创建fiberNode。我们遍历的是newChildrenArray，遍历过程中得到的新的FiberNode会挨个被上一个FiberNode.sibling链接起来,这样index就能对应起来了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/React-v16/" rel="tag"># React v16</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/07/react-v16-ChildReconciler/" rel="prev" title="react-v16-ChildReconciler">
+      <i class="fa fa-chevron-left"></i> react-v16-ChildReconciler
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/28/v16-Scheduling-in-React/" rel="next" title="React的调度-v16">
+      React的调度-v16 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#findHighestPriorityRoot"><span class="nav-number">2.1.</span> <span class="nav-text">findHighestPriorityRoot</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E6%95%88%E8%8A%82%E7%82%B9%E6%B8%85%E9%99%A4"><span class="nav-number">2.1.1.</span> <span class="nav-text">无效节点清除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E4%BC%98%E5%85%88%E8%8A%82%E7%82%B9"><span class="nav-number">2.1.2.</span> <span class="nav-text">返回优先节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">2.1.3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#performWork"><span class="nav-number">2.2.</span> <span class="nav-text">performWork</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#performWorkOnRoot"><span class="nav-number">2.3.</span> <span class="nav-text">performWorkOnRoot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#renderRoot"><span class="nav-number">2.4.</span> <span class="nav-text">renderRoot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#workLoop"><span class="nav-number">2.5.</span> <span class="nav-text">workLoop</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#beginWork"><span class="nav-number">2.6.</span> <span class="nav-text">beginWork</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ClassComponent"><span class="nav-number">2.6.1.</span> <span class="nav-text">ClassComponent</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E8%8A%82%E7%82%B9Children"><span class="nav-number">2.6.1.1.</span> <span class="nav-text">单节点Children</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E8%8A%82%E7%82%B9children"><span class="nav-number">2.6.1.2.</span> <span class="nav-text">多节点children</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90%E4%B8%80"><span class="nav-number">2.6.1.2.1.</span> <span class="nav-text">例子一</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BE%8B%E5%AD%90%E4%BA%8C"><span class="nav-number">2.6.1.2.2.</span> <span class="nav-text">例子二</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%87%8D%E8%A6%81%E8%A1%A5%E5%85%85-placeChild"><span class="nav-number">2.6.1.2.3.</span> <span class="nav-text">重要补充: placeChild</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93-1"><span class="nav-number">2.6.1.2.4.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HostComponent"><span class="nav-number">2.6.2.</span> <span class="nav-text">HostComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FunctionComponent"><span class="nav-number">2.6.3.</span> <span class="nav-text">FunctionComponent</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Diff%E7%AE%97%E6%B3%95%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">Diff算法小总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Component-Diff"><span class="nav-number">3.1.</span> <span class="nav-text">Component Diff</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tree-Diff"><span class="nav-number">3.2.</span> <span class="nav-text">Tree Diff</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Element-Diff"><span class="nav-number">3.3.</span> <span class="nav-text">Element Diff</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

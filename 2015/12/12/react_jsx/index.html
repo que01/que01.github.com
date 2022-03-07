@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="React实践系列一 JSX，这是一篇关于JSX相关的学习记录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React实践系列一 JSX">
+<meta property="og:url" content="http://www.que01.top/2015/12/12/react_jsx/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="React实践系列一 JSX，这是一篇关于JSX相关的学习记录">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-12-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.558Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2015/12/12/react_jsx/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React实践系列一 JSX | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2015/12/12/react_jsx/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React实践系列一 JSX
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-12-12 00:00:00" itemprop="dateCreated datePublished" datetime="2015-12-12T00:00:00+08:00">2015-12-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2015/12/12/react_jsx/" class="post-meta-item leancloud_visitors" data-flag-title="React实践系列一 JSX" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">React实践系列一 JSX，这是一篇关于JSX相关的学习记录</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="关于React"><a href="#关于React" class="headerlink" title="关于React"></a>关于React</h2><p>React最近很火。一来一直以来DOM操作都是性能瓶颈,二来从另一个角度来诠释模块化。虽然说它按传统MVC的概念来分的话智仅仅能算V层面,同AngularJS这类MVVM框架在广度有较大距离。但是呢，一件事物不能一味求大求全，何况并不是一味大就可以解决EveryThing————比如YUI。</p>
+<p>React之所以成功，我以为，它是击中了前端从业人员的痛点：</p>
+<ol>
+<li>多个文章和书籍都无数次在说，DOM是性能后腿。然而避无可避。</li>
+<li>模块化说来容易做起来永远是一项业界痛点。太多代码写了一年又一年，也许下一年还会重复写。 </li>
+</ol>
+<p>React根据这两个痛点做了两件事：</p>
+<ol>
+<li>shadow DOM   ==&gt;  减少不必要的DOM操作</li>
+<li>JSX          ==&gt;  将模块相关的HTML,CSS,JS放到一起，这也许是一项前端领域的“逆生长”。</li>
+</ol>
+<p><span style="color:red">——本文只说JSX</span></p>
+<h2 id="JSX"><a href="#JSX" class="headerlink" title="JSX"></a>JSX</h2><p>JSX有什么好处呢：</p>
+<ul>
+<li>允许使用熟悉的语法来定义HTML元素树</li>
+<li>提供更加语义化且易懂的标签</li>
+<li>程序结构更加直观</li>
+<li>抽象了React.Element的创建过程</li>
+<li>随时掌控HTML标签以及生成这些标签的代码</li>
+<li>原生的Javascript</li>
+</ul>
+<p>当然，上面说了那么多只是文科考试一般的答案，实际工作中，没人会背诵下来。实际上，JSX仅仅是发明出来方便将html，css，js杂糅到一起做成模块用的工具，用不用可以看喜好。简单来对比下用和不用的区别(当然，用不用JSX，React依然是React)：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//不使用JSX</span></span><br><span class="line">React.createElement(<span class="string">&#x27;h1&#x27;</span>,&#123;<span class="attr">className</span>:<span class="string">&quot;aaa&quot;</span>&#125;,<span class="string">&quot;hello world&quot;</span>);</span><br><span class="line"><span class="comment">//使用JSX</span></span><br><span class="line">&lt;h1 <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;aaa&quot;</span>&gt;hello world&lt;/h1&gt;</span><br></pre></td></tr></table></figure>
+
+<p>两者在最后运行时候是等效的，但是很显然，JSX抹平了HTML在js中的转换问题，做到了将html标签转换js可识别的DOM对象的自动化——大家都干过用N个”+”来拼接HTML字符串并innerHTML到dom元素中的活儿，一旦字符串庞大，这个拼接就会很费神，然而这仅仅是字符串，手动来操作一个复杂的html字符串转换js认识的DOM，这将会更加复杂。所幸JSX为我们做好了这项工作。</p>
+<h2 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h2><p>首先让我们先来个Hello World！第一步就老实从Hello组件做起好了。来个半官方的demo，我仅仅改了标签而已。注意这里JSX浏览器端编译工具体积达到1.3M，这里再次说明了，这个转换是一件相当复杂的事情。</p>
+<p><a class="jsbin-embed" target="_blank" rel="noopener" href="http://jsbin.com/gayuca/3/embed?html,output">JS Bin on jsbin.com</a></p>
+<h2 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h2><p>hello world到此为止就可以运行了，但是这个demo仅仅是一个写死的，不可以复用的html——事实上复制粘贴比它快多了，对吧？<br>第二步，来构建一个简单的组件。这里我抄个demo过来，就不写了。</p>
+<pre>
+组件的层级：
+- CommentBox
+  - CommentList
+    - Comment
+  - CommentForm
+</pre>
+<p>代码如下：</p>
+<p><a class="jsbin-embed" target="_blank" rel="noopener" href="http://jsbin.com/winohi/embed?html,output">JS Bin on jsbin.com</a></p>
+<p>这里定义一个评论组件，他包含一个评论列表和一个提交评论的表单，我们用React.createClass分别构造了这三个小模块，然后在CommentBox中引用了CommentList和CommentForm，这样，一个包含列表和表单的评论组件就做好了——当然，它只是随便填充了点文字意思了那么一下。。。</p>
+<h2 id="step3"><a href="#step3" class="headerlink" title="step3"></a>step3</h2><p>到此为止，这个组件可以实现复用了，但是，<b>它的数据还是写死的</b>。CommentList里面也没有Comment，完善一下：<br><a class="jsbin-embed" target="_blank" rel="noopener" href="http://jsbin.com/dazisu/embed?html,output">JS Bin on jsbin.com</a></p>
+<p>说一下这里有哪些需要注意的，它做了什么</p>
+<ul>
+<li>添加了一个Comment组件，并改变了CommentList</li>
+<li>传入了data对象</li>
+<li>在CommentList中根据传入的data遍历输出了Comment</li>
+</ul>
+<h2 id="写在step4之前"><a href="#写在step4之前" class="headerlink" title="写在step4之前"></a>写在step4之前</h2><p>写到step3，步子跨越的有些大了。这里补充一下关于JSX的一些基础，和语法相关常识。</p>
+<h3 id="JSX的注释"><a href="#JSX的注释" class="headerlink" title="JSX的注释"></a>JSX的注释</h3><p>JSX本质上是js，即使当它是JSX时候可以不太遵循JS语法，但是一旦编译成JS，它就必须遵循JS的语法。</p>
+<p>这里简单说一下常见的两种情况：</p>
+<ul>
+<li><p>注释在JS中</p>
+</li>
+<li><p>注释在HTML中</p>
+</li>
+</ul>
+<h5 id="注释在JS中"><a href="#注释在JS中" class="headerlink" title="注释在JS中"></a>注释在JS中</h5><p>注释在JS中其实没有太多好说的，和常规的JS一样</p>
+<h5 id="注释在HTML中"><a href="#注释在HTML中" class="headerlink" title="注释在HTML中"></a>注释在HTML中</h5><p>注释在HTML中的话，有两种情况：</p>
+<ol>
+<li>作为子节点</li>
+<li>作为内联属性</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//作为子节点</span></span><br><span class="line">&lt;div&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//这是一个注释</span></span><br><span class="line">    &#125;</span><br><span class="line">   &lt;h1&gt;helloWorld&lt;/h1&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment">//作为内联属性</span></span><br><span class="line">&lt;input </span><br><span class="line">    <span class="comment">//这是一个注释</span></span><br><span class="line">type=<span class="string">&quot;text&quot;</span>&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里的注释，可以使用 “//“&amp;”/* */“</p>
+<h3 id="JSX模板替代性相关"><a href="#JSX模板替代性相关" class="headerlink" title="JSX模板替代性相关"></a>JSX模板替代性相关</h3><p>模板的作用众所周知，它至少起到以下作用：</p>
+<ol>
+<li>在标记中输出变量</li>
+<li>选择性输出HTML</li>
+<li>遍历输出固定HTML标记</li>
+<li>分支支持(if else之流)</li>
+</ol>
+<p>这里就根据上面4个，一一说到JSX中的替代解决方案</p>
+<h5 id="在标记中输出变量-–-gt"><a href="#在标记中输出变量-–-gt" class="headerlink" title="在标记中输出变量 –&gt; {}"></a>在标记中输出变量 –&gt; {}</h5><p>在JSX中，花括号{}中间的内容会被渲染为动态值，在{}中放入的任何东西都会被求值，实际上每个{}之间，都会放入一个context(上下文)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//解析变量</span></span><br><span class="line"><span class="keyword">var</span> test = <span class="string">&quot;helloWorld&quot;</span>;</span><br><span class="line">&lt;h2&gt;&#123;test&#125;&lt;<span class="regexp">/h2&gt; /</span><span class="regexp">/==&gt;&lt;h2&gt;helloWorld&lt;/</span>h2&gt;</span><br><span class="line"><span class="comment">//执行函数</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params">a,b</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">String</span>(a)+<span class="built_in">String</span>(b);</span><br><span class="line">&#125;</span><br><span class="line">&lt;h2&gt;&#123;hello(<span class="string">&quot;hello&quot;</span>,<span class="string">&quot;World&quot;</span>)&#125;&lt;<span class="regexp">/h2&gt; /</span><span class="regexp">/==&gt;&lt;h2&gt;helloWorld&lt;/</span>h2&gt;</span><br><span class="line"><span class="comment">//解析数组</span></span><br><span class="line"><span class="keyword">var</span> test = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line">&lt;h2&gt;&#123;test&#125;&lt;<span class="regexp">/h2&gt; /</span><span class="regexp">/==&gt;&lt;h2&gt;123&lt;/</span>h2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="选择性输出HTML-–-gt-dangerouslySetInnerHTML"><a href="#选择性输出HTML-–-gt-dangerouslySetInnerHTML" class="headerlink" title="选择性输出HTML  –&gt;  dangerouslySetInnerHTML"></a>选择性输出HTML  –&gt;  dangerouslySetInnerHTML</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createMarkup</span>(<span class="params"></span>) </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">            __html: <span class="string">&#x27;&lt;span&gt;Hello World&lt;/span&gt;&#x27;</span></span><br><span class="line">    &#125;;</span><br><span class="line">...</span><br><span class="line">render:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">dangerouslySetInnerHTML</span>=<span class="string">&#123;createMarkup()&#125;</span> /&gt;</span></span></span><br><span class="line">&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h5 id="遍历输出固定HTML标记-–-gt-this-props-data-map"><a href="#遍历输出固定HTML标记-–-gt-this-props-data-map" class="headerlink" title="遍历输出固定HTML标记  –&gt; this.props.data.map"></a>遍历输出固定HTML标记  –&gt; this.props.data.map</h5><p>关于遍历输出固定html标记，在上文的例子中有一个已经运行起来的demo，把它提取出来：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> CommentList = React.createClass(&#123;</span><br><span class="line">  render: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> commentNodes = <span class="built_in">this</span>.props.data.map(<span class="function"><span class="keyword">function</span> (<span class="params">comment</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        &lt;Comment author=&#123;comment.author&#125;&gt;</span><br><span class="line">          &#123;comment.text&#125;</span><br><span class="line">        &lt;/Comment&gt;</span><br><span class="line">      );</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">&quot;commentList&quot;</span>&gt;</span><br><span class="line">        &#123;commentNodes&#125;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">var</span> Comment = React.createClass(&#123;</span><br><span class="line">  render: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">&quot;comment&quot;</span>&gt;</span><br><span class="line">        &lt;h2 className=<span class="string">&quot;commentAuthor&quot;</span>&gt;</span><br><span class="line">          &#123;<span class="built_in">this</span>.props.author&#125;</span><br><span class="line">        &lt;/h2&gt;</span><br><span class="line">        &#123;<span class="built_in">this</span>.props.children&#125;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>大致说一下这里出现的各种变量：<br>首先要说的是 {this.props.children} ，这是一个非常关键的变量。它指向哪个变量呢？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在CommentList中调用</span></span><br><span class="line">&lt;Comment author=张三&gt;</span><br><span class="line">  测试变量</span><br><span class="line">&lt;/Comment&gt;</span><br><span class="line"><span class="comment">//最后在编译成的：</span></span><br><span class="line">&lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;comment&quot;</span>&gt;</span><br><span class="line">&lt;h2 <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;commentAuthor&quot;</span>&gt;</span><br><span class="line">  张三</span><br><span class="line">&lt;/h2&gt;</span><br><span class="line">    测试变量</span><br><span class="line">&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<p>对比上面两个code片段，可以看到：{this.props.children}的地方，出现了”测试变量”。</p>
+<p>——{this.props.children}实际上就是指向了Comment标记开始到结尾过程中的子元素</p>
+<p>这里解释了JSX中如何生成遍历过程中输出不同变量的，但是还没有说明如何进行遍历过程，这里就是this.props.data.map的作用了。熟悉JS的话就不需要再解释了，map对数组每个元素操作后返回了新的变量组成的数据，最后放到{}中去解析去了：数组是会被当做字符串加起来innerHTML到目标位置的。</p>
+<p>最后整理下实现的路径：</p>
+<ol>
+<li>定义Comment组件，把Comment标记中的文本作为变量放到内容区，以备遍历过程中输出不同变量之需</li>
+<li>使用map方法生成一个包含多个Comment组件的数组，把逻辑放到CommentList定义语句中</li>
+<li>将返回的数组放到{}中去解析生成，从而遍历生成子节点</li>
+</ol>
+<h5 id="分支支持-if-else之流"><a href="#分支支持-if-else之流" class="headerlink" title="分支支持(if else之流)"></a>分支支持(if else之流)</h5><p>分支这个最后决定一笔略过了——前面说过了，{}中会有个context，所以，if/else在js中怎么用，这里就可以怎么用。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>JSX应该算是是React的语法糖，它是React的语法更加简洁，好写和好认。用好JSX是React实现实用意义的第一步。<br>本文简单解释了必要的概念，从step1到step4，实现了一个非常简单评论组件——虽然它很简单，但是一旦封装好却可以重复使用。<br>在step1到step4，实践了复用子组件的同时，实现了模板在实用意义中至关重要的3点：</p>
+<ol>
+<li>在标记中输出变量</li>
+<li>选择性输出HTML</li>
+<li>分支支持(if else之流)</li>
+</ol>
+<p>本文将就此终止，但是本文仍不完善，比如没有讲到this.props，但是这部重要，最重要的是，如何把JSX当成模板用一回，是将JSX作为实用工具最初的一步。关于this.props和组件中数据传递，下一篇再说。</p>
+<p>this end</p>
+<script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/11/30/closure2/" rel="prev" title="Javascript闭包“浅”析">
+      <i class="fa fa-chevron-left"></i> Javascript闭包“浅”析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/12/15/react_cycle/" rel="next" title="React实践系列一 组件生命周期">
+      React实践系列一 组件生命周期 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EReact"><span class="nav-number">1.</span> <span class="nav-text">关于React</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JSX"><span class="nav-number">2.</span> <span class="nav-text">JSX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#step1"><span class="nav-number">3.</span> <span class="nav-text">step1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#step2"><span class="nav-number">4.</span> <span class="nav-text">step2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#step3"><span class="nav-number">5.</span> <span class="nav-text">step3</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8step4%E4%B9%8B%E5%89%8D"><span class="nav-number">6.</span> <span class="nav-text">写在step4之前</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JSX%E7%9A%84%E6%B3%A8%E9%87%8A"><span class="nav-number">6.1.</span> <span class="nav-text">JSX的注释</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B3%A8%E9%87%8A%E5%9C%A8JS%E4%B8%AD"><span class="nav-number">6.1.0.1.</span> <span class="nav-text">注释在JS中</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B3%A8%E9%87%8A%E5%9C%A8HTML%E4%B8%AD"><span class="nav-number">6.1.0.2.</span> <span class="nav-text">注释在HTML中</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JSX%E6%A8%A1%E6%9D%BF%E6%9B%BF%E4%BB%A3%E6%80%A7%E7%9B%B8%E5%85%B3"><span class="nav-number">6.2.</span> <span class="nav-text">JSX模板替代性相关</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9C%A8%E6%A0%87%E8%AE%B0%E4%B8%AD%E8%BE%93%E5%87%BA%E5%8F%98%E9%87%8F-%E2%80%93-gt"><span class="nav-number">6.2.0.1.</span> <span class="nav-text">在标记中输出变量 –&gt; {}</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%80%89%E6%8B%A9%E6%80%A7%E8%BE%93%E5%87%BAHTML-%E2%80%93-gt-dangerouslySetInnerHTML"><span class="nav-number">6.2.0.2.</span> <span class="nav-text">选择性输出HTML  –&gt;  dangerouslySetInnerHTML</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%81%8D%E5%8E%86%E8%BE%93%E5%87%BA%E5%9B%BA%E5%AE%9AHTML%E6%A0%87%E8%AE%B0-%E2%80%93-gt-this-props-data-map"><span class="nav-number">6.2.0.3.</span> <span class="nav-text">遍历输出固定HTML标记  –&gt; this.props.data.map</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%86%E6%94%AF%E6%94%AF%E6%8C%81-if-else%E4%B9%8B%E6%B5%81"><span class="nav-number">6.2.0.4.</span> <span class="nav-text">分支支持(if else之流)</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

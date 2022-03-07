@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="开始读react代码。这里做一点react工程结构浅析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react工程结构浅析">
+<meta property="og:url" content="http://www.que01.top/2018/04/15/react-build/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="开始读react代码。这里做一点react工程结构浅析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-04-15T08:13:47.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.630Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react gulp">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2018/04/15/react-build/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react工程结构浅析 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2018/04/15/react-build/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react工程结构浅析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-15 16:13:47" itemprop="dateCreated datePublished" datetime="2018-04-15T16:13:47+08:00">2018-04-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2018/04/15/react-build/" class="post-meta-item leancloud_visitors" data-flag-title="react工程结构浅析" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">开始读react代码。这里做一点react工程结构浅析。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="浅析"><a href="#浅析" class="headerlink" title="浅析"></a>浅析</h1><p>这里以 15-stable 这个 tag,也就是 15.6.2 为基准分析<br>这里还是得从 package.json 开始，npm scrip 命令如下</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&quot;scripts&quot;: &#123;</span><br><span class="line">  &quot;build&quot;: &quot;grunt build&quot;,</span><br><span class="line">  &quot;linc&quot;: &quot;git diff --name-only --diff-filter=ACMRTUB `git merge-base HEAD master` | grep &#x27;\\.js$&#x27; | xargs eslint --&quot;,</span><br><span class="line">  &quot;lint&quot;: &quot;grunt lint&quot;,</span><br><span class="line">  &quot;postinstall&quot;: &quot;node node_modules/fbjs-scripts/node/check-dev-engines.js package.json&quot;,</span><br><span class="line">  &quot;test&quot;: &quot;jest&quot;,</span><br><span class="line">  &quot;flow&quot;: &quot;flow&quot;,</span><br><span class="line">  &quot;prettier&quot;: &quot;node ./scripts/prettier/index.js write&quot;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>可见 build 是使用的 grunt 打包</p>
+<h1 id="gruntfile任务总览"><a href="#gruntfile任务总览" class="headerlink" title="gruntfile任务总览:"></a>gruntfile任务总览:</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">grunt.registerTask(<span class="string">&quot;build&quot;</span>, [</span><br><span class="line">  <span class="string">&quot;delete-build-modules&quot;</span>,</span><br><span class="line">  <span class="string">&quot;build-modules&quot;</span>,</span><br><span class="line">  <span class="string">&quot;version-check&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:basic&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:addons&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:min&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:addonsMin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:dom&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:domMin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:domServer&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:domServerMin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:domFiber&quot;</span>,</span><br><span class="line">  <span class="string">&quot;browserify:domFiberMin&quot;</span>,</span><br><span class="line">  <span class="string">&quot;npm-react:release&quot;</span>,</span><br><span class="line">  <span class="string">&quot;npm-react:pack&quot;</span>,</span><br><span class="line">  <span class="string">&quot;npm-react-dom:release&quot;</span>,</span><br><span class="line">  <span class="string">&quot;npm-react-dom:pack&quot;</span>,</span><br><span class="line">  <span class="string">&quot;npm-react-test:release&quot;</span>,</span><br><span class="line">  <span class="string">&quot;npm-react-test:pack&quot;</span>,</span><br><span class="line">  <span class="string">&quot;compare_size&quot;</span></span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+
+<p>如果熟悉 grunt,会很清楚这个 build 实际上是下面数组里面所有任务的集合，这里挨个分解一下每一行的任务</p>
+<h2 id="delete-build-modules"><a href="#delete-build-modules" class="headerlink" title="delete-build-modules"></a>delete-build-modules</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">grunt.registerTask(<span class="string">&quot;delete-build-modules&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// Use gulp here.</span></span><br><span class="line">  spawnGulp([<span class="string">&quot;react:clean&quot;</span>], <span class="literal">null</span>, <span class="built_in">this</span>.async());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里调用了一个函数 spawnGulp</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">spawnGulp</span>(<span class="params">args, opts, done</span>) </span>&#123;</span><br><span class="line">  grunt.util.spawn(</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">// This could be more flexible (require.resolve &amp; lookup bin in package)</span></span><br><span class="line">      <span class="comment">// but if it breaks we&#x27;ll fix it then.</span></span><br><span class="line">      cmd: path.join(<span class="string">&quot;node_modules&quot;</span>, <span class="string">&quot;.bin&quot;</span>, GULP_EXE),</span><br><span class="line">      args: args,</span><br><span class="line">      opts: <span class="built_in">Object</span>.assign(&#123; <span class="attr">stdio</span>: <span class="string">&quot;inherit&quot;</span> &#125;, opts)</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">err, result, code</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        grunt.fail.fatal(<span class="string">&quot;Something went wrong running gulp: &quot;</span>, result);</span><br><span class="line">      &#125;</span><br><span class="line">      done(code === <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>grunt.util.spawn</strong> 是 grunt 一个 api,它可以创建一个子进程，它的 API 比较简单，<code>grunt.util.spawn(opts, callback)</code>,执行一个命令(opts 里面配置)，当这个命令执行完毕退出时候会执行 callback。<br><code>this.async()</code>则是 grunt 内部设定异步的一个方式,通过这种方式 grunt 才会知道这是一个异步任务。<br>综上，<code>spawnGulp(['react:clean'], null, this.async())</code>实际上是在对 grunt 说，『调用一个子进程，执行’gulp react:clean’，并等待它执行完毕，如果抛错就中断整个 grunt 任务并抛出错误。』<br>gulp 任务的配置文件是 gulpfile,里面定义的任务如下，很容易明白，这是一个删除各个库类 lib 文件的任务，不需要说太多。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">gulp.task(<span class="string">&quot;react:clean&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> del([</span><br><span class="line">    paths.react.lib,</span><br><span class="line">    paths.reactDOM.lib,</span><br><span class="line">    paths.reactNative.lib,</span><br><span class="line">    paths.reactShallowRenderer.lib,</span><br><span class="line">    paths.reactTestRenderer.lib</span><br><span class="line">  ]);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="build-modules"><a href="#build-modules" class="headerlink" title="build-modules"></a>build-modules</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">grunt.registerTask(<span class="string">&quot;build-modules&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  spawnGulp([<span class="string">&quot;react:modules&quot;</span>], <span class="literal">null</span>, <span class="built_in">this</span>.async());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这个和 1 同理，只不过任务换成了 gulp react:modules</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">gulp.task(<span class="string">&quot;react:modules&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> merge(</span><br><span class="line">    gulp</span><br><span class="line">      .src(paths.react.src)</span><br><span class="line">      .pipe(babel(babelOptsReact))</span><br><span class="line">      .pipe(stripProvidesModule())</span><br><span class="line">      .pipe(flatten())</span><br><span class="line">      .pipe(gulp.dest(paths.react.lib)),</span><br><span class="line">    gulp</span><br><span class="line">      .src(paths.reactDOM.src)</span><br><span class="line">      .pipe(babel(babelOptsReactDOM))</span><br><span class="line">      .pipe(stripProvidesModule())</span><br><span class="line">      .pipe(flatten())</span><br><span class="line">      .pipe(gulp.dest(paths.reactDOM.lib)),</span><br><span class="line">    gulp</span><br><span class="line">      .src(paths.reactNative.src)</span><br><span class="line">      .pipe(babel(babelOptsReactNative))</span><br><span class="line">      .pipe(stripProvidesModule())</span><br><span class="line">      .pipe(flatten())</span><br><span class="line">      .pipe(gulp.dest(paths.reactNative.lib)),</span><br><span class="line">    gulp</span><br><span class="line">      .src(paths.reactShallowRenderer.src)</span><br><span class="line">      .pipe(stripProvidesModule())</span><br><span class="line">      .pipe(babel(babelOptsReactShallowRenderer))</span><br><span class="line">      .pipe(flatten())</span><br><span class="line">      .pipe(gulp.dest(paths.reactShallowRenderer.lib)),</span><br><span class="line">    gulp</span><br><span class="line">      .src(paths.reactTestRenderer.src)</span><br><span class="line">      .pipe(stripProvidesModule())</span><br><span class="line">      .pipe(babel(babelOptsReactTestRenderer))</span><br><span class="line">      .pipe(flatten())</span><br><span class="line">      .pipe(gulp.dest(paths.reactTestRenderer.lib))</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这个任务是 gulpfile 的核心部分，gulpfile291 行代码里面 90%都是它的配置、和相关预定义。这几个任务主要的就是 babel(options)、stripProvidesModule、flatten<br>这里先找其中第一个 options 看看，这五个 options 整体结构都雷同</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> babelOptsReact = &#123;</span><br><span class="line">  plugins: [</span><br><span class="line">    devExpressionWithCodes, <span class="comment">// this pass has to run before `rewrite-modules`</span></span><br><span class="line">    [babelPluginModules, &#123; <span class="attr">map</span>: moduleMapReact &#125;]</span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以很容易理解这个代码的意思，实质上就是运行 babel,只不过给每个 bable 传入的 plugins 都不一样而已。这里看看这个 devExpressionWithCodes 文件，它指向了 scripts/error-codes/dev-expression-with-codes.js，这里看看这个文件的内容，这里核心一点的地方就是需要对 babel 的 <a target="_blank" rel="noopener" href="https://babeljs.io/docs/plugins/">plugins</a> 有所了解.<br>官方的简介里面提及，babel 是一个编译器，在高层级设计上，有三个运行阶段：parsing, transforming, and generation，plugins 这个东西会影响 transforming 这个环节。<br>根据官方页面的#plugin-development 提及的，来到<a target="_blank" rel="noopener" href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/plugin-handbook.md">babel-handbook 的中文版 plugins 引导页面</a>。<br>scripts/error-codes/dev-expression-with-codes.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> evalToString = <span class="built_in">require</span>(<span class="string">&quot;./evalToString&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> existingErrorMap = <span class="built_in">require</span>(<span class="string">&quot;./codes.json&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> invertObject = <span class="built_in">require</span>(<span class="string">&quot;./invertObject&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> errorMap = invertObject(existingErrorMap);</span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">babel</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> t = babel.types;</span><br><span class="line">  <span class="keyword">var</span> SEEN_SYMBOL = <span class="built_in">Symbol</span>(<span class="string">&quot;dev-expression-with-codes.seen&quot;</span>);</span><br><span class="line">  <span class="comment">// Generate a hygienic identifier</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">getProdInvariantIdentifier</span>(<span class="params">path, localState</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!localState.prodInvariantIdentifier) &#123;</span><br><span class="line">      localState.prodInvariantIdentifier = path.scope.generateUidIdentifier(</span><br><span class="line">        <span class="string">&quot;prodInvariant&quot;</span></span><br><span class="line">      );</span><br><span class="line">      path.scope.getProgramParent().push(&#123;</span><br><span class="line">        id: localState.prodInvariantIdentifier,</span><br><span class="line">        init: t.callExpression(t.identifier(<span class="string">&quot;require&quot;</span>), [</span><br><span class="line">          t.stringLiteral(<span class="string">&quot;reactProdInvariant&quot;</span>)</span><br><span class="line">        ])</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> localState.prodInvariantIdentifier;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> DEV_EXPRESSION = t.binaryExpression(</span><br><span class="line">    <span class="string">&quot;!==&quot;</span>,</span><br><span class="line">    t.memberExpression(</span><br><span class="line">      t.memberExpression(t.identifier(<span class="string">&quot;process&quot;</span>), t.identifier(<span class="string">&quot;env&quot;</span>), <span class="literal">false</span>),</span><br><span class="line">      t.identifier(<span class="string">&quot;NODE_ENV&quot;</span>),</span><br><span class="line">      <span class="literal">false</span></span><br><span class="line">    ),</span><br><span class="line">    t.stringLiteral(<span class="string">&quot;production&quot;</span>)</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    pre: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="built_in">this</span>.prodInvariantIdentifier = <span class="literal">null</span>;</span><br><span class="line">    &#125;,</span><br><span class="line">    visitor: &#123;</span><br><span class="line">      Identifier: &#123;</span><br><span class="line">        enter: <span class="function"><span class="keyword">function</span>(<span class="params">path</span>) </span>&#123;</span><br><span class="line">          <span class="comment">// Do nothing when testing</span></span><br><span class="line">          <span class="keyword">if</span> (process.env.NODE_ENV === <span class="string">&quot;test&quot;</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// Replace __DEV__ with process.env.NODE_ENV !== &#x27;production&#x27;</span></span><br><span class="line">          <span class="keyword">if</span> (path.isIdentifier(&#123; <span class="attr">name</span>: <span class="string">&quot;__DEV__&quot;</span> &#125;)) &#123;</span><br><span class="line">            path.replaceWith(DEV_EXPRESSION);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      CallExpression: &#123;</span><br><span class="line">        exit: <span class="function"><span class="keyword">function</span>(<span class="params">path</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">var</span> node = path.node;</span><br><span class="line">          <span class="comment">// Ignore if it&#x27;s already been processed</span></span><br><span class="line">          <span class="keyword">if</span> (node[SEEN_SYMBOL]) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// Insert `var PROD_INVARIANT = require(&#x27;reactProdInvariant&#x27;);`</span></span><br><span class="line">          <span class="comment">// before all `require(&#x27;invariant&#x27;)`s.</span></span><br><span class="line">          <span class="comment">// NOTE it doesn&#x27;t support ES6 imports yet.</span></span><br><span class="line">          <span class="keyword">if</span> (</span><br><span class="line">            path.get(<span class="string">&quot;callee&quot;</span>).isIdentifier(&#123; <span class="attr">name</span>: <span class="string">&quot;require&quot;</span> &#125;) &amp;&amp;</span><br><span class="line">            path.get(<span class="string">&quot;arguments&quot;</span>)[<span class="number">0</span>] &amp;&amp;</span><br><span class="line">            path.get(<span class="string">&quot;arguments&quot;</span>)[<span class="number">0</span>].isStringLiteral(&#123; <span class="attr">value</span>: <span class="string">&quot;invariant&quot;</span> &#125;)</span><br><span class="line">          ) &#123;</span><br><span class="line">            node[SEEN_SYMBOL] = <span class="literal">true</span>;</span><br><span class="line">            getProdInvariantIdentifier(path, <span class="built_in">this</span>);</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (path.get(<span class="string">&quot;callee&quot;</span>).isIdentifier(&#123; <span class="attr">name</span>: <span class="string">&quot;invariant&quot;</span> &#125;)) &#123;</span><br><span class="line">            <span class="comment">// Turns this code:</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// invariant(condition, argument, &#x27;foo&#x27;, &#x27;bar&#x27;);</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// into this:</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// if (!condition) &#123;</span></span><br><span class="line">            <span class="comment">//   if (&quot;production&quot; !== process.env.NODE_ENV) &#123;</span></span><br><span class="line">            <span class="comment">//     invariant(false, argument, &#x27;foo&#x27;, &#x27;bar&#x27;);</span></span><br><span class="line">            <span class="comment">//   &#125; else &#123;</span></span><br><span class="line">            <span class="comment">//     PROD_INVARIANT(&#x27;XYZ&#x27;, &#x27;foo&#x27;, &#x27;bar&#x27;);</span></span><br><span class="line">            <span class="comment">//   &#125;</span></span><br><span class="line">            <span class="comment">// &#125;</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// where</span></span><br><span class="line">            <span class="comment">// - `XYZ` is an error code: a unique identifier (a number string)</span></span><br><span class="line">            <span class="comment">//   that references a verbose error message.</span></span><br><span class="line">            <span class="comment">//   The mapping is stored in `scripts/error-codes/codes.json`.</span></span><br><span class="line">            <span class="comment">// - `PROD_INVARIANT` is the `reactProdInvariant` function that always throws with an error URL like</span></span><br><span class="line">            <span class="comment">//   [http://facebook.github.io/react/docs/error-decoder.html?invariant=XYZ&amp;args[\]=foo&amp;args[]=bar](http://facebook.github.io/react/docs/error-decoder.html?invariant=XYZ&amp;args%5B%5D=foo&amp;args%5B%5D=bar)</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// Specifically this does 3 things:</span></span><br><span class="line">            <span class="comment">// 1. Checks the condition first, preventing an extra function call.</span></span><br><span class="line">            <span class="comment">// 2. Adds an environment check so that verbose error messages aren&#x27;t</span></span><br><span class="line">            <span class="comment">//    shipped to production.</span></span><br><span class="line">            <span class="comment">// 3. Rewrites the call to `invariant` in production to `reactProdInvariant`</span></span><br><span class="line">            <span class="comment">//   - `reactProdInvariant` is always renamed to avoid shadowing</span></span><br><span class="line">            <span class="comment">// The generated code is longer than the original code but will dead</span></span><br><span class="line">            <span class="comment">// code removal in a minifier will strip that out.</span></span><br><span class="line">            <span class="keyword">var</span> condition = node.arguments[<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">var</span> errorMsgLiteral = evalToString(node.arguments[<span class="number">1</span>]);</span><br><span class="line">            <span class="keyword">var</span> prodErrorId = errorMap[errorMsgLiteral];</span><br><span class="line">            <span class="keyword">if</span> (prodErrorId === <span class="literal">undefined</span>) &#123;</span><br><span class="line">              <span class="comment">// The error cannot be found in the map.</span></span><br><span class="line">              node[SEEN_SYMBOL] = <span class="literal">true</span>;</span><br><span class="line">              <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">&quot;test&quot;</span>) &#123;</span><br><span class="line">                <span class="built_in">console</span>.warn(</span><br><span class="line">                  <span class="string">&#x27;Error message &quot;&#x27;</span> +</span><br><span class="line">                    errorMsgLiteral +</span><br><span class="line">                    <span class="string">&#x27;&quot; cannot be found. The current React version &#x27;</span> +</span><br><span class="line">                    <span class="string">&quot;and the error map are probably out of sync. &quot;</span> +</span><br><span class="line">                    <span class="string">&quot;Please run `gulp react:extract-errors` before building React.&quot;</span></span><br><span class="line">                );</span><br><span class="line">              &#125;</span><br><span class="line">              <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">var</span> devInvariant = t.callExpression(</span><br><span class="line">              node.callee,</span><br><span class="line">              [</span><br><span class="line">                t.booleanLiteral(<span class="literal">false</span>),</span><br><span class="line">                t.stringLiteral(errorMsgLiteral)</span><br><span class="line">              ].concat(node.arguments.slice(<span class="number">2</span>))</span><br><span class="line">            );</span><br><span class="line">            devInvariant[SEEN_SYMBOL] = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">var</span> localInvariantId = getProdInvariantIdentifier(path, <span class="built_in">this</span>);</span><br><span class="line">            <span class="keyword">var</span> prodInvariant = t.callExpression(</span><br><span class="line">              localInvariantId,</span><br><span class="line">              [t.stringLiteral(prodErrorId)].concat(node.arguments.slice(<span class="number">2</span>))</span><br><span class="line">            );</span><br><span class="line">            prodInvariant[SEEN_SYMBOL] = <span class="literal">true</span>;</span><br><span class="line">            path.replaceWith(</span><br><span class="line">              t.ifStatement(</span><br><span class="line">                t.unaryExpression(<span class="string">&quot;!&quot;</span>, condition),</span><br><span class="line">                t.blockStatement([</span><br><span class="line">                  t.ifStatement(</span><br><span class="line">                    DEV_EXPRESSION,</span><br><span class="line">                    t.blockStatement([t.expressionStatement(devInvariant)]),</span><br><span class="line">                    t.blockStatement([t.expressionStatement(prodInvariant)])</span><br><span class="line">                  )</span><br><span class="line">                ])</span><br><span class="line">              )</span><br><span class="line">            );</span><br><span class="line">          &#125; <span class="keyword">else</span> <span class="keyword">if</span> (path.get(<span class="string">&quot;callee&quot;</span>).isIdentifier(&#123; <span class="attr">name</span>: <span class="string">&quot;warning&quot;</span> &#125;)) &#123;</span><br><span class="line">            <span class="comment">// Turns this code:</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// warning(condition, argument, argument);</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// into this:</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// if (&quot;production&quot; !== process.env.NODE_ENV) &#123;</span></span><br><span class="line">            <span class="comment">//   warning(condition, argument, argument);</span></span><br><span class="line">            <span class="comment">// &#125;</span></span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="comment">// The goal is to strip out warning calls entirely in production. We</span></span><br><span class="line">            <span class="comment">// don&#x27;t need the same optimizations for conditions that we use for</span></span><br><span class="line">            <span class="comment">// invariant because we don&#x27;t care about an extra call in __DEV__</span></span><br><span class="line">            node[SEEN_SYMBOL] = <span class="literal">true</span>;</span><br><span class="line">            path.replaceWith(</span><br><span class="line">              t.ifStatement(</span><br><span class="line">                DEV_EXPRESSION,</span><br><span class="line">                t.blockStatement([t.expressionStatement(node)])</span><br><span class="line">              )</span><br><span class="line">            );</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其中 DEV_EXPRESSION 实质上是指：process.evn.NODE_ENV !== ‘product’<br>visitor.Identifier.enter 主要逻辑则是遇到 name 为<strong>DEV</strong>的 Identifier 时时替换为 process.evn.NODE_ENV !== ‘product’<br>可能这样说比较绕，通俗点说就是全局替换遇到的<strong>DEV</strong> 为 process.evn.NODE_ENV !== ‘product’<br>类似的, visitor.CallExpression.exit 则是函数执行节点退出时候被执行的函数，常规的，举个例子，test(-8)解析成 AST 后，时这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    type: <span class="string">&quot;ExpressionStatement&quot;</span>,</span><br><span class="line">    expression: &#123;</span><br><span class="line">        type: <span class="string">&quot;CallExpression&quot;</span>,</span><br><span class="line">        callee: &#123;</span><br><span class="line">          type: <span class="string">&quot;Identifier&quot;</span>,</span><br><span class="line">          name: <span class="string">&quot;test&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="built_in">arguments</span>: [&#123;</span><br><span class="line">          type: <span class="string">&quot;UnaryExpression&quot;</span>,</span><br><span class="line">          operator: <span class="string">&quot;-&quot;</span>,</span><br><span class="line">          prefix: <span class="literal">true</span>,</span><br><span class="line">          <span class="built_in">arguments</span>: &#123;</span><br><span class="line">            type: <span class="string">&quot;NumericLiteral&quot;</span>,</span><br><span class="line">            value: <span class="number">8</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有了换个例子，继续下面的分析也就会顺利很多。不过考虑到代码里面已经有非常详尽的功能注释，所以这里暂时对 API 关键词做记录，但是暂时不再深究如何做到。</p>
+<p>保留关键词：<br><strong>prodInvariantIdentifier</strong></p>
+<p><strong>getProgramParent</strong></p>
+<p><strong>generateUidIdentifier</strong></p>
+<p>然后 <strong>visitor.CallExpression.exit</strong> 这块，主要功能如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># 功能一</span><br><span class="line"><span class="comment">// 插入 `var PROD_INVARIANT = require(&#x27;reactProdInvariant&#x27;);`</span></span><br><span class="line"><span class="comment">// 到所有的 `require(&#x27;invariant&#x27;)`前面.</span></span><br><span class="line"># 功能二</span><br><span class="line"><span class="comment">// 转换类似这种调用 invariant(condition, argument, &#x27;foo&#x27;, &#x27;bar&#x27;);</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// 为下面这种形式:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">if</span> (!condition) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;production&quot;</span> !== process.env.NODE_ENV) &#123;</span><br><span class="line">    	invariant(<span class="literal">false</span>, argument, <span class="string">&#x27;foo&#x27;</span>, <span class="string">&#x27;bar&#x27;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    	PROD_INVARIANT(<span class="string">&#x27;XYZ&#x27;</span>, <span class="string">&#x27;foo&#x27;</span>, <span class="string">&#x27;bar&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"># 功能三</span><br><span class="line"><span class="comment">// 转换 warning(condition, argument, argument);</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// 为下方代码:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;production&quot;</span> !== process.env.NODE_ENV) &#123;</span><br><span class="line">	warning(condition, argument, argument);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总体归纳一下，这个其实就是对两个函数进行转译过程.<br><strong>功能一</strong>确保后面调用 <strong>invariant</strong> 时候(被功能二转译所以需要用到 PROD_INVARIANT)功能二可以顺利执行<br><strong>功能二</strong>在生产模式执行 PROD_INVARIANT 在非生产执行 invariant，两者的区别是一个传递 errorId 到线上看报错，一个本地看<br><strong>功能三</strong>类似，在非生产显示 warning，在生产模式去掉<br>接下来是[babelPluginModules, {map: moduleMapReact}],，这个 babelPluginModules 指向/node_modules/fbjs-scripts/babel-6/rewrite-modules.js, map 则时传入的参数。</p>
+<p>moduleMapReact 定义</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> moduleMapBase = <span class="built_in">Object</span>.assign(</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">&quot;object-assign&quot;</span>: <span class="string">&quot;object-assign&quot;</span>,</span><br><span class="line">    <span class="string">&quot;create-react-class&quot;</span>: <span class="string">&quot;create-react-class&quot;</span>,</span><br><span class="line">    <span class="string">&quot;create-react-class/factory&quot;</span>: <span class="string">&quot;create-react-class/factory&quot;</span>,</span><br><span class="line">    <span class="string">&quot;prop-types&quot;</span>: <span class="string">&quot;prop-types&quot;</span>,</span><br><span class="line">    <span class="string">&quot;prop-types/factory&quot;</span>: <span class="string">&quot;prop-types/factory&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="built_in">require</span>(<span class="string">&quot;fbjs/module-map&quot;</span>)</span><br><span class="line">);</span><br><span class="line"><span class="keyword">var</span> moduleMapReact = <span class="built_in">Object</span>.assign(</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// Addons needs to reach into DOM internals</span></span><br><span class="line">    ReactDOM: <span class="string">&quot;react-dom/lib/ReactDOM&quot;</span>,</span><br><span class="line">    ReactInstanceMap: <span class="string">&quot;react-dom/lib/ReactInstanceMap&quot;</span>,</span><br><span class="line">    ReactTestUtils: <span class="string">&quot;react-dom/lib/ReactTestUtils&quot;</span>,</span><br><span class="line">    ReactPerf: <span class="string">&quot;react-dom/lib/ReactPerf&quot;</span>,</span><br><span class="line">    getVendorPrefixedEventName: <span class="string">&quot;react-dom/lib/getVendorPrefixedEventName&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  moduleMapBase</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>rewrite-modules.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Rewrites module string literals according to the `map` and `prefix` options.</span></span><br><span class="line"><span class="comment">* This allows other npm packages to be published and used directly without</span></span><br><span class="line"><span class="comment">* being a part of the same build.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mapModule</span>(<span class="params">state, <span class="built_in">module</span></span>) </span>&#123;</span><br><span class="line"><span class="keyword">var</span> moduleMap = state.opts.map || &#123;&#125;;</span><br><span class="line"><span class="keyword">if</span> (moduleMap.hasOwnProperty(<span class="built_in">module</span>)) &#123;</span><br><span class="line">    <span class="keyword">return</span> moduleMap[<span class="built_in">module</span>];</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Jest understands the haste module system, so leave modules intact.</span></span><br><span class="line"><span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">&#x27;test&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> modulePrefix = state.opts.prefix;</span><br><span class="line">    <span class="keyword">if</span> (modulePrefix == <span class="literal">null</span>) &#123;</span><br><span class="line">      modulePrefix = <span class="string">&#x27;./&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> modulePrefix + <span class="built_in">module</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getArguments</span>(<span class="params">path</span>) </span>&#123;</span><br><span class="line"><span class="keyword">var</span> args = path.get(<span class="string">&#x27;arguments&#x27;</span>);</span><br><span class="line"><span class="keyword">if</span> (args &amp;&amp; args.length) &#123;</span><br><span class="line">    <span class="keyword">return</span> args[<span class="number">0</span>].node;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> jestMethods = [</span><br><span class="line">    <span class="string">&#x27;dontMock&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;genMockFromModule&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;mock&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;setMock&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;unmock&#x27;</span>,</span><br><span class="line">];</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isJestProperty</span>(<span class="params">t, property</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> t.isIdentifier(property) &amp;&amp; jestMethods.indexOf(property.name) !== -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">babel</span>) </span>&#123;</span><br><span class="line"><span class="keyword">var</span> t = babel.types;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Transforms `require(&#x27;Foo&#x27;)` and `require.requireActual(&#x27;Foo&#x27;)`.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transformRequireCall</span>(<span class="params">path, state</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> calleePath = path.get(<span class="string">&#x27;callee&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      !t.isIdentifier(calleePath.node, &#123;<span class="attr">name</span>: <span class="string">&#x27;require&#x27;</span>&#125;) &amp;&amp;</span><br><span class="line">      !(</span><br><span class="line">        t.isMemberExpression(calleePath.node) &amp;&amp;</span><br><span class="line">        t.isIdentifier(calleePath.node.object, &#123;<span class="attr">name</span>: <span class="string">&#x27;require&#x27;</span>&#125;) &amp;&amp;</span><br><span class="line">        t.isIdentifier(calleePath.node.property, &#123;<span class="attr">name</span>: <span class="string">&#x27;requireActual&#x27;</span>&#125;)</span><br><span class="line">      )</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> args = path.get(<span class="string">&#x27;arguments&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (!args.length) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> moduleArg = args[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">if</span> (moduleArg.node.type === <span class="string">&#x27;StringLiteral&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> <span class="built_in">module</span> = mapModule(state, moduleArg.node.value);</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">module</span>) &#123;</span><br><span class="line">        moduleArg.replaceWith(t.stringLiteral(<span class="built_in">module</span>));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Transforms either individual or chained calls to `jest.dontMock(&#x27;Foo&#x27;)`,</span></span><br><span class="line"><span class="comment">* `jest.mock(&#x27;Foo&#x27;)`, and `jest.genMockFromModule(&#x27;Foo&#x27;)`.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transformJestHelper</span>(<span class="params">path, state</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> calleePath = path.get(<span class="string">&#x27;callee&#x27;</span>);</span><br><span class="line">    <span class="keyword">var</span> args = path.get(<span class="string">&#x27;arguments&#x27;</span>);</span><br><span class="line">    <span class="keyword">if</span> (!args.length) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> moduleArg = args[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      moduleArg.node.type === <span class="string">&#x27;StringLiteral&#x27;</span> &amp;&amp;</span><br><span class="line">      calleePath.node &amp;&amp;</span><br><span class="line">      isJestProperty(t, calleePath.node.property)</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="keyword">var</span> <span class="built_in">module</span> = mapModule(state, moduleArg.node.value);</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">module</span>) &#123;</span><br><span class="line">        moduleArg.replaceWith(t.stringLiteral(<span class="built_in">module</span>))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> jestIdentifier = &#123;</span><br><span class="line">    <span class="function"><span class="title">Identifier</span>(<span class="params">path</span>)</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (path.[node.name](http:<span class="comment">//node.name) === &#x27;jest&#x27;) &#123;</span></span><br><span class="line">        <span class="built_in">this</span>.isJest = <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">transformJestCall</span>(<span class="params">path, state</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> params = &#123;<span class="attr">isJest</span>: <span class="literal">false</span>&#125;;</span><br><span class="line">    path.traverse(jestIdentifier, params);</span><br><span class="line">    <span class="keyword">if</span> (params.isJest) &#123;</span><br><span class="line">      transformJestHelper(path, state);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> &#123;</span><br><span class="line">    visitor: &#123;</span><br><span class="line">      CallExpression: &#123;</span><br><span class="line">        <span class="function"><span class="title">exit</span>(<span class="params">path, state</span>)</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (path.node.seen) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          transformRequireCall(path, state);</span><br><span class="line">          transformJestCall(path, state);</span><br><span class="line">          path.node.seen = <span class="literal">true</span>;</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>transformRequireCall</strong> 很容易理解，根据 map 重写模块的引用，比如将 require(‘Promise’) 转译成 require(‘fbjs/lib/Promise’)等。而且注释也有标明<code>Transforms require(&#39;Foo&#39;)</code> and <code>require.requireActual(&#39;Foo&#39;)</code><br>transformJestHelper 类似 transformRequireCall，只不过时对 jest 的调用做一些替换，如果 map 里面有那么和 transformRequireCall 一样替换掉<br>到这里 bable(options)就到此结束了，不过最后还是总结这个环节做的事情</p>
+<ul>
+<li><p>处理<strong>DEV</strong>、invariant、warning 这三个变量、函数调用等的转译</p>
+</li>
+<li><p>替换 require、require.requireActual、jest 环节包名的重写(<strong>rewrite</strong>)<br>接下来是 stripProvidesModule(node_modules/fbjs-scripts/gulp/strip-provides-module.js)</p>
+</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> gutil = <span class="built_in">require</span>(<span class="string">&quot;gulp-util&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> through = <span class="built_in">require</span>(<span class="string">&quot;through2&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> PM_REGEXP = <span class="built_in">require</span>(<span class="string">&quot;./shared/provides-module&quot;</span>).regexp;</span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">opts</span>) </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">transform</span>(<span class="params">file, enc, cb</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (file.isNull()) &#123;</span><br><span class="line">      cb(<span class="literal">null</span>, file);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (file.isStream()) &#123;</span><br><span class="line">      cb(<span class="keyword">new</span> gutil.PluginError(<span class="string">&quot;module-map&quot;</span>, <span class="string">&quot;Streaming not supported&quot;</span>));</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Get the @providesModule piece out of the file and save that.</span></span><br><span class="line">    <span class="keyword">var</span> contents = file.contents.toString().replace(PM_REGEXP, <span class="string">&quot;&quot;</span>);</span><br><span class="line">    file.contents = <span class="keyword">new</span> Buffer(contents);</span><br><span class="line">    <span class="built_in">this</span>.push(file);</span><br><span class="line">    cb();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> through.obj(transform);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>函数本身很简单，用途时将代码注释中包含的@providesModule 这一行删除掉。<br>flatten()这个的话可能是最好理解的。直接看 gulp-flatten 官方文档基本可以秒懂，就是去除文件中间路径，将指定目录遍历所有下级文件都归集到一起方便放到一个指定目录用的。<br>到这里 gulp 的 build 环节就分析完毕了，但是还是做一个最后的总结。<br>当代码执行下面代码时候</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">gulp</span><br><span class="line">      .src(paths.react.src)</span><br><span class="line">      .pipe(babel(babelOptsReact))</span><br><span class="line">      .pipe(stripProvidesModule())</span><br><span class="line">      .pipe(flatten())</span><br><span class="line">      .pipe(gulp.dest(paths.react.lib)),</span><br></pre></td></tr></table></figure>
+
+<p>一共发生了这些事情:</p>
+<ul>
+<li>babel 环节<ul>
+<li>替换<strong>DEV</strong>,替换 invariant、warning</li>
+<li>根据 Alias 文件产生的 Map 文件(主要是 Alias 映射关系维护)，更新 require 环节的引用路径 2.删除注释中的@providesModule(这个主要时用来生成之前提到的 Map 文件，是一套维护 Map 系统) 3.扁平化，将目标 src 文件处理好后全部放到目的文件夹<br>至此我们的 gruntFile 里面的 build-modules 任务已经分析完毕。<br>接下来是 version-check,这个也是一个 gulp 任务的引用，根据 getTask 定义</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getTask</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">require</span>(<span class="string">`./gulp/tasks/<span class="subst">$&#123;name&#125;</span>`</span>)(gulp, plugins);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该任务位于 gulp/tasks/version-check.js<br>核心代码是：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> reactVersion = <span class="built_in">require</span>(<span class="string">&quot;../../package.json&quot;</span>).version;</span><br><span class="line"><span class="keyword">var</span> versions = &#123;</span><br><span class="line">  <span class="string">&quot;packages/react/package.json&quot;</span>: <span class="built_in">require</span>(<span class="string">&quot;../../packages/react/package.json&quot;</span>)</span><br><span class="line">    .version,</span><br><span class="line">  <span class="string">&quot;packages/react-dom/package.json&quot;</span>: <span class="built_in">require</span>(<span class="string">&quot;../../packages/react-dom/package.json&quot;</span>)</span><br><span class="line">    .version,</span><br><span class="line">  <span class="string">&quot;packages/react-test-renderer/package.json&quot;</span>: <span class="built_in">require</span>(<span class="string">&quot;../../packages/react-test-renderer/package.json&quot;</span>)</span><br><span class="line">    .version,</span><br><span class="line">  <span class="string">&quot;src/ReactVersion.js&quot;</span>: <span class="built_in">require</span>(<span class="string">&quot;../../src/ReactVersion&quot;</span>)</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> allVersionsMatch = <span class="literal">true</span>;</span><br><span class="line"><span class="built_in">Object</span>.keys(versions).forEach(<span class="function"><span class="keyword">function</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> version = versions[name];</span><br><span class="line">  <span class="keyword">if</span> (version !== reactVersion) &#123;</span><br><span class="line">    allVersionsMatch = <span class="literal">false</span>;</span><br><span class="line">    gutil.log(</span><br><span class="line">      gutil.colors.red(</span><br><span class="line">        <span class="string">&quot;%s version does not match package.json. Expected %s, saw %s.&quot;</span></span><br><span class="line">      ),</span><br><span class="line">      name,</span><br><span class="line">      reactVersion,</span><br><span class="line">      version</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">if</span> (!allVersionsMatch) &#123;</span><br><span class="line">  process.exit(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>作用很明显，确保 package 目录下的 react、react-dom、react-test-renderer 和 src/ReactVersion 以及根目录下 package.json 版本号完全一致。</p>
+<h2 id="browserify"><a href="#browserify" class="headerlink" title="browserify"></a>browserify</h2><p>接下来是系列 browserify 的任务</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;browserify:basic&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:addons&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:min&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:addonsMin&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:dom&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:domMin&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:domServer&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:domServerMin&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:domFiber&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;browserify:domFiberMin&#x27;</span>,</span><br></pre></td></tr></table></figure>
+
+<p>这些配置在 grunt/config/browserify.js,这些 basic，addons 任务都是一个套路，代码相似就不重复记录了</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> basic = &#123;</span><br><span class="line">  entries: [</span><br><span class="line">      <span class="string">&#x27;./build/node_modules/react/lib/ReactUMDEntry.js&#x27;</span>,</span><br><span class="line">  ],</span><br><span class="line">  outfile: <span class="string">&#x27;./build/react.js&#x27;</span>,</span><br><span class="line">  debug: <span class="literal">false</span>,</span><br><span class="line">  standalone: <span class="string">&#x27;React’, // 全局导出时候的库名称</span></span><br><span class="line"><span class="string">  // Apply as global transform so that we also envify fbjs and any other deps</span></span><br><span class="line"><span class="string">  globalTransforms: [envifyDev],</span></span><br><span class="line"><span class="string">  plugins: [collapser],</span></span><br><span class="line"><span class="string">  after: [derequire, simpleBannerify],</span></span><br><span class="line"><span class="string">  // 其他还有一些 after</span></span><br><span class="line"><span class="string">  // [wrapperify, minify, bannerify, simpleBannerify]</span></span><br><span class="line"><span class="string">&#125;;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里大概有几个包需要简单说一下<br>loose-envify 这是一个替换用的包，类似 envify，效果如下，不解释</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// before</span></span><br><span class="line"><span class="keyword">if</span> (process.env.NODE_ENV === <span class="string">&quot;development&quot;</span>) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;development only&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//after</span></span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;production&quot;</span> === <span class="string">&quot;development&quot;</span>) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&quot;development only&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>bundle-collapser(collapser)也是一个替换用的包，可以将 require(‘helloword’)转换成类似 require(1)这种极短的引用<br>wrapperify 将库包裹成 UMD 规范<br>minify 压缩代码<br>simpleBannerify、bannerify 给代码文件 Header 包括开源协议和一系列作者信息等等<br>总体大致的流程就是这个对象设置了入口文件、出口文件，然后打包过程中进行一系列替换、封装 UMD、添加文件头、压缩等优化操作，弄清楚每个引用代表的功能，整个过程很明晰。<br>接下来就是 npm 这块的任务了</p>
+<h2 id="release-amp-amp-pack"><a href="#release-amp-amp-pack" class="headerlink" title="release &amp;&amp; pack"></a>release &amp;&amp; pack</h2><p>‘npm-react:release’,<br>‘npm-react:pack’,<br>‘npm-react-dom:release’,<br>‘npm-react-dom:pack’,<br>‘npm-react-test:release’,<br>‘npm-react-test:pack’,<br>这些任务的流程基本一样，所以只已 npm-react 为记录，其中 npm-react:release 的任务主要代码是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">buildRelease</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// delete build/react-core for fresh start</span></span><br><span class="line">  <span class="keyword">if</span> (grunt.file.exists(dest)) &#123;</span><br><span class="line">    grunt.file.delete(dest);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// mkdir -p build/react-core/lib</span></span><br><span class="line">  grunt.file.mkdir(lib);</span><br><span class="line">  <span class="comment">// Copy npm-react/*_/_ to build/npm-react</span></span><br><span class="line">  <span class="comment">// and build/modules/*_/_ to build/react-core/lib</span></span><br><span class="line">  <span class="keyword">var</span> mappings = [].concat(</span><br><span class="line">    grunt.file.expandMapping(<span class="string">&quot;**/*&quot;</span>, dest, &#123; <span class="attr">cwd</span>: src &#125;),</span><br><span class="line">    grunt.file.expandMapping(<span class="string">&quot;**/*&quot;</span>, lib, &#123; <span class="attr">cwd</span>: modSrc &#125;),</span><br><span class="line">    grunt.file.expandMapping(<span class="string">&quot;LICENSE&quot;</span>, dest)</span><br><span class="line">  );</span><br><span class="line">  mappings.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">mapping</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> mappingSrc = mapping.src[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">var</span> mappingDest = mapping.dest;</span><br><span class="line">    <span class="keyword">if</span> (grunt.file.isDir(mappingSrc)) &#123;</span><br><span class="line">      grunt.file.mkdir(mappingDest);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      grunt.file.copy(mappingSrc, mappingDest);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="comment">// Make built source available inside npm package</span></span><br><span class="line">  grunt.file.mkdir(dist);</span><br><span class="line">  distFiles.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">file</span>) </span>&#123;</span><br><span class="line">    grunt.file.copy(<span class="string">&quot;build/&quot;</span> + file, dist + file);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="comment">// modify build/react-core/package.json to set version ##</span></span><br><span class="line">  <span class="keyword">var</span> pkg = grunt.file.readJSON(dest + <span class="string">&quot;package.json&quot;</span>);</span><br><span class="line">  pkg.version = grunt.config.data.pkg.version;</span><br><span class="line">  grunt.file.write(dest + <span class="string">&quot;package.json&quot;</span>, <span class="built_in">JSON</span>.stringify(pkg, <span class="literal">null</span>, <span class="number">2</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总体来讲这个任务虽然挂着 buildRelease 的名头实际上他就是一个做复制粘贴的苦力活儿，主要 build 任务在 build:modules 已经做完了，这里仅仅说一下它做了什么，然后就是怎么做的。 </p>
+<ul>
+<li>复制 packages/react/里面所有文件到 build/packages/react/目录 </li>
+<li>复制 build/node_modules/react/lib/里面所有文件到 build/packages/react/lib/目录 </li>
+<li>复制 build:modules 打包好的 react.js、react-addons.js 和它们的 min 文件到 build/packages/react/dist/目录 </li>
+<li>修改 package.json 里面的版本号</li>
+</ul>
+<p>然后是 npm-react:pack 相关的</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">packRelease</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> done = <span class="built_in">this</span>.async();</span><br><span class="line">  <span class="keyword">var</span> spawnCmd = &#123;</span><br><span class="line">    cmd: <span class="string">&quot;npm&quot;</span>,</span><br><span class="line">    args: [<span class="string">&quot;pack&quot;</span>, <span class="string">&quot;packages/react&quot;</span>],</span><br><span class="line">    opts: &#123;</span><br><span class="line">      cwd: <span class="string">&quot;build/&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  grunt.util.spawn(spawnCmd, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> buildSrc = <span class="string">&quot;build/react-&quot;</span> + grunt.config.data.pkg.version + <span class="string">&quot;.tgz&quot;</span>;</span><br><span class="line">    <span class="keyword">var</span> buildDest = <span class="string">&quot;build/packages/react.tgz&quot;</span>;</span><br><span class="line">    fs.rename(buildSrc, buildDest, done);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>spawnCmd 这个相当于时执行一个命令: <code>cd build/ && npm pack package/react</code><br>pack 是 npm 工具内建的一个命令 打包 npm 包生成<name>-<version>.tgz 格式压缩包<br>下面代码则是执行完毕生成了<name>-<version>.tgz 格式压缩包后重命名为 react.tgz</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react-gulp/" rel="tag"># react gulp</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/01/15/typescript-notes/" rel="prev" title="typescript笔记">
+      <i class="fa fa-chevron-left"></i> typescript笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/20/react-render/" rel="next" title="react render环节分析">
+      react render环节分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B5%85%E6%9E%90"><span class="nav-number">1.</span> <span class="nav-text">浅析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gruntfile%E4%BB%BB%E5%8A%A1%E6%80%BB%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">gruntfile任务总览:</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#delete-build-modules"><span class="nav-number">2.1.</span> <span class="nav-text">delete-build-modules</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#build-modules"><span class="nav-number">2.2.</span> <span class="nav-text">build-modules</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#browserify"><span class="nav-number">2.3.</span> <span class="nav-text">browserify</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#release-amp-amp-pack"><span class="nav-number">2.4.</span> <span class="nav-text">release &amp;&amp; pack</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

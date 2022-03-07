@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="React v17.0.2.hooks部分之 useState 的阅读整理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-17.0.2-hooks 之 useState">
+<meta property="og:url" content="http://www.que01.top/2021/06/13/2021-6-13-react-17-0-2-hooks/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="React v17.0.2.hooks部分之 useState 的阅读整理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-06-13T02:03:22.000Z">
+<meta property="article:modified_time" content="2022-02-23T00:24:27.435Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2021/06/13/2021-6-13-react-17-0-2-hooks/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-17.0.2-hooks 之 useState | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2021/06/13/2021-6-13-react-17-0-2-hooks/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-17.0.2-hooks 之 useState
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-06-13 10:03:22" itemprop="dateCreated datePublished" datetime="2021-06-13T10:03:22+08:00">2021-06-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-02-23 08:24:27" itemprop="dateModified" datetime="2022-02-23T08:24:27+08:00">2022-02-23</time>
+              </span>
+
+          
+            <span id="/2021/06/13/2021-6-13-react-17-0-2-hooks/" class="post-meta-item leancloud_visitors" data-flag-title="react-17.0.2-hooks 之 useState" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">React v17.0.2.hooks部分之 useState 的阅读整理。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="全局状况"><a href="#全局状况" class="headerlink" title="全局状况"></a>全局状况</h1><p>这一篇其实是<a href="/2021/05/10/react-17-0-2/">react v17.0.2整体结构分析</a>的组成部分。太长就把它抽出来了。<br>以下实际上都是ReactHooks的组成部分。因为同属hooks范畴就单独归纳一下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">useCallback,</span><br><span class="line">useContext,</span><br><span class="line">useEffect,</span><br><span class="line">useImperativeHandle,</span><br><span class="line">useDebugValue,</span><br><span class="line">useLayoutEffect,</span><br><span class="line">useMemo,</span><br><span class="line">useMutableSource,</span><br><span class="line">useReducer,</span><br><span class="line">useRef,</span><br><span class="line">useState,</span><br></pre></td></tr></table></figure>
+
+<p>关于这些useXXX系列的函数都在ReactHook.js里面。他们的结构几乎一模一样:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">useState</span>&lt;<span class="title">S</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  initialState: (() =&gt; S) | S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">BasicStateAction</span>&lt;<span class="title">S</span>&gt;&gt;] </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> dispatcher = resolveDispatcher();</span><br><span class="line">  <span class="keyword">return</span> dispatcher.useState(initialState);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// useCallback =&gt; dispatcher.useCallback(arguments);</span></span><br><span class="line"><span class="comment">// useContext =&gt; dispatcher.useContext(arguments);</span></span><br><span class="line"><span class="comment">// useEffect =&gt; dispatcher.useEffect(arguments);</span></span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+
+<p>这里<code>dispatcher</code>指向<code>ReactCurrentDispatcher.current</code>。</p>
+<p>关于这个变量，大致可以认为它是一个指针，会在运行过程中不断变化其指向。在当前分析的版本中，它的定义在ReactFiberHooks.new.js文件中。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReactFiberHooks.new.js#line399</span></span><br><span class="line">ReactCurrentDispatcher.current =</span><br><span class="line">  current === <span class="literal">null</span> || current.memoizedState === <span class="literal">null</span></span><br><span class="line">    ? HooksDispatcherOnMount</span><br><span class="line">    : HooksDispatcherOnUpdate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ReactFiberHooks.old.js#line1776</span></span><br><span class="line"><span class="comment">// ReactFiberHooks.new.js#line1817</span></span><br><span class="line"><span class="comment">// 这两个文件里面这部分定义是一致的</span></span><br><span class="line"><span class="keyword">const</span> HooksDispatcherOnMount: Dispatcher = &#123;</span><br><span class="line">  readContext,</span><br><span class="line"></span><br><span class="line">  useCallback: mountCallback,</span><br><span class="line">  useContext: readContext,</span><br><span class="line">  useEffect: mountEffect,</span><br><span class="line">  useImperativeHandle: mountImperativeHandle,</span><br><span class="line">  useLayoutEffect: mountLayoutEffect,</span><br><span class="line">  useMemo: mountMemo,</span><br><span class="line">  useReducer: mountReducer,</span><br><span class="line">  useRef: mountRef,</span><br><span class="line">  useState: mountState,</span><br><span class="line">  useDebugValue: mountDebugValue,</span><br><span class="line">  useDeferredValue: mountDeferredValue,</span><br><span class="line">  useTransition: mountTransition,</span><br><span class="line">  useMutableSource: mountMutableSource,</span><br><span class="line">  useOpaqueIdentifier: mountOpaqueIdentifier,</span><br><span class="line"></span><br><span class="line">  unstable_isNewReconciler: enableNewReconciler,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> HooksDispatcherOnUpdate: Dispatcher = &#123;</span><br><span class="line">  readContext,</span><br><span class="line"></span><br><span class="line">  useCallback: updateCallback,</span><br><span class="line">  useContext: readContext,</span><br><span class="line">  useEffect: updateEffect,</span><br><span class="line">  useImperativeHandle: updateImperativeHandle,</span><br><span class="line">  useLayoutEffect: updateLayoutEffect,</span><br><span class="line">  useMemo: updateMemo,</span><br><span class="line">  useReducer: updateReducer,</span><br><span class="line">  useRef: updateRef,</span><br><span class="line">  useState: updateState,</span><br><span class="line">  useDebugValue: updateDebugValue,</span><br><span class="line">  useDeferredValue: updateDeferredValue,</span><br><span class="line">  useTransition: updateTransition,</span><br><span class="line">  useMutableSource: updateMutableSource,</span><br><span class="line">  useOpaqueIdentifier: updateOpaqueIdentifier,</span><br><span class="line"></span><br><span class="line">  unstable_isNewReconciler: enableNewReconciler,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>这里重提一下重点，本篇的重点是React核心的数据结构</strong>。</p>
+<h1 id="useState的细节"><a href="#useState的细节" class="headerlink" title="useState的细节"></a>useState的细节</h1><p>我们看一看常见的useState的定义(mountState&amp;&amp;updateState):</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mountState</span>&lt;<span class="title">S</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  initialState: (() =&gt; S) | S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">BasicStateAction</span>&lt;<span class="title">S</span>&gt;&gt;] </span>&#123;</span><br><span class="line">	<span class="comment">// 细节忽略</span></span><br><span class="line">  <span class="keyword">return</span> [hook.memoizedState, dispatch];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateState</span>&lt;<span class="title">S</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  initialState: (() =&gt; S) | S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">BasicStateAction</span>&lt;<span class="title">S</span>&gt;&gt;] </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> updateReducer(basicStateReducer, (initialState: <span class="built_in">any</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">rerenderReducer</span>&lt;<span class="title">S</span>, <span class="title">I</span>, <span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  reducer: (S, A) =&gt; S,</span></span></span><br><span class="line"><span class="function"><span class="params">  initialArg: I,</span></span></span><br><span class="line"><span class="function"><span class="params">  init?: I =&gt; S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">A</span>&gt;] </span>&#123;</span><br><span class="line">	<span class="comment">// 细节忽略</span></span><br><span class="line">  <span class="keyword">return</span> [newState, dispatch];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以究根结底来说，我们常见<code>const [text, setText] = useState('hello')</code>返回的就是一个state和一个dispatch。</p>
+<p>关于这个hooks机制吧，因为在函数式组件里面(每次render必然会重新执行这个render，正常来讲变量赋值会被初始化)，所以个人盲猜就是用闭包原理做了一个仅仅对当前函数式组件开放访问的闭包作用域。后面爬源码来验证这个猜想吧。这里目标是mountState函数。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mountState</span>&lt;<span class="title">S</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  initialState: (() =&gt; S) | S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">BasicStateAction</span>&lt;<span class="title">S</span>&gt;&gt;] </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> hook = mountWorkInProgressHook();</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> initialState === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    <span class="comment">// $FlowFixMe: Flow doesn&#x27;t like mixed types</span></span><br><span class="line">    initialState = initialState();</span><br><span class="line">  &#125;</span><br><span class="line">  hook.memoizedState = hook.baseState = initialState;</span><br><span class="line">  <span class="keyword">const</span> queue = (hook.queue = &#123;</span><br><span class="line">    pending: <span class="literal">null</span>,</span><br><span class="line">    dispatch: <span class="literal">null</span>,</span><br><span class="line">    lastRenderedReducer: basicStateReducer,</span><br><span class="line">    lastRenderedState: (initialState: <span class="built_in">any</span>),</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">const</span> dispatch: Dispatch&lt;</span><br><span class="line">    BasicStateAction&lt;S&gt;,</span><br><span class="line">  &gt; = (queue.dispatch = (dispatchAction.bind(</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    currentlyRenderingFiber,</span><br><span class="line">    queue,</span><br><span class="line">  ): <span class="built_in">any</span>));</span><br><span class="line">  <span class="keyword">return</span> [hook.memoizedState, dispatch];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里hooks赋值的结构是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> hook: Hook = &#123;</span><br><span class="line">  memoizedState: <span class="literal">null</span>, <span class="comment">// 保存最新的值</span></span><br><span class="line">  baseState: <span class="literal">null</span>, <span class="comment">// 初始值</span></span><br><span class="line">  baseQueue: <span class="literal">null</span>,</span><br><span class="line">  queue: &#123;</span><br><span class="line">    pending: <span class="literal">null</span>,</span><br><span class="line">    dispatch: <span class="literal">null</span>,</span><br><span class="line">    lastRenderedReducer: basicStateReducer,</span><br><span class="line">    lastRenderedState: (initialState: any),</span><br><span class="line">  &#125;,</span><br><span class="line">  next: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这很显然是一个链表的结构，第一次执行之后会返回这样的hooks结构，后续执行的时候就会把相应的hooks数据结构放到这个next属性上并返回，最终所有的hooks组成一个链表。然后它被放在当前渲染的currentlyRenderingFiber节点上(dispatchAction函数内容)。</p>
+<p>另外可以看到返回dispatch的核心路径了: <code>dispatchAction.bind()</code>。这个函数如果涉及到fiber要分析还是挺麻烦的，考虑到这里fiber为null，所以我把相关代码删了，贼清晰现在：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dispatchAction</span>&lt;<span class="title">S</span>, <span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  fiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  queue: UpdateQueue&lt;S, A&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  action: A,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> eventTime = requestEventTime();</span><br><span class="line">  <span class="keyword">const</span> update: Update&lt;S, A&gt; = &#123;</span><br><span class="line">    lane,</span><br><span class="line">    action,</span><br><span class="line">    eagerReducer: <span class="literal">null</span>,</span><br><span class="line">    eagerState: <span class="literal">null</span>,</span><br><span class="line">    next: (<span class="literal">null</span>: <span class="built_in">any</span>),</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Append the update to the end of the list.</span></span><br><span class="line">  <span class="keyword">const</span> pending = queue.pending;</span><br><span class="line">  <span class="keyword">if</span> (pending === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">    update.next = update;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    update.next = pending.next;</span><br><span class="line">    pending.next = update;</span><br><span class="line">  &#125;</span><br><span class="line">  queue.pending = update;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里有几个注意点：</p>
+<ol>
+<li>bind函数的返回。bind函数是将函数绑定了上下文之后返回。所以dispatch是一个函数。这个函数就是指定了this指向的dispatchAction</li>
+<li>dispatch这个定义的时候传入了一些参数，核心就是这个hook.queue。</li>
+<li><strong>闭包的实现</strong>：通过bind函数，成功的把状态值存入了dispatchAction函数的闭包里面。</li>
+</ol>
+<p>当我们mount渲染完毕之后，dispatch也就被定义完毕，在这个定义过程中，巧妙的利用了bind这个函数将相关的一些值存到了一个基于dispatchAction函数构造出来的新函数里面。这个过程中因为这个闭包的存在，我们的无状态组件在更新的时候，将不会丢失内部状态。</p>
+<p>这里我们继续对这个这个更新的流程分析一下，看看后续更新过程之中，它是如何在update流程里面，拿到旧的值，并如何在更新过程中使用setXXX(new)获取新的值，并触发视图更新。</p>
+<p><strong>这里主要是两个要点，第一个是视图更新时候如何拿到缓存值，第二个是setXXX(newValue)过程中更新值和View。</strong></p>
+<p>这里讨巧一点进行探究，如果先分析第一个那么后续的要重新分析，但是如果直接分析第二个，一方面即可以继续上面的分析思路，另一方面它本身也会触发更新和缓存值读取，这样两个分析就组成了一条线。</p>
+<p>所以我们直接看看setXXX(newValue)过程发生了什么。</p>
+<p>这里往上进行回顾,首先是setXXX这个函数，它的值的定义：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// useState初始最终导出：[hook.memoizedState, dispatch]</span></span><br><span class="line"><span class="keyword">const</span> dispatch: Dispatch&lt;</span><br><span class="line">  BasicStateAction&lt;S&gt;,</span><br><span class="line">&gt; = (queue.dispatch = (dispatchAction.bind(</span><br><span class="line">  <span class="literal">null</span>,</span><br><span class="line">  currentlyRenderingFiber,</span><br><span class="line">  queue,</span><br><span class="line">): <span class="built_in">any</span>));</span><br><span class="line"><span class="comment">// dispatchAction的函数参数定义:</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dispatchAction</span>&lt;<span class="title">S</span>, <span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  fiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  queue: UpdateQueue&lt;S, A&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  action: A,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"><span class="comment">// 那么此时, 通过dispatchAction.bind这个调用:</span></span><br><span class="line">setXXX(newValue) === dispatchAction(currentlyRenderingFiber, queue, newValue)</span><br></pre></td></tr></table></figure>
+
+<p>此时我们就可以带着疑问去分析，当执行setXXX(newValue)时候，发生了什么。<br>此时，我们需要对dispatchAction函数做一些比较细致的分析，之前dispatchAction函数我们把Fiber节点相关东西删掉了方便理解简单的意图，但是这里需要则需要对Fiber处理部分进行细致分析(为了尽量简洁还是删除了dev部分代码)。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dispatchAction</span>&lt;<span class="title">S</span>, <span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  fiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  queue: UpdateQueue&lt;S, A&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  action: A,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> eventTime = requestEventTime();</span><br><span class="line">  <span class="keyword">const</span> lane = requestUpdateLane(fiber);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> update: Update&lt;S, A&gt; = &#123;</span><br><span class="line">    lane,</span><br><span class="line">    action, <span class="comment">// &lt;- 这里保存的是setXXX(newValue)里面的newValue值</span></span><br><span class="line">    eagerReducer: <span class="literal">null</span>,</span><br><span class="line">    eagerState: <span class="literal">null</span>,</span><br><span class="line">    next: (<span class="literal">null</span>: <span class="built_in">any</span>),</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// 提到的queue在前文中的定义</span></span><br><span class="line">  <span class="comment">// const queue = (hook.queue = &#123;</span></span><br><span class="line">  <span class="comment">//   pending: null,</span></span><br><span class="line">  <span class="comment">//   dispatch: dispatchAction.bind(</span></span><br><span class="line">  <span class="comment">//     null,</span></span><br><span class="line">  <span class="comment">//     currentlyRenderingFiber,</span></span><br><span class="line">  <span class="comment">//     queue,</span></span><br><span class="line">  <span class="comment">//   ): any),</span></span><br><span class="line">  <span class="comment">//   lastRenderedReducer: basicStateReducer,</span></span><br><span class="line">  <span class="comment">//   lastRenderedState: (initialState: any),</span></span><br><span class="line">  <span class="comment">// &#125;);</span></span><br><span class="line">  <span class="comment">// Append the update to the end of the list.</span></span><br><span class="line">  <span class="keyword">const</span> pending = queue.pending;</span><br><span class="line">  <span class="keyword">if</span> (pending === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">    update.next = update;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    update.next = pending.next;</span><br><span class="line">    pending.next = update;</span><br><span class="line">  &#125;</span><br><span class="line">  queue.pending = update;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> alternate = fiber.alternate;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    fiber === currentlyRenderingFiber ||</span><br><span class="line">    (alternate !== <span class="literal">null</span> &amp;&amp; alternate === currentlyRenderingFiber)</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="comment">// This is a render phase update. Stash it in a lazily-created map of</span></span><br><span class="line">    <span class="comment">// queue -&gt; linked list of updates. After this render pass, we&#x27;ll restart</span></span><br><span class="line">    <span class="comment">// and apply the stashed updates on top of the work-in-progress hook.</span></span><br><span class="line">    <span class="comment">// 这是一个渲染阶段的更新, 将其保存在一个延迟创建的队列(更新链表)映射中。</span></span><br><span class="line">    <span class="comment">// 在这个更新结束之后，我们将会重新触发顶部的work-in-progress，将保存起来的更新进行应用。</span></span><br><span class="line">    <span class="comment">// 这里做一个标记 并在render阶段触发更新 这种对应的是已经有多个update在fiber上的情况</span></span><br><span class="line">    didScheduleRenderPhaseUpdateDuringThisPass = didScheduleRenderPhaseUpdate = <span class="literal">true</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 主要来说，这里是一个条件赋值行为(针对update对象)</span></span><br><span class="line">    <span class="comment">// 这里有个要点在于，当前update队列其实还是空的 所以可以直接计算下一步的state</span></span><br><span class="line">    <span class="comment">// 如果: 里面的值和当前一致就直接return退出不走下面的scheduleWork逻辑。</span></span><br><span class="line">    <span class="comment">// 反之, 则执行scheduleUpdateOnFiber进行更新</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 以下是16.8版本时候的if判断 17.0.2有更新 但是贴出来感觉也有些参考意义</span></span><br><span class="line">    <span class="comment">// currentlyRenderingFiber =&gt; workInProgress</span></span><br><span class="line">    <span class="comment">// if (</span></span><br><span class="line">    <span class="comment">//   fiber === currentlyRenderingFiber ||</span></span><br><span class="line">    <span class="comment">//   (alternate !== null &amp;&amp; alternate === currentlyRenderingFiber)</span></span><br><span class="line">    <span class="comment">// ) &#123;</span></span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      fiber.lanes === NoLanes &amp;&amp;</span><br><span class="line">      (alternate === <span class="literal">null</span> || alternate.lanes === NoLanes)</span><br><span class="line">      <span class="comment">// fiber.lanes =&gt; fiber节点优先级</span></span><br><span class="line">      <span class="comment">// fiber.lanes === NoLanes =&gt; fiber节点上没有更新需要执行</span></span><br><span class="line">      <span class="comment">// 当fiber上不存在别的update，就不需要经过多个update进行合并计算state</span></span><br><span class="line">      <span class="comment">// 那么当前的update就是唯一的计算过程，即可以立刻算出结果</span></span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="comment">// The queue is currently empty, which means we can eagerly compute the</span></span><br><span class="line">      <span class="comment">// next state before entering the render phase. If the new state is the</span></span><br><span class="line">      <span class="comment">// same as the current state, we may be able to bail out entirely.</span></span><br><span class="line">      <span class="keyword">const</span> lastRenderedReducer = queue.lastRenderedReducer;</span><br><span class="line">      <span class="keyword">if</span> (lastRenderedReducer !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> prevDispatcher;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">const</span> currentState: S = (queue.lastRenderedState: <span class="built_in">any</span>);</span><br><span class="line">          <span class="keyword">const</span> eagerState = lastRenderedReducer(currentState, action);</span><br><span class="line">          <span class="comment">// Stash the eagerly computed state, and the reducer used to compute</span></span><br><span class="line">          <span class="comment">// it, on the update object. If the reducer hasn&#x27;t changed by the</span></span><br><span class="line">          <span class="comment">// time we enter the render phase, then the eager state can be used</span></span><br><span class="line">          <span class="comment">// without calling the reducer again.</span></span><br><span class="line">          update.eagerReducer = lastRenderedReducer;</span><br><span class="line">          update.eagerState = eagerState;</span><br><span class="line">          <span class="keyword">if</span> (is(eagerState, currentState)) &#123;</span><br><span class="line">            <span class="comment">// Fast path. We can bail out without scheduling React to re-render.</span></span><br><span class="line">            <span class="comment">// It&#x27;s still possible that we&#x27;ll need to rebase this update later,</span></span><br><span class="line">            <span class="comment">// if the component re-renders for a different reason and by that</span></span><br><span class="line">            <span class="comment">// time the reducer has changed.</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">          <span class="comment">// Suppress the error. It will throw again in the render phase.</span></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123; &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 16.8版本的调用 scheduleWork(fiber, expirationTime);</span></span><br><span class="line">    scheduleUpdateOnFiber(fiber, lane, eventTime);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的逻辑在注释里面其实比较清楚了。为了方便阅读部分关键地方我都做了中文注释，并加了一点点个人理解。</p>
+<p>这里的逻辑分支大致是: </p>
+<ul>
+<li><p>如果是第一次update更新过程，那么立刻计算出结果，并调用scheduleUpdateOnFiber(scheduleWork)更新</p>
+</li>
+<li><p>如果之前已经更新过，再次更新，那么此时queue.pending保存的就是上一次缓存的 update 对象(代码块 line36),此时: <code>update.next = pending.next; pending.next = update;queue.pending = update;</code>这三条代码，就比较有趣，它完成了一个环形链表(当然其实首次更新过程也有一个环形链表):</p>
+<ul>
+<li>先将 update 下个节点设为pending的下个节点</li>
+<li>然后pending下个节点设为 update。通过这两步骤就讲 update 塞进了环形列表</li>
+<li>最后将queue.pending指向 update。</li>
+<li>完毕后做一个需要批量更新的标记</li>
+</ul>
+</li>
+</ul>
+<h1 id="篇外-总结"><a href="#篇外-总结" class="headerlink" title="篇外 || 总结"></a>篇外 || 总结</h1><p>分析过上文这些数据逻辑变动之后，大致就明白这个这个 useState其实实质上还是对<code>dispatchAction</code>的细节分析。</p>
+<p>这里queue的维护是这里核心逻辑。这里主要是维护的pending(当前 update 节点指针)，以及update节点所在的环形链表。</p>
+<p>至于后续的更新主要是通过标记更新，或者手动执行<code>scheduleUpdateOnFiber|scheduleWork</code>函数来实现的。</p>
+<p>关于这个函数，在16.8版本下的scheduleWork函数的分析，其实前面也分析, 具体可以参考看看<a href="/2019/08/07/react-v16-Update-renderPhase/">《react-v16-Update renderPhase篇》</a>。</p>
+<p>这个函数是在上一篇中是setState函数的下级调用，在这里直接调用它实质上和setState触发更新原理也差不多。<br>这一篇就不再赘述。</p>
+<p>但是新版本这里更新了调用方式<code>scheduleUpdateOnFiber</code>, 但是呢，查看了一下相关函数里面的原有的scheduleWork调用基本都直接替换为scheduleUpdateOnFiber，那么很显然这里scheduleUpdateOnFiber基本等同scheduleWork，只是加入了一个lane优先级参数。</p>
+<p>而优先级的整理，则又是一个故事了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/10/react-17-0-2/" rel="prev" title="react-17.0.2">
+      <i class="fa fa-chevron-left"></i> react-17.0.2
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/18/2021-6-18-react-17-0-2-hooks-useEffect/" rel="next" title="react-17.0.2-hooks 之 useEffect">
+      react-17.0.2-hooks 之 useEffect <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E7%8A%B6%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">全局状况</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#useState%E7%9A%84%E7%BB%86%E8%8A%82"><span class="nav-number">2.</span> <span class="nav-text">useState的细节</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AF%87%E5%A4%96-%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">篇外 || 总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

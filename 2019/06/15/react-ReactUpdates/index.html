@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这里是react笔记之ReactUpdates分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React ReactUpdates">
+<meta property="og:url" content="http://www.que01.top/2019/06/15/react-ReactUpdates/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这里是react笔记之ReactUpdates分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-06-15T06:04:57.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.654Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/06/15/react-ReactUpdates/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React ReactUpdates | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/06/15/react-ReactUpdates/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React ReactUpdates
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-15 14:04:57" itemprop="dateCreated datePublished" datetime="2019-06-15T14:04:57+08:00">2019-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/06/15/react-ReactUpdates/" class="post-meta-item leancloud_visitors" data-flag-title="React ReactUpdates" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这里是react笔记之ReactUpdates分析。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h1><p>ReactUpdates模块在整个生命周期中是基础性质的模块，它是调用虚拟DOM算法更新DOM的主要调用者，其重要性不言而喻。</p>
+<p>React在更新DOM过程中有几个重要的职责，其中事务职责和批量更新职责是核心。</p>
+<p>这其中事务负责实用innerHTML更新小范围DOM时候，将其中各种状态预先保存，完成替换后还原这些状态。批量更新则包括componentDidMount带来的更新，以及用户操作带来的各种更新。</p>
+<h1 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h1><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactUpdates = &#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * React references `ReactReconcileTransaction` using this property in order</span></span><br><span class="line"><span class="comment">   * to allow dependency injection.</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@internal</span></span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  ReactReconcileTransaction: <span class="literal">null</span>,</span><br><span class="line"></span><br><span class="line">  batchedUpdates: batchedUpdates,</span><br><span class="line">  enqueueUpdate: enqueueUpdate,</span><br><span class="line">  flushBatchedUpdates: flushBatchedUpdates,</span><br><span class="line">  injection: ReactUpdatesInjection,</span><br><span class="line">  asap: asap</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>属性/方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ReactReconcileTransaction</td>
+<td>更新需要依赖的事务调度</td>
+</tr>
+<tr>
+<td>batchedUpdates</td>
+<td>批量更新方法</td>
+</tr>
+<tr>
+<td>enqueueUpdate</td>
+<td>队列更新方法</td>
+</tr>
+<tr>
+<td>flushBatchedUpdates</td>
+<td>batchedUpdates的实际执行者</td>
+</tr>
+<tr>
+<td>injection</td>
+<td>依赖注入，ReactReconcileTransaction、batchingStrategy(batchedUpdates依赖)由它来注入</td>
+</tr>
+<tr>
+<td>asap</td>
+<td>将回调排入队列以在当前批处理循环结束时运行</td>
+</tr>
+</tbody></table>
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><h2 id="enqueueUpdate"><a href="#enqueueUpdate" class="headerlink" title="enqueueUpdate"></a>enqueueUpdate</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueUpdate</span>(<span class="params">component</span>) </span>&#123;</span><br><span class="line">  ensureInjected();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Various parts of our code (such as ReactCompositeComponent&#x27;s</span></span><br><span class="line">  <span class="comment">// _renderValidatedComponent) assume that calls to render aren&#x27;t nested;</span></span><br><span class="line">  <span class="comment">// verify that that&#x27;s the case. (This is called by each top-level update</span></span><br><span class="line">  <span class="comment">// function, like setState, forceUpdate, etc.; creation and</span></span><br><span class="line">  <span class="comment">// destruction of top-level components is guarded in ReactMount.)</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!batchingStrategy.isBatchingUpdates) &#123;</span><br><span class="line">    batchingStrategy.batchedUpdates(enqueueUpdate, component);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  dirtyComponents.push(component);</span><br><span class="line">  <span class="keyword">if</span> (component._updateBatchNumber == <span class="literal">null</span>) &#123;</span><br><span class="line">    component._updateBatchNumber = updateBatchNumber + <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数是一个入队操作。</p>
+<p>如果当前没有处于更新过程中，那么直接进行更新(<code>batchingStrategy.batchedUpdates(enqueueUpdate, component)</code>)不加入<code>dirtyComponents</code>。</p>
+<p>否则将需要更新的component压入到<code>dirtyComponents</code>,并设置<code>component._updateBatchNumber</code>。</p>
+<h2 id="batchedUpdates"><a href="#batchedUpdates" class="headerlink" title="batchedUpdates"></a>batchedUpdates</h2><p>本质上只是对<code>batchingStrategy.batchedUpdates(callback, a, b, c, d, e)</code>的调用。</p>
+<p>batchingStrategy对应的路径是:src/renderers/shared/stack/reconciler/ReactDefaultBatchingStrategy.js</p>
+<p>所以这里重点就扯一扯batchingStrategy。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> RESET_BATCHED_UPDATES = &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">false</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> FLUSH_BATCHED_UPDATES = &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: ReactUpdates.flushBatchedUpdates.bind(ReactUpdates),</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> TRANSACTION_WRAPPERS = [FLUSH_BATCHED_UPDATES, RESET_BATCHED_UPDATES];</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ReactDefaultBatchingStrategyTransaction</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.reinitializeTransaction();</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">Object</span>.assign(ReactDefaultBatchingStrategyTransaction.prototype, Transaction, &#123;</span><br><span class="line">  getTransactionWrappers: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> TRANSACTION_WRAPPERS;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">var</span> transaction = <span class="keyword">new</span> ReactDefaultBatchingStrategyTransaction();</span><br><span class="line"><span class="keyword">var</span> ReactDefaultBatchingStrategy = &#123;</span><br><span class="line">  isBatchingUpdates: <span class="literal">false</span>,</span><br><span class="line">  batchedUpdates: <span class="function"><span class="keyword">function</span>(<span class="params">callback, a, b, c, d, e</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> alreadyBatchingUpdates = ReactDefaultBatchingStrategy.isBatchingUpdates;</span><br><span class="line">    ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">if</span> (alreadyBatchingUpdates) &#123;</span><br><span class="line">      <span class="keyword">return</span> callback(a, b, c, d, e);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> transaction.perform(callback, <span class="literal">null</span>, a, b, c, d, e);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这里更新逻辑还是比较简单，根据维护的isBatchingUpdates这个标记来判定直接回调调用还是事务完成后进行函数调用。这里核心还是ReactDefaultBatchingStrategyTransaction。关于这个事务定义比较简单是RESET_BATCHED_UPDATES &amp;&amp; FLUSH_BATCHED_UPDATES两个事务的组合。</p>
+<p>核心是事务完成后执行:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">false</span>;</span><br><span class="line">ReactUpdates.flushBatchedUpdates.bind(ReactUpdates)</span><br></pre></td></tr></table></figure>
+<p>这里就涉及到flushBatchedUpdates了，而asap被它依赖，所以先扯一扯它。</p>
+<h2 id="asap"><a href="#asap" class="headerlink" title="asap"></a>asap</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">asapCallbackQueue.enqueue(callback, context);</span><br></pre></td></tr></table></figure>
+
+<p>这个函数核心代码只有一行。asapCallbackQueue.enqueue作用是将一个函数和其上下文推入到维护的函数队列中。</p>
+<p>关于这个函数，它是一个特殊的操作，它是针对bug <a target="_blank" rel="noopener" href="https://github.com/facebook/react/issues/1698">#1698</a>的解决方案。</p>
+<p>它的调用主要位于表单元素Input、Select和TextArea的_handleChange函数中,主要调用是<code>ReactUpdates.asap(forceUpdateIfMounted, this);</code>,用于在事务close外添加一个给CallbackQueue队列进行入队的操作，以图实现最快进行更新。</p>
+<h2 id="flushBatchedUpdates"><a href="#flushBatchedUpdates" class="headerlink" title="flushBatchedUpdates"></a>flushBatchedUpdates</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> flushBatchedUpdates = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ReactUpdatesFlushTransaction&#x27;s wrappers will clear the dirtyComponents</span></span><br><span class="line">  <span class="comment">// array and perform any updates enqueued by mount-ready handlers (i.e.,</span></span><br><span class="line">  <span class="comment">// componentDidUpdate) but we need to check here too in order to catch</span></span><br><span class="line">  <span class="comment">// updates enqueued by setState callbacks and asap calls.</span></span><br><span class="line">  <span class="keyword">while</span> (dirtyComponents.length || asapEnqueued) &#123;</span><br><span class="line">    <span class="keyword">if</span> (dirtyComponents.length) &#123;</span><br><span class="line">      <span class="keyword">var</span> transaction = ReactUpdatesFlushTransaction.getPooled();</span><br><span class="line">      transaction.perform(runBatchedUpdates, <span class="literal">null</span>, transaction);</span><br><span class="line">      ReactUpdatesFlushTransaction.release(transaction);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (asapEnqueued) &#123;</span><br><span class="line">      asapEnqueued = <span class="literal">false</span>;</span><br><span class="line">      <span class="keyword">var</span> queue = asapCallbackQueue;</span><br><span class="line">      asapCallbackQueue = CallbackQueue.getPooled();</span><br><span class="line">      queue.notifyAll();</span><br><span class="line">      CallbackQueue.release(queue);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="其一-对象池"><a href="#其一-对象池" class="headerlink" title="其一 对象池"></a>其一 对象池</h3><p>这里先关注dirtyComponents这一截。</p>
+<p>这里对dirtyComponents进行了遍历，如果没有对象池处理，每次遍历过程中的更新都会重新new一个ReactUpdatesFlushTransaction事务，然后重新销毁。但是这里有了事务之后就可以直接getPooled()，用完之后可以使用release缓存，这样对象池里面就是一个初始化状态的实例。</p>
+<p>当然提到release这个过程显然跑不了查看一下实例上的<code>destructor</code>——<code>transaction.release</code>环节会执行这个函数。它实质上是调用<code>instance.destructor()</code>后将instance压入到对象池方便后面<code>getPooled</code>获取。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">destructor: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.dirtyComponentsLength = <span class="literal">null</span>;</span><br><span class="line">  CallbackQueue.release(<span class="built_in">this</span>.callbackQueue);</span><br><span class="line">  <span class="built_in">this</span>.callbackQueue = <span class="literal">null</span>;</span><br><span class="line">  ReactUpdates.ReactReconcileTransaction.release(<span class="built_in">this</span>.reconcileTransaction);</span><br><span class="line">  <span class="built_in">this</span>.reconcileTransaction = <span class="literal">null</span>;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>对照一下其构造器:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ReactUpdatesFlushTransaction</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.reinitializeTransaction();</span><br><span class="line">  <span class="built_in">this</span>.dirtyComponentsLength = <span class="literal">null</span>;</span><br><span class="line">  <span class="built_in">this</span>.callbackQueue = CallbackQueue.getPooled();</span><br><span class="line">  <span class="built_in">this</span>.reconcileTransaction = ReactUpdates.ReactReconcileTransaction.getPooled(</span><br><span class="line">    <span class="comment">/* useCreateElement */</span> <span class="literal">true</span>,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很容易发现这两个操作除了dirtyComponentsLength赋值外都是反向操作。很有意思的是他们里面也有一个CallbackQueue的getPooled和release过程。这里<strong>需要主要就是对象池的操作了，<code>release</code>执行时候会执行instance.destructor使实例进入初始化环境放到对象池，<code>getPooled</code>获取的时候回重新执行一次构造器。</strong></p>
+<p>除此以外就是runBatchedUpdates函数的执行了。</p>
+<h3 id="其二-ReactUpdatesFlushTransaction事务"><a href="#其二-ReactUpdatesFlushTransaction事务" class="headerlink" title="其二 ReactUpdatesFlushTransaction事务"></a>其二 ReactUpdatesFlushTransaction事务</h3><p>ReactUpdatesFlushTransaction事务是<code>NESTED_UPDATES</code> 和<code>UPDATE_QUEUEING</code>的组合。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> NESTED_UPDATES = &#123;</span><br><span class="line">  initialize: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.dirtyComponentsLength = dirtyComponents.length;</span><br><span class="line">  &#125;,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.dirtyComponentsLength !== dirtyComponents.length) &#123;</span><br><span class="line">      <span class="comment">// Additional updates were enqueued by componentDidUpdate handlers or</span></span><br><span class="line">      <span class="comment">// similar; before our own UPDATE_QUEUEING wrapper closes, we want to run</span></span><br><span class="line">      <span class="comment">// these new updates so that if A&#x27;s componentDidUpdate calls setState on</span></span><br><span class="line">      <span class="comment">// B, B will update before the callback A&#x27;s updater provided when calling</span></span><br><span class="line">      <span class="comment">// setState.</span></span><br><span class="line">      dirtyComponents.splice(<span class="number">0</span>, <span class="built_in">this</span>.dirtyComponentsLength);</span><br><span class="line">      flushBatchedUpdates();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      dirtyComponents.length = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> UPDATE_QUEUEING = &#123;</span><br><span class="line">  initialize: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.callbackQueue.reset();</span><br><span class="line">  &#125;,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.callbackQueue.notifyAll();</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>UPDATE_QUEUEING</code>比较简单，初始化时候清空队列中的回调和context，事务结束时候则按上下文调用所有回调。</p>
+<p><code>NESTED_UPDATES</code>相对复杂一点。初始化时候缓存<code>dirtyComponents.length</code>到<code>dirtyComponentsLength</code>,事务结束时候检查缓存的长度值和当前<code>dirtyComponents.length</code>是否相等，相等则清空<code>dirtyComponents</code>,否则在<code>dirtyComponents</code>里面移除已经更新好的，重新执行<code>flushBatchedUpdates</code>来继续更新后续加入的组件，这是一个递归操作直到<code>dirtyComponents.length === 0</code>。这个一般发生在父组件更新导致子组件联动更新上。</p>
+<h2 id="runBatchedUpdates"><a href="#runBatchedUpdates" class="headerlink" title="runBatchedUpdates"></a>runBatchedUpdates</h2><p>这个函数没有导出使用，但是在内部则实质上承担了调用组件的更新逻辑职责。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">runBatchedUpdates</span>(<span class="params">transaction</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> len = transaction.dirtyComponentsLength;</span><br><span class="line">  invariant(</span><br><span class="line">    len === dirtyComponents.length,</span><br><span class="line">    <span class="string">&quot;Expected flush transaction&#x27;s stored dirty-components length (%s) to &quot;</span> +</span><br><span class="line">      <span class="string">&#x27;match dirty-components array length (%s).&#x27;</span>,</span><br><span class="line">    len,</span><br><span class="line">    dirtyComponents.length,</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Since reconciling a component higher in the owner hierarchy usually (not</span></span><br><span class="line">  <span class="comment">// always -- see shouldComponentUpdate()) will reconcile children, reconcile</span></span><br><span class="line">  <span class="comment">// them before their children by sorting the array.</span></span><br><span class="line">  dirtyComponents.sort(mountOrderComparator);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Any updates enqueued while reconciling must be performed after this entire</span></span><br><span class="line">  <span class="comment">// batch. Otherwise, if dirtyComponents is [A, B] where A has children B and</span></span><br><span class="line">  <span class="comment">// C, B could update twice in a single batch if C&#x27;s render enqueues an update</span></span><br><span class="line">  <span class="comment">// to B (since B would have already updated, we should skip it, and the only</span></span><br><span class="line">  <span class="comment">// way we can know to do so is by checking the batch counter).</span></span><br><span class="line">  updateBatchNumber++;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">    <span class="comment">// If a component is unmounted before pending changes apply, it will still</span></span><br><span class="line">    <span class="comment">// be here, but we assume that it has cleared its _pendingCallbacks and</span></span><br><span class="line">    <span class="comment">// that performUpdateIfNecessary is a noop.</span></span><br><span class="line">    <span class="keyword">var</span> component = dirtyComponents[i];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// If performUpdateIfNecessary happens to enqueue any new updates, we</span></span><br><span class="line">    <span class="comment">// shouldn&#x27;t execute the callbacks until the next render happens, so</span></span><br><span class="line">    <span class="comment">// stash the callbacks first</span></span><br><span class="line">    <span class="keyword">var</span> callbacks = component._pendingCallbacks;</span><br><span class="line">    component._pendingCallbacks = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> markerName;</span><br><span class="line">    <span class="keyword">if</span> (ReactFeatureFlags.logTopLevelRenders) &#123;</span><br><span class="line">      <span class="keyword">var</span> namedComponent = component;</span><br><span class="line">      <span class="comment">// Duck type TopLevelWrapper. This is probably always true.</span></span><br><span class="line">      <span class="keyword">if</span> (component._currentElement.type.isReactTopLevelWrapper) &#123;</span><br><span class="line">        namedComponent = component._renderedComponent;</span><br><span class="line">      &#125;</span><br><span class="line">      markerName = <span class="string">&#x27;React update: &#x27;</span> + namedComponent.getName();</span><br><span class="line">      <span class="built_in">console</span>.time(markerName);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ReactReconciler.performUpdateIfNecessary(</span><br><span class="line">      component,</span><br><span class="line">      transaction.reconcileTransaction,</span><br><span class="line">      updateBatchNumber,</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (markerName) &#123;</span><br><span class="line">      <span class="built_in">console</span>.timeEnd(markerName);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (callbacks) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; callbacks.length; j++) &#123;</span><br><span class="line">        transaction.callbackQueue.enqueue(</span><br><span class="line">          callbacks[j],</span><br><span class="line">          component.getPublicInstance(),</span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数里面主要就是个嵌套遍历过程，第一层先遍历dirtyComponents对每个component调用ReactReconciler.performUpdateIfNecessary，然后第二层对当前component前期没有更新的callbacks进行遍历执行。</p>
+<p>ReactReconciler.performUpdateIfNecessary主要是判断当前component._updateBatchNumber和updateBatchNumber是否相等 不相等直接退出，否则调用当前component自身performUpdateIfNecessary进行更新。</p>
+<p><strong>这个不相等直接退出是什么意思呢</strong>？假设dirtyComponents中队列为[A, B], 但是它们结构如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">     +------+</span><br><span class="line">     |  A   |</span><br><span class="line">   +---------+</span><br><span class="line">   |         |</span><br><span class="line">+-----+  +------+</span><br><span class="line">|  B  |  |  C   |</span><br><span class="line">+-----+  +------+</span><br></pre></td></tr></table></figure>
+
+<p>此时B会触发2次更新，显然这是一个重复的操作，那么问题是两次更新，抛弃哪一个更新呢？</p>
+<p>这里仔细想一想react更新流程，很容易明白，当dirtyComponents进行操作维护的时候，基本都是处于正在更新中否则会直接进行更新，直到更新结束时候才会进行批处理对dirtyComponents中component进行更新。</p>
+<p>当我们dirtyComponents中队列为[A, B]时候，相关的callback|state都已经在这个时间段中收集完毕了，不会出现更新过程中突然新加入一些callback|state的情况。</p>
+<p>React在进行dirtyComponents更新时候会采用队列中第一次更新，而抛弃队列中后续相同组件的更新。</p>
+<h2 id="enqueueUpdate-1"><a href="#enqueueUpdate-1" class="headerlink" title="enqueueUpdate"></a>enqueueUpdate</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueUpdate</span>(<span class="params">component</span>) </span>&#123;</span><br><span class="line">  ensureInjected();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Various parts of our code (such as ReactCompositeComponent&#x27;s</span></span><br><span class="line">  <span class="comment">// _renderValidatedComponent) assume that calls to render aren&#x27;t nested;</span></span><br><span class="line">  <span class="comment">// verify that that&#x27;s the case. (This is called by each top-level update</span></span><br><span class="line">  <span class="comment">// function, like setState, forceUpdate, etc.; creation and</span></span><br><span class="line">  <span class="comment">// destruction of top-level components is guarded in ReactMount.)</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!batchingStrategy.isBatchingUpdates) &#123;</span><br><span class="line">    batchingStrategy.batchedUpdates(enqueueUpdate, component);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  dirtyComponents.push(component);</span><br><span class="line">  <span class="keyword">if</span> (component._updateBatchNumber == <span class="literal">null</span>) &#123;</span><br><span class="line">    component._updateBatchNumber = updateBatchNumber + <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数是一个入队操作。</p>
+<p>如果当前没有处于更新过程中，那么直接进行更新(<code>batchingStrategy.batchedUpdates(enqueueUpdate, component)</code>)不加入<code>dirtyComponents</code>。</p>
+<p>否则将需要更新的component压入到<code>dirtyComponents</code>,并设置<code>component._updateBatchNumber</code>。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/15/react-PooledClass/" rel="prev" title="React PooledClass">
+      <i class="fa fa-chevron-left"></i> React PooledClass
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/17/react-table-of-react/" rel="next" title="React笔记大纲导航">
+      React笔记大纲导航 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#enqueueUpdate"><span class="nav-number">3.1.</span> <span class="nav-text">enqueueUpdate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#batchedUpdates"><span class="nav-number">3.2.</span> <span class="nav-text">batchedUpdates</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#asap"><span class="nav-number">3.3.</span> <span class="nav-text">asap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#flushBatchedUpdates"><span class="nav-number">3.4.</span> <span class="nav-text">flushBatchedUpdates</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%B8%80-%E5%AF%B9%E8%B1%A1%E6%B1%A0"><span class="nav-number">3.4.1.</span> <span class="nav-text">其一 对象池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BA%8C-ReactUpdatesFlushTransaction%E4%BA%8B%E5%8A%A1"><span class="nav-number">3.4.2.</span> <span class="nav-text">其二 ReactUpdatesFlushTransaction事务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#runBatchedUpdates"><span class="nav-number">3.5.</span> <span class="nav-text">runBatchedUpdates</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#enqueueUpdate-1"><span class="nav-number">3.6.</span> <span class="nav-text">enqueueUpdate</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

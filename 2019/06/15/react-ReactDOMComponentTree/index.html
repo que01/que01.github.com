@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这里是react笔记之ReactDOMComponentTree分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React ReactDOMComponentTree">
+<meta property="og:url" content="http://www.que01.top/2019/06/15/react-ReactDOMComponentTree/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这里是react笔记之ReactDOMComponentTree分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-06-15T05:45:42.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.652Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/06/15/react-ReactDOMComponentTree/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React ReactDOMComponentTree | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/06/15/react-ReactDOMComponentTree/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React ReactDOMComponentTree
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-15 13:45:42" itemprop="dateCreated datePublished" datetime="2019-06-15T13:45:42+08:00">2019-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/06/15/react-ReactDOMComponentTree/" class="post-meta-item leancloud_visitors" data-flag-title="React ReactDOMComponentTree" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这里是react笔记之ReactDOMComponentTree分析。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h1><p>ReactDOMComponentTree主要是对DOM Node 和 ConponentInst做一些映射，不过这个映射不通过Map结构来处理，而是通过在它们自身上面挂载属性做缓存的方式来实现。</p>
+<p>这样当给出一个DOM Node 或者 ConponentInst时候 就可以对应给出它们对应的DOM Node 或者 ConponentInst了。</p>
+<h1 id="API"><a href="#API" class="headerlink" title="API"></a>API</h1><table>
+<thead>
+<tr>
+<th>方法名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>getClosestInstanceFromNode</td>
+<td>根据传入的DOM Node返回临近的(实际上是往上找)ReactDOMComponent or ReactDOMTextComponent</td>
+</tr>
+<tr>
+<td>getInstanceFromNode</td>
+<td>根据传入的DOM Node返回对应的ReactDOMComponent or ReactDOMTextComponent实例 可能返回null</td>
+</tr>
+<tr>
+<td>getNodeFromInstance</td>
+<td>根据传入的组件实例获得对应的DOM Node</td>
+</tr>
+<tr>
+<td>precacheChildNodes</td>
+<td>为所有的子节点实例添加_hostNode属性进行缓存, 这个缓存操作是双向的</td>
+</tr>
+<tr>
+<td>precacheNode</td>
+<td>使用给定的DOM node填充在给定的实例的_hostNode属性上</td>
+</tr>
+<tr>
+<td>uncacheNode</td>
+<td>将给定实例的_hostNode设为null</td>
+</tr>
+</tbody></table>
+<p>这之前，需要先弄清楚，DOM Node和Instance是什么。DOM Node这个不提默认大家知道，Instance这个，可以参见instantiateReactComponent返回的几种实例。</p>
+<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><h2 id="getRenderedHostOrTextFromComponent"><a href="#getRenderedHostOrTextFromComponent" class="headerlink" title="getRenderedHostOrTextFromComponent"></a>getRenderedHostOrTextFromComponent</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getRenderedHostOrTextFromComponent</span>(<span class="params">component</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> rendered;</span><br><span class="line">  <span class="keyword">while</span> ((rendered = component._renderedComponent)) &#123;</span><br><span class="line">    component = rendered;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> component;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数被导出多个方法调用到。它的作用是从给定的component(自定义组件或者空组件)一直向下钻，直到获取到一个<code>component._renderedComponent === void 0</code>的组件并返回(如果一开始就满足这个条件就直接返回了传入的componet)。这个过程中如果component上已经有<code>_renderedComponent</code>那么它会被赋值给component并再次重复这个步骤。</p>
+<h2 id="precacheNode"><a href="#precacheNode" class="headerlink" title="precacheNode"></a>precacheNode</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">precacheNode</span>(<span class="params">inst, node</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> hostInst = getRenderedHostOrTextFromComponent(inst);</span><br><span class="line">  hostInst._hostNode = node;</span><br><span class="line">  node[internalInstanceKey] = hostInst;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码就三行，但是这里做了三件事:</p>
+<ul>
+<li>获取hostInst 从inst上一直往下钻获取_renderedComponent 参见上面的分析</li>
+<li>在实例上绑定<strong>_hostNode</strong>将其设为DOM Node</li>
+<li>在DOM Node上将inst使用<strong>internalInstanceKey</strong>做key挂载好</li>
+</ul>
+<p>所以这里的缓存是两步: 在DOM Node上缓存inst的同时也在实例上缓存了DOM Node</p>
+<h2 id="uncacheNode"><a href="#uncacheNode" class="headerlink" title="uncacheNode"></a>uncacheNode</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">uncacheNode</span>(<span class="params">inst</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> node = inst._hostNode;</span><br><span class="line">  <span class="keyword">if</span> (node) &#123;</span><br><span class="line">    <span class="keyword">delete</span> node[internalInstanceKey];</span><br><span class="line">    inst._hostNode = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>precacheNode的反向操作。双向解绑。</p>
+<h2 id="precacheChildNodes"><a href="#precacheChildNodes" class="headerlink" title="precacheChildNodes"></a>precacheChildNodes</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">precacheChildNodes</span>(<span class="params">inst, node</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (inst._flags &amp; Flags.hasCachedChildNodes) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> children = inst._renderedChildren;</span><br><span class="line">  <span class="keyword">var</span> childNode = node.firstChild;</span><br><span class="line">  outer: <span class="keyword">for</span> (<span class="keyword">var</span> name <span class="keyword">in</span> children) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!children.hasOwnProperty(name)) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> childInst = children[name];</span><br><span class="line">    <span class="keyword">var</span> childID = getRenderedHostOrTextFromComponent(childInst)._domID;</span><br><span class="line">    <span class="keyword">if</span> (childID === <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// We&#x27;re currently unmounting this child in ReactMultiChild; skip it.</span></span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// We assume the child nodes are in the same order as the child instances.</span></span><br><span class="line">    <span class="keyword">for</span> (; childNode !== <span class="literal">null</span>; childNode = childNode.nextSibling) &#123;</span><br><span class="line">      <span class="keyword">if</span> (shouldPrecacheNode(childNode, childID)) &#123;</span><br><span class="line">        precacheNode(childInst, childNode);</span><br><span class="line">        <span class="keyword">continue</span> outer;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// We reached the end of the DOM children without finding an ID match.</span></span><br><span class="line">    invariant(<span class="literal">false</span>, <span class="string">&#x27;Unable to find element with ID %s.&#x27;</span>, childID);</span><br><span class="line">  &#125;</span><br><span class="line">  inst._flags |= Flags.hasCachedChildNodes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数用处是遍历所有下级children并为其调用precacheNode进行缓存。</p>
+<p>这个遍历是遍历当前实例下一级且只有这一级的children。缓存完毕之后更新<code>_flags</code>,这里的运算是位或运算，只要<code>inst._flags、Flags.hasCachedChildNodes</code>之一为1那么为1，否则同时为0就为0.</p>
+<p>这个缓存过程是为了避免算法纬度达到<code>n^2</code>。</p>
+<p>这里注释里面提到这里代码存在的BUG: <code>inst._renderedChildren</code>更新和这里的缓存会存在赛跑问题,所以更改它之前会调用<code>prepareToManageChildren</code>来避免这种情况。不过就当前观察的版本15.6.2来说这个函数已经被移除了。后面会分析一下当前版本是怎样做的。</p>
+<h2 id="getClosestInstanceFromNode"><a href="#getClosestInstanceFromNode" class="headerlink" title="getClosestInstanceFromNode"></a>getClosestInstanceFromNode</h2><p>这个函数逻辑有些小绕。它的逻辑是:</p>
+<ul>
+<li>判断传入的DOM Node是否已经挂载internalInstanceKey属性，有则返回 否则下一步</li>
+<li>一直往上找自己的父元素，直到找到一个已经被缓存internalInstanceKey属性的父元素</li>
+<li>返回这个找到的元素，如果之前向上溯源超过两级就使用<code>precacheChildNodes(inst, node)</code>对这个元素的child进行缓存操作</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/15/react-route/" rel="prev" title="react-route">
+      <i class="fa fa-chevron-left"></i> react-route
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/15/react-PooledClass/" rel="next" title="React PooledClass">
+      React PooledClass <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#API"><span class="nav-number">2.</span> <span class="nav-text">API</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%86%E8%8A%82"><span class="nav-number">3.</span> <span class="nav-text">细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#getRenderedHostOrTextFromComponent"><span class="nav-number">3.1.</span> <span class="nav-text">getRenderedHostOrTextFromComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#precacheNode"><span class="nav-number">3.2.</span> <span class="nav-text">precacheNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#uncacheNode"><span class="nav-number">3.3.</span> <span class="nav-text">uncacheNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#precacheChildNodes"><span class="nav-number">3.4.</span> <span class="nav-text">precacheChildNodes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#getClosestInstanceFromNode"><span class="nav-number">3.5.</span> <span class="nav-text">getClosestInstanceFromNode</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

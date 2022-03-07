@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这一篇是对四五年来关于vim的第一篇记录。这算是个人备忘录，但是也能是一篇可以带你装逼带你飞的vim插件不完整教程。vim用好了其实真的无视很多IDE。当然，无意挑起战争——再牛逼编辑器也替代不了代码的作用。——不过，一入『空门』，咱就这点爱好了.折腾无罪，爱好万岁。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vim-notebook">
+<meta property="og:url" content="http://www.que01.top/2016/07/24/vim-notebook/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这一篇是对四五年来关于vim的第一篇记录。这算是个人备忘录，但是也能是一篇可以带你装逼带你飞的vim插件不完整教程。vim用好了其实真的无视很多IDE。当然，无意挑起战争——再牛逼编辑器也替代不了代码的作用。——不过，一入『空门』，咱就这点爱好了.折腾无罪，爱好万岁。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/youdao.png">
+<meta property="og:image" content="http://www.que01.top/images/ycmd1.png">
+<meta property="og:image" content="http://www.que01.top/images/ycmd2.png">
+<meta property="og:image" content="http://www.que01.top/images/ycmd3.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/yangyangwithgnu/use_vim_as_ide/master/pics/%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8.gif">
+<meta property="og:image" content="http://www.que01.top/images/buffer.png">
+<meta property="og:image" content="http://www.que01.top/images/ctrlP.png">
+<meta property="og:image" content="http://7xpovu.com1.z0.glb.cloudshelldn.com/ultisnip.png">
+<meta property="article:published_time" content="2016-07-24T03:00:17.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.614Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="vim">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/youdao.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/07/24/vim-notebook/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>vim-notebook | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/07/24/vim-notebook/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          vim-notebook
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-24 11:00:17" itemprop="dateCreated datePublished" datetime="2016-07-24T11:00:17+08:00">2016-07-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/07/24/vim-notebook/" class="post-meta-item leancloud_visitors" data-flag-title="vim-notebook" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这一篇是对四五年来关于vim的第一篇记录。这算是个人备忘录，但是也能是一篇可以带你装逼带你飞的vim插件不完整教程。vim用好了其实真的无视很多IDE。当然，无意挑起战争——再牛逼编辑器也替代不了代码的作用。——不过，一入『空门』，咱就这点爱好了.折腾无罪，爱好万岁。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>Vim的使用到如今算是有4年多了。期间断断续续也开始使用sublime，notepad+，atom，vscode等现代编辑器。<br>但是同vim相比，始终少了那种手指在键盘跳舞的感觉。即使很多时候，vim在完成特定任务时候效率有所不如。<br>但是vim完全依托键盘的理念，始终让我迷醉所以不忍心放弃，尤其是当YouCompleteMe和ternJs的出世，让vim在前端编程上渐渐赶上了IDE的功能。<br>然而我也仅仅是知道了很少很少部分的vim使用而已。<br>所以这里打算做记录一下。关于插件，关于配置，关于心得。</p>
+<p>我还是执着的认为，各种编辑器层出不穷，但是Vim你完全可以使用一辈子。Geek的感觉，指尖跳舞的感觉，『怀古的情节』,还有专注的力量。</p>
+<h1 id="从配置开始说起"><a href="#从配置开始说起" class="headerlink" title="从配置开始说起"></a>从配置开始说起</h1><p>我fork了一份github上star最多的vimrc配置。并做了自己的定义和修改。我尽量保持对原来配置的完整的情况进行定义，这样可以保证那一天我再想去merge大神配置时候不会出现太多的配置冲突。<br>这里是大神的配置<a target="_blank" rel="noopener" href="https://github.com/amix/vimrc">amix/vimrc</a>,这里是我的配置<a target="_blank" rel="noopener" href="https://github.com/que01/vimrc">que01/vimrc</a>.</p>
+<p>虽然大神的配置千锤百炼，但是如果是同为前端的你话，那么还是更加推荐我自己的配置。毕竟作为一名一直紧追前沿的前端从业者,我也许更懂前端开发过程中需要怎样的体验。</p>
+<p>个人的vimrc和amix/vimrc的安装还是有区别的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 首先是官方的安装走一遍</span></span><br><span class="line">git clone https://github.com/que01/vimrc ~/.vim_runtime &amp;&amp; cd ~/.vim_runtime &amp;&amp; sh install_awesome_vimrc.sh</span><br><span class="line"><span class="meta">#</span><span class="bash"> 个人配置需要的</span></span><br><span class="line">git submodule init &amp;&amp; git submodule update</span><br><span class="line">cd sources_non_forked/YouCompleteMe &amp;&amp; sh install.sh</span><br><span class="line">cd sources_non_forked/vimproc &amp;&amp; make</span><br></pre></td></tr></table></figure>
+
+<p>当然，如果你不想配置的，我自己做了一份docker的镜像，如果想多地共用，可以直接使用docker来替代本地的vim。==&gt; <a target="_blank" rel="noopener" href="https://hub.docker.com/r/que01/docker-vim-tiny/">que01/docker-vim-tiny</a></p>
+<p>这里列举一下自己新加入的插件:</p>
+<table>
+<thead>
+<tr>
+<th align="left">名称</th>
+<th align="left">简介</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><a href="#YoucompleteMe-amp-amp-tern-for-vim">YouCompleteMe</a></td>
+<td align="left">vim补全神器top1</td>
+</tr>
+<tr>
+<td align="left"><a href="#YoucompleteMe-amp-amp-tern-for-vim">tern for vim</a></td>
+<td align="left">js语气补全引擎</td>
+</tr>
+<tr>
+<td align="left">emmet</td>
+<td align="left">emmet前端都知道</td>
+</tr>
+<tr>
+<td align="left">vim-jsx</td>
+<td align="left">react的jsx支持</td>
+</tr>
+<tr>
+<td align="left">auto-pairs</td>
+<td align="left">括号自动配对</td>
+</tr>
+<tr>
+<td align="left">tabular</td>
+<td align="left">对其代码</td>
+</tr>
+<tr>
+<td align="left">vim-es6</td>
+<td align="left">es6支持</td>
+</tr>
+<tr>
+<td align="left">vim-markdown(替换了原来的)</td>
+<td align="left">markdown支持</td>
+</tr>
+<tr>
+<td align="left"><a href="#vim-youdao-translater">vim-youdao-translater </a></td>
+<td align="left">有道翻译,这个还是超级好用!读源代码时候有这个东西如虎添翼</td>
+</tr>
+<tr>
+<td align="left">vimshell</td>
+<td align="left">在vim下进行shell操作。虽然没有zsh好用,但是可堪一用的</td>
+</tr>
+</tbody></table>
+<h1 id="vim基础操作"><a href="#vim基础操作" class="headerlink" title="vim基础操作"></a>vim基础操作</h1><h2 id="vim的模式"><a href="#vim的模式" class="headerlink" title="vim的模式"></a>vim的模式</h2><ul>
+<li>启动Vim后，vim在 Normal 模式下。</li>
+<li>让我们进入 Insert 模式，请按下键 i 。此时vim左下角有一个–insert–字样,此时可以进行输入了</li>
+<li>如果你想返回 Normal 模式，请按 ESC 键。</li>
+</ul>
+<h2 id="vim的移动"><a href="#vim的移动" class="headerlink" title="vim的移动"></a>vim的移动</h2><h3 id="简单的移动"><a href="#简单的移动" class="headerlink" title="简单的移动"></a>简单的移动</h3><pre>
+j 向下                              k
+k 向上                          h       l
+l 向右                              j
+h 向左
+</pre>
+
+<h3 id="复杂一点的移动"><a href="#复杂一点的移动" class="headerlink" title="复杂一点的移动"></a>复杂一点的移动</h3><table>
+<thead>
+<tr>
+<th align="left">按键</th>
+<th align="left">行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">0</td>
+<td align="left">数字零，到行头,本配置有修改,到当前行第一个字母</td>
+</tr>
+<tr>
+<td align="left">^</td>
+<td align="left">到本行第一个不是blank字符的位置（所谓blank字符就是空格，tab，换行，回车等）</td>
+</tr>
+<tr>
+<td align="left">$</td>
+<td align="left">到本行行尾</td>
+</tr>
+<tr>
+<td align="left">g_</td>
+<td align="left">到本行最后一个不是blank字符的位置。</td>
+</tr>
+<tr>
+<td align="left">/pattern</td>
+<td align="left">搜索 pattern 的字符串（陈皓注：如果搜索出多个匹配，可按n键到下一个）</td>
+</tr>
+</tbody></table>
+<h2 id="复制粘贴"><a href="#复制粘贴" class="headerlink" title="复制粘贴"></a>复制粘贴</h2><p>y负责复制&amp;&amp;p负责粘贴</p>
+<h2 id="Undo-Redo"><a href="#Undo-Redo" class="headerlink" title="Undo/Redo"></a>Undo/Redo</h2><p>u撤销 &amp; <C-r>重做。C-r是指Control+r</p>
+<h2 id="保存"><a href="#保存" class="headerlink" title="保存"></a>保存</h2><table>
+<thead>
+<tr>
+<th align="left">按键</th>
+<th align="left">行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">:q!</td>
+<td align="left">退出不保存</td>
+</tr>
+<tr>
+<td align="left">:wq</td>
+<td align="left">保存并退出</td>
+</tr>
+<tr>
+<td align="left">:qa!</td>
+<td align="left">强行退出所有的正在编辑的文件，就算别的文件有更改</td>
+</tr>
+<tr>
+<td align="left">:x</td>
+<td align="left">相当于:wq但是仅在需要时候才保存</td>
+</tr>
+</tbody></table>
+<h2 id="基础篇收尾"><a href="#基础篇收尾" class="headerlink" title="基础篇收尾"></a>基础篇收尾</h2><p>这就是基础的东西了，如果觉得不够的话，可以自行爬文<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/5426.html">《简明 Vim 练级攻略》</a>.这一小节的内容基本来源这里。<br>之所以不深入，原因在个人，这不是一篇小白文，主要面向用户主要是中级用户。</p>
+<h1 id="个人配置快捷键-amp-amp-有用的按键"><a href="#个人配置快捷键-amp-amp-有用的按键" class="headerlink" title="个人配置快捷键&amp;&amp;有用的按键"></a>个人配置快捷键&amp;&amp;有用的按键</h1><p>这里包含两个部分的内容，一个是插件的快捷键绑定，一个比较有用的一些自带的按键,:开头的是命令。这里为了方便打字，按键都不打尖括号了。</p>
+<table>
+<thead>
+<tr>
+<th align="left">按键</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">loader+yd</td>
+<td align="left">翻译光标所在单词</td>
+</tr>
+<tr>
+<td align="left">ysw(</td>
+<td align="left"><a href="#vim-surround">vim-surround</a>系列快捷键</td>
+</tr>
+<tr>
+<td align="left">:Tab /=</td>
+<td align="left">对其=号</td>
+</tr>
+<tr>
+<td align="left">:TableFormat</td>
+<td align="left">在markdown文档中格式化table</td>
+</tr>
+<tr>
+<td align="left">loader+o</td>
+<td align="left">打开buffer列表</td>
+</tr>
+<tr>
+<td align="left">C+f</td>
+<td align="left">ctrlP搜索,多次按下可以改变搜索规则</td>
+</tr>
+<tr>
+<td align="left">C+l</td>
+<td align="left">jsdoc激活，在js的function上方按下生成注释</td>
+</tr>
+<tr>
+<td align="left">C+J</td>
+<td align="left">ultisnips补全需要用到这个</td>
+</tr>
+<tr>
+<td align="left">Tab&amp;S-Tab</td>
+<td align="left">superTab的上下切换</td>
+</tr>
+<tr>
+<td align="left">C-d</td>
+<td align="left">多光标选中</td>
+</tr>
+<tr>
+<td align="left">*</td>
+<td align="left">高亮所有光标下单词,n,p上写切换</td>
+</tr>
+<tr>
+<td align="left">gg</td>
+<td align="left">跳到文件头部</td>
+</tr>
+<tr>
+<td align="left">GG</td>
+<td align="left">调到文件尾部</td>
+</tr>
+<tr>
+<td align="left">0</td>
+<td align="left">跳到当前行第一个字符</td>
+</tr>
+<tr>
+<td align="left">I</td>
+<td align="left">调到当前行首并设为插入状态</td>
+</tr>
+<tr>
+<td align="left">A</td>
+<td align="left">调到当前行末尾并设为插入状态</td>
+</tr>
+<tr>
+<td align="left">dd</td>
+<td align="left">删除当前行</td>
+</tr>
+<tr>
+<td align="left">gG,g$</td>
+<td align="left">删除光标到行末尾</td>
+</tr>
+<tr>
+<td align="left">S</td>
+<td align="left">删除当前行内容，但是不删除行</td>
+</tr>
+<tr>
+<td align="left">dw</td>
+<td align="left">删除一个单词</td>
+</tr>
+<tr>
+<td align="left">yw</td>
+<td align="left">复制一个单词</td>
+</tr>
+<tr>
+<td align="left">:split</td>
+<td align="left">水平切割窗口</td>
+</tr>
+<tr>
+<td align="left">:vsplit</td>
+<td align="left">垂直切割窗口</td>
+</tr>
+<tr>
+<td align="left">:close</td>
+<td align="left">关闭窗口</td>
+</tr>
+<tr>
+<td align="left">H</td>
+<td align="left">移动到可视区域最上一行</td>
+</tr>
+<tr>
+<td align="left">L</td>
+<td align="left">移动到可视区域最下一行</td>
+</tr>
+<tr>
+<td align="left">M</td>
+<td align="left">移动到可视区域中间</td>
+</tr>
+<tr>
+<td align="left">:s/aa/bb/g</td>
+<td align="left">光标所在行出现的所有包含 aa 的字符串中的 aa 替换为 bb</td>
+</tr>
+<tr>
+<td align="left">:g/^$/d</td>
+<td align="left">删除空行</td>
+</tr>
+<tr>
+<td align="left">cib</td>
+<td align="left">光标移动到括号按下，清除括号内部并设为插入</td>
+</tr>
+<tr>
+<td align="left">cit</td>
+<td align="left">同上 html标签内部</td>
+</tr>
+<tr>
+<td align="left">ci’ &amp; ci”</td>
+<td align="left">同上，单双引号</td>
+</tr>
+</tbody></table>
+<h1 id="Vim插件"><a href="#Vim插件" class="headerlink" title="Vim插件"></a>Vim插件</h1><p>vim插件使用基本是本文的重点所在。当基本掌握了Vim之后，各种各样的Vim插件帮你实现各种IDE才可能具有的高级功能。可以大大提高个人效率和编辑体验.<br>本文挑重点写一下个人认为非常有用的插件。这些排名不代表优先级，排位仅仅是随兴所至。</p>
+<h2 id="vim-youdao-translater"><a href="#vim-youdao-translater" class="headerlink" title="vim-youdao-translater"></a>vim-youdao-translater</h2><p>中文用户会知道有个东西叫做有道词典，IT程序🐶会知道有种东西叫做vim。当vim遇到有道词典，那确实是一件赏心悦目的事情。<br>空口无凭，上个图让大家看看实在的:<br><img src="/images/youdao.png" alt="youdao"><br>在本配置的中的使用方法：光标移动过去,然后按<code>< loader>yd</code>,如果你不知道什么是loader键，那我不解释了，直接说个人配置的是逗号键:,。<br>如果你不爱用我配置，那么安装好这个插件以后，在配置里加上如下代码即可：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">noremap &lt;leader&gt;yd :&lt;C-u&gt;Ydc&lt;CR&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="YoucompleteMe-amp-amp-tern-for-vim"><a href="#YoucompleteMe-amp-amp-tern-for-vim" class="headerlink" title="YoucompleteMe&amp;&amp;tern_for_vim"></a>YoucompleteMe&amp;&amp;tern_for_vim</h2><p>这两个放在一起写是有原因，因为作为前端，这两个插件是配合在一起才能发挥最大用途的。<br>不过在使用他们之前我们尚需要配置:</p>
+<ol>
+<li>cd <you project folder> &amp;&amp; touch .tern-project # 到项目文件夹下创建.tern-project</li>
+<li>粘贴配置文件到.tern-project #配置可以去ternjs官网看文档</li>
+</ol>
+<p>个人一般通用的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;libs&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;browser&quot;</span>,</span><br><span class="line">    <span class="string">&quot;jquery&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里让不知道的童鞋看看它们结合的强大:<br><img src="/images/ycmd1.png" alt="ymcd1"><br><img src="/images/ycmd2.png" alt="ycmd2"><br>通过上面的代码可以看到,vim此时已经可以做到一定程度语意补全，即很多ide扯到的智能感知。<br>如果上面那两个图还没能说明什么，那么再看下面这个图，你会明白为什么说它是vim补全的top1:<br><img src="/images/ycmd3.png" alt="ycmd3"><br>就是这样,它不仅进行了补全，还智能识别了每个属性的值的类型。有了这两货，摆脱IDE真的不是什么梦了。</p>
+<h2 id="vim-surround"><a href="#vim-surround" class="headerlink" title="vim-surround"></a>vim-surround</h2><p>vim-surround是个超级神器,如果说有些插件是长枪，一扫一大片的话，那么vim-surround可以说是弓箭，专攻一点。</p>
+<p>添加括号(html标签中空格请忽视):</p>
+<table>
+<thead>
+<tr>
+<th align="left">start</th>
+<th align="left">命令</th>
+<th align="left">end</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">H*ello world</td>
+<td align="left">ysw(</td>
+<td align="left">H(ello) world</td>
+</tr>
+<tr>
+<td align="left">H*ello world</td>
+<td align="left">ysaw(</td>
+<td align="left">(Hello) world</td>
+</tr>
+<tr>
+<td align="left">H*ello world</td>
+<td align="left">ys$(</td>
+<td align="left">H(ello world)</td>
+</tr>
+<tr>
+<td align="left">H*ello world</td>
+<td align="left">ys2aw(</td>
+<td align="left">(Hello world)</td>
+</tr>
+<tr>
+<td align="left">Hello wo*rld</td>
+<td align="left">yss(</td>
+<td align="left">(Hello world)</td>
+</tr>
+<tr>
+<td align="left">Hello wo*rld</td>
+<td align="left">vlllllS(</td>
+<td align="left">Hel(lo wor)ld)</td>
+</tr>
+<tr>
+<td align="left">*Hello world</td>
+<td align="left">VS</td>
+<td align="left">&lt; p&gt;Hello world&lt; /p&gt;</td>
+</tr>
+</tbody></table>
+<p>修改括号(html标签中空格请忽视):</p>
+<table>
+<thead>
+<tr>
+<th align="left">start</th>
+<th align="left">命令</th>
+<th align="left">end</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">[H*ello world]</td>
+<td align="left">cs[&lt; p&gt;</td>
+<td align="left">&lt; p&gt;Hello world&lt;/ p&gt;</td>
+</tr>
+<tr>
+<td align="left">&lt; p&gt;H*ello world&lt;/ p&gt;</td>
+<td align="left">cst&lt; div&gt;</td>
+<td align="left">&lt; div&gt;Hello world&lt;/ div&gt;</td>
+</tr>
+<tr>
+<td align="left">&lt; div&gt;H*ello world&lt;/ div&gt;</td>
+<td align="left">cst(</td>
+<td align="left">(Hello world)</td>
+</tr>
+</tbody></table>
+<p>删除括号:</p>
+<table>
+<thead>
+<tr>
+<th align="left">start</th>
+<th align="left">命令</th>
+<th align="left">end</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">(H*ello) world</td>
+<td align="left">ds(</td>
+<td align="left">Hello world</td>
+</tr>
+<tr>
+<td align="left">&lt; p&gt;Hello world&lt;/ p&gt;</td>
+<td align="left">dst</td>
+<td align="left">Hello world))</td>
+</tr>
+</tbody></table>
+<h2 id="tabular"><a href="#tabular" class="headerlink" title="tabular"></a>tabular</h2><p>tabular是一个用来对齐文本的插件，功能非常强大，对代码有洁癖和美观要求的人来说是非常实用的。<br>具体的官方文档可以看这里: <a target="_blank" rel="noopener" href="http://vimcasts.org/episodes/aligning-text-with-tabular-vim/">官方文档</a></p>
+<p>这个使用比较简单，视频里面的都可以用，不过最后的设置个人测试了一下似乎没有效果。</p>
+<p>不过这个插件使用还是非常简单的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">one = <span class="number">1</span></span><br><span class="line">two = <span class="number">2</span></span><br><span class="line">three = <span class="number">3</span></span><br><span class="line">four = <span class="number">4</span>  </span><br><span class="line"><span class="comment">// :Tab /=</span></span><br><span class="line">&#123;</span><br><span class="line">        title: <span class="string">&quot;Aligning assignments&quot;</span></span><br><span class="line">        h264Src: <span class="string">&quot;/media/alignment.mov&quot;</span>,</span><br><span class="line">        oggSrc: <span class="string">&quot;/media/alignment.ogv&quot;</span></span><br><span class="line">        posterSrc: <span class="string">&quot;/media/alignment.png&quot;</span></span><br><span class="line">        duration: <span class="number">320</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// :Tab /:</span></span><br></pre></td></tr></table></figure>
+<p>简单说就是运行 :Tab /&lt;分隔符号&gt;<br>当然，这么说不是最准确的表达，不过初步使用就这样理解无所谓了。</p>
+<h2 id="vim-markdown"><a href="#vim-markdown" class="headerlink" title="vim-markdown"></a>vim-markdown</h2><p>vim-markdown依赖tabular。</p>
+<p>下面是一些快捷键。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">]]: go to next header. &lt;Plug&gt;Markdown_MoveToNextHeader</span><br><span class="line"></span><br><span class="line">[[: go to previous header. Contrast with ]c. &lt;Plug&gt;Markdown_MoveToPreviousHeader</span><br><span class="line"></span><br><span class="line">][: go to next sibling header if any. &lt;Plug&gt;Markdown_MoveToNextSiblingHeader</span><br><span class="line"></span><br><span class="line">[]: go to previous sibling header if any. &lt;Plug&gt;Markdown_MoveToPreviousSiblingHeader</span><br><span class="line"></span><br><span class="line">]c: go to Current header. &lt;Plug&gt;Markdown_MoveToCurHeader</span><br><span class="line"></span><br><span class="line">]u: go to parent header (Up). &lt;Plug&gt;Markdown_MoveToParentHeader</span><br></pre></td></tr></table></figure>
+
+<p>然而这个感觉平时不是很用得上，虽然可能上还是很有用的，不过我个人觉得还是表格格式化最有用:<br>使用 :TableFormat 可以将排版稀烂的表格格式化好,这里给个稀烂的例子</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">|name|age|</span><br><span class="line">|zhangsan|15|</span><br><span class="line">|lisi|4|</span><br><span class="line">|wangerxiao|18|</span><br></pre></td></tr></table></figure>
+<p>光标移动到这个table的区域内，运行上面的命令，即可将table格式化好.</p>
+<h2 id="NERD-Tree"><a href="#NERD-Tree" class="headerlink" title="NERD Tree"></a>NERD Tree</h2><p>NERD Tree是最常用的插件了。就个人经验来说，它甚至是最常用的。</p>
+<p>盗来的图,哈哈：<br><img src="https://raw.githubusercontent.com/yangyangwithgnu/use_vim_as_ide/master/pics/%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8.gif"></p>
+<p>本配置中的开关项目树的方法: &lt; loader&gt; + nn</p>
+<p>快捷键：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">o       在已有窗口中打开文件、目录或书签，并跳到该窗口</span><br><span class="line">go      在已有窗口 中打开文件、目录或书签，但不跳到该窗口</span><br><span class="line">t       在新 Tab 中打开选中文件/书签，并跳到新 Tab</span><br><span class="line">T       在新 Tab 中打开选中文件/书签，但不跳到新 Tab</span><br><span class="line">i       split 一个新窗口打开选中文件，并跳到该窗口</span><br><span class="line">gi      split 一个新窗口打开选中文件，但不跳到该窗口</span><br><span class="line">s       vsplit 一个新窗口打开选中文件，并跳到该窗口</span><br><span class="line">gs      vsplit 一个新 窗口打开选中文件，但不跳到该窗口</span><br><span class="line">!       执行当前文件</span><br><span class="line">O       递归打开选中 结点下的所有目录</span><br><span class="line">x       合拢选中结点的父目录</span><br><span class="line">X       递归 合拢选中结点下的所有目录</span><br><span class="line">e       Edit the current dif</span><br><span class="line"></span><br><span class="line">双击    相当于 NERDTree-o</span><br><span class="line">中键    对文件相当于 NERDTree-i，对目录相当于 NERDTree-e</span><br><span class="line"></span><br><span class="line">D       删除当前书签</span><br><span class="line"></span><br><span class="line">P       跳到根结点</span><br><span class="line">p       跳到父结点</span><br><span class="line">K       跳到当前目录下同级的第一个结点</span><br><span class="line">J       跳到当前目录下同级的最后一个结点</span><br><span class="line">k       跳到当前目录下同级的前一个结点</span><br><span class="line">j       跳到当前目录下同级的后一个结点</span><br><span class="line"></span><br><span class="line">C       将选中目录或选中文件的父目录设为根结点</span><br><span class="line">u       将当前根结点的父目录设为根目录，并变成合拢原根结点</span><br><span class="line">U       将当前根结点的父目录设为根目录，但保持展开原根结点</span><br><span class="line">r       递归刷新选中目录</span><br><span class="line">R       递归刷新根结点</span><br><span class="line">m       显示文件系统菜单</span><br><span class="line">cd      将 CWD 设为选中目录</span><br><span class="line"></span><br><span class="line">I       切换是否显示隐藏文件</span><br><span class="line">f       切换是否使用文件过滤器</span><br><span class="line">F       切换是否显示文件</span><br><span class="line">B       切换是否显示书签</span><br><span class="line"></span><br><span class="line">q       关闭 NerdTree 窗口</span><br><span class="line">?       切换是否显示 Quick Help</span><br></pre></td></tr></table></figure>
+
+<h2 id="bufexplorer"><a href="#bufexplorer" class="headerlink" title="bufexplorer"></a>bufexplorer</h2><p>有了bufexplorer就可以浏览和管理buffer了。tab虽然也是vim中一个重要概念，但是个人还是更喜欢直接使用buffer而不用tab。</p>
+<p>激活bufexplorer的快捷键是 &lt; loder&gt;+o;<br>激活以后是这样的:<br><img src="/images/buffer.png" alt="buffer"></p>
+<p>我们是用jk进行上下移动，按d删除一个buffer，按enter进入光标所在的buffer。当我们编辑多个文件时候就是这样简单.</p>
+<h2 id="ctrlp"><a href="#ctrlp" class="headerlink" title="ctrlp"></a>ctrlp</h2><p>用惯了sublime和atom的C-p吧？这个插件就是用来解决这个痛点(如果你没用试过但是有这个编辑器强烈推荐试试，如果没有就智能告诉你，这是一个项目内部模糊检索文件功能)，就算有NERD tree,但是如果你清晰记得文件名中某个单词，之间模糊检索会更快！</p>
+<p>虽然C-p是默认的按键绑定，但是这份配置绑定到了C+f.初次使用需要检索全局文件项目很大就会比较慢，但是如果小项目几秒就好了。效果图是这样的:<br><img src="/images/ctrlP.png" alt="ctrlP"></p>
+<h2 id="mru-vim"><a href="#mru-vim" class="headerlink" title="mru.vim"></a>mru.vim</h2><p>MRU是啥？Most Recently Used——最近打开最多的。这个插件倍整合到ctrlP了。如果想使用它，那么按下 C-f即可，当你多次按下C-f会在不同检索方式中切换，其中就会有MRU.</p>
+<h2 id="vim-fugitive"><a href="#vim-fugitive" class="headerlink" title="vim-fugitive"></a>vim-fugitive</h2><p>好吧，vim绑上了git，这一定是在犯规！vim-fugitive是一个vim中使用git的wrapper——原谅我很不好翻译这个词汇.</p>
+<p>基本使用:</p>
+<table>
+<thead>
+<tr>
+<th align="left">git</th>
+<th align="left">fugitive</th>
+<th align="left">action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">:Git checkout %</td>
+<td align="left">:Gread</td>
+<td align="left">将当前文件反转至上次的checkout状态</td>
+</tr>
+<tr>
+<td align="left">:Git rm %</td>
+<td align="left">:Gremove</td>
+<td align="left">从Git中删除该文件，并且vim中也删除该文件的buffer</td>
+</tr>
+<tr>
+<td align="left">:Git mv %</td>
+<td align="left">:Gmove</td>
+<td align="left">重命名当前的文件名以及对应的buffer名</td>
+</tr>
+<tr>
+<td align="left">:Git commit</td>
+<td align="left">:Gcommit</td>
+<td align="left">提交，可以使用ctrl+n来补全</td>
+</tr>
+<tr>
+<td align="left">:Git blame</td>
+<td align="left">:Gblame</td>
+<td align="left">查看当前文件每一行的最后一次修改都是谁完成的</td>
+</tr>
+<tr>
+<td align="left">:Git status</td>
+<td align="left">:Gstatus</td>
+<td align="left">打开一个git status命令的窗口.Ctrl+n和Ctrl+p可以在文件中上下移动</td>
+</tr>
+</tbody></table>
+<h3 id="Gstatus的内部命令"><a href="#Gstatus的内部命令" class="headerlink" title=":Gstatus的内部命令"></a>:Gstatus的内部命令</h3><table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><Enter></td>
+<td align="left">open current file in the window below</td>
+</tr>
+<tr>
+<td align="left">p</td>
+<td align="left">run <code>git add –patch</code> for current file</td>
+</tr>
+<tr>
+<td align="left">C</td>
+<td align="left">invoke :Gcommit</td>
+</tr>
+</tbody></table>
+<h2 id="vim-jsdoc"><a href="#vim-jsdoc" class="headerlink" title="vim-jsdoc"></a>vim-jsdoc</h2><p>你不一定听过这个插件，但是一定听过sublime的DocBlockr。<br>什么？你没听说过？好吧，看下面的代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * [foobar description]</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param  <span class="type">&#123;[type]&#125;</span> </span>baz [description]</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param  <span class="type">&#123;[type]&#125;</span> </span>quux [description]</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return <span class="type">&#123;[type]&#125;</span></span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foobar</span> (<span class="params">baz, quux</span>) </span>&#123; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>vim下没有DockBlockr,但是你猜到了，vim-jsdoc可以做到同样的事情，而且它可以做的更好——依托灵活的配置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;如果你只需要同DockBlockr一样的行为仅仅需要第一行配置</span><br><span class="line">nmap &lt;silent&gt; &lt;C-l&gt; ?function&lt;cr&gt;:noh&lt;cr&gt;&lt;Plug&gt;(jsdoc)</span><br><span class="line">&quot;加上这两行后会在底部ex命令行逐个提问类型 描述(推荐,好处是不需要自己移动光标去写了,而且更容易写出标准的注释)</span><br><span class="line">let g:jsdoc_allow_input_prompt&#x3D;1</span><br><span class="line">let g:jsdoc_input_description&#x3D;1</span><br></pre></td></tr></table></figure>
+
+<h2 id="vim-easymotion"><a href="#vim-easymotion" class="headerlink" title="vim-easymotion"></a>vim-easymotion</h2><p>过千的star说明一切，这个插件给vim以更灵活的移动方式.定位单词不在需要按好多次jkhl。<br>本来想自己写下的，不过有人比我写的更好更细心，那么，就引用一下：<br><a target="_blank" rel="noopener" href="http://www.wklken.me/posts/2015/06/07/vim-plugin-easymotion.html#1-wb">《VIM插件: EASYMOTION[快速跳转]》</a>;</p>
+<h2 id="ultisnips"><a href="#ultisnips" class="headerlink" title="ultisnips"></a>ultisnips</h2><p>去除了snipmate，换了ultisnips，比snipmate更好的补全工具。配合vim-snippets以后，可以发挥非常大的作用，常用的代码补全都有了。</p>
+<p>在本配置内的使用方式是： 输入短标记以后会出现下拉pop弹框，按tab切换到目标位置，然后按下&lt; c+j&gt;即可,具体如图，这是没有按下c-j。<br><img src="http://7xpovu.com1.z0.glb.cloudshelldn.com/ultisnip.png"><br>按下c-j马上就变成了</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="literal">true</span>)&#123;</span><br><span class="line"></span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="supertab"><a href="#supertab" class="headerlink" title="supertab"></a>supertab</h2><p>这个插件就是用&lt; Tab&gt;来替换&lt; c-n&gt;的,&lt; S+Tab&gt;等同于&lt; s-p&gt;</p>
+<h2 id="vim-multiple-cursors"><a href="#vim-multiple-cursors" class="headerlink" title="vim-multiple-cursors"></a>vim-multiple-cursors</h2><p>4k5的star,只能说sulime的&lt; c+d&gt;好用的不行。<br>这里做了一些配置:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">let g:multi_cursor_use_default_mapping&#x3D;0</span><br><span class="line">&quot; Default mapping</span><br><span class="line">let g:multi_cursor_next_key&#x3D;&#39;&lt;C-d&gt;&#39;</span><br><span class="line">let g:multi_cursor_prev_key&#x3D;&#39;&lt;C-p&gt;&#39;</span><br><span class="line">let g:multi_cursor_skip_key&#x3D;&#39;&lt;C-x&gt;&#39;</span><br><span class="line">let g:multi_cursor_quit_key&#x3D;&#39;&lt;Esc&gt;&#39;&quot;</span><br></pre></td></tr></table></figure>
+<p>按下&lt; c+d&gt;就可以像sublime里面一样任性的&lt; c+d&gt;了！</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="http://www.d0u9.xyz/vimcha-jian-jie-shao-fugitive/">《vim插件介绍－Fugitive》</a>;<br><a target="_blank" rel="noopener" href="http://www.wklken.me/posts/2015/06/07/vim-plugin-easymotion.html#1-wb">《VIM插件: EASYMOTION[快速跳转]》</a>;<br><a target="_blank" rel="noopener" href="http://coolshell.cn/articles/5426.html">《简明 Vim 练级攻略》</a>.<br><a target="_blank" rel="noopener" href="http://www.wklken.me/posts/2015/06/07/vim-plugin-multiplecursors.html">《VIM插件: MULTIPLE-CURSORS》</a>;</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/vim/" rel="tag"># vim</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/24/Promise/" rel="prev" title="Promise">
+      <i class="fa fa-chevron-left"></i> Promise
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/11/06/node-buffer/" rel="next" title="node-buffer笔记">
+      node-buffer笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%8E%E9%85%8D%E7%BD%AE%E5%BC%80%E5%A7%8B%E8%AF%B4%E8%B5%B7"><span class="nav-number">2.</span> <span class="nav-text">从配置开始说起</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">vim基础操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#vim%E7%9A%84%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">vim的模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim%E7%9A%84%E7%A7%BB%E5%8A%A8"><span class="nav-number">3.2.</span> <span class="nav-text">vim的移动</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E7%A7%BB%E5%8A%A8"><span class="nav-number">3.2.1.</span> <span class="nav-text">简单的移动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E4%B8%80%E7%82%B9%E7%9A%84%E7%A7%BB%E5%8A%A8"><span class="nav-number">3.2.2.</span> <span class="nav-text">复杂一点的移动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4"><span class="nav-number">3.3.</span> <span class="nav-text">复制粘贴</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Undo-Redo"><span class="nav-number">3.4.</span> <span class="nav-text">Undo&#x2F;Redo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%9D%E5%AD%98"><span class="nav-number">3.5.</span> <span class="nav-text">保存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%AF%87%E6%94%B6%E5%B0%BE"><span class="nav-number">3.6.</span> <span class="nav-text">基础篇收尾</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%AA%E4%BA%BA%E9%85%8D%E7%BD%AE%E5%BF%AB%E6%8D%B7%E9%94%AE-amp-amp-%E6%9C%89%E7%94%A8%E7%9A%84%E6%8C%89%E9%94%AE"><span class="nav-number">4.</span> <span class="nav-text">个人配置快捷键&amp;&amp;有用的按键</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Vim%E6%8F%92%E4%BB%B6"><span class="nav-number">5.</span> <span class="nav-text">Vim插件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-youdao-translater"><span class="nav-number">5.1.</span> <span class="nav-text">vim-youdao-translater</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YoucompleteMe-amp-amp-tern-for-vim"><span class="nav-number">5.2.</span> <span class="nav-text">YoucompleteMe&amp;&amp;tern_for_vim</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-surround"><span class="nav-number">5.3.</span> <span class="nav-text">vim-surround</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tabular"><span class="nav-number">5.4.</span> <span class="nav-text">tabular</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-markdown"><span class="nav-number">5.5.</span> <span class="nav-text">vim-markdown</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NERD-Tree"><span class="nav-number">5.6.</span> <span class="nav-text">NERD Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bufexplorer"><span class="nav-number">5.7.</span> <span class="nav-text">bufexplorer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ctrlp"><span class="nav-number">5.8.</span> <span class="nav-text">ctrlp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mru-vim"><span class="nav-number">5.9.</span> <span class="nav-text">mru.vim</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-fugitive"><span class="nav-number">5.10.</span> <span class="nav-text">vim-fugitive</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Gstatus%E7%9A%84%E5%86%85%E9%83%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">5.10.1.</span> <span class="nav-text">:Gstatus的内部命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-jsdoc"><span class="nav-number">5.11.</span> <span class="nav-text">vim-jsdoc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-easymotion"><span class="nav-number">5.12.</span> <span class="nav-text">vim-easymotion</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ultisnips"><span class="nav-number">5.13.</span> <span class="nav-text">ultisnips</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#supertab"><span class="nav-number">5.14.</span> <span class="nav-text">supertab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vim-multiple-cursors"><span class="nav-number">5.15.</span> <span class="nav-text">vim-multiple-cursors</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

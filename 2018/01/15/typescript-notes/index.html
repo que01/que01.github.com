@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="最近业务需要一直在基于 React+Typescript的技术栈上工作，从Typescript新手到相对熟练还是花了点时间，这里就给Tyepscript的使用做点小笔记，算是对过去一些小总结。如果可以帮到更多人，那么幸甚。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="typescript笔记">
+<meta property="og:url" content="http://www.que01.top/2018/01/15/typescript-notes/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="最近业务需要一直在基于 React+Typescript的技术栈上工作，从Typescript新手到相对熟练还是花了点时间，这里就给Tyepscript的使用做点小笔记，算是对过去一些小总结。如果可以帮到更多人，那么幸甚。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-01-15T08:13:47.000Z">
+<meta property="article:modified_time" content="2020-12-18T14:13:07.886Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="typescript">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2018/01/15/typescript-notes/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>typescript笔记 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2018/01/15/typescript-notes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          typescript笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-15 16:13:47" itemprop="dateCreated datePublished" datetime="2018-01-15T16:13:47+08:00">2018-01-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-18 22:13:07" itemprop="dateModified" datetime="2020-12-18T22:13:07+08:00">2020-12-18</time>
+              </span>
+
+          
+            <span id="/2018/01/15/typescript-notes/" class="post-meta-item leancloud_visitors" data-flag-title="typescript笔记" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">最近业务需要一直在基于 React+Typescript的技术栈上工作，从Typescript新手到相对熟练还是花了点时间，这里就给Tyepscript的使用做点小笔记，算是对过去一些小总结。如果可以帮到更多人，那么幸甚。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Typescript的类型"><a href="#Typescript的类型" class="headerlink" title="Typescript的类型"></a>Typescript的类型</h1><p>截至目前版本(TypeScript 2.6), Typescript类型有以下几种:</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>boolean</td>
+<td>布尔值</td>
+</tr>
+<tr>
+<td>number</td>
+<td>数字</td>
+</tr>
+<tr>
+<td>string</td>
+<td>字符串</td>
+</tr>
+<tr>
+<td>array</td>
+<td>数组</td>
+</tr>
+<tr>
+<td>Tuple</td>
+<td>元组类型允许表示一个已知元素数量和类型的数组</td>
+</tr>
+<tr>
+<td>enum</td>
+<td>枚举，给数字集合更好的命名，默认从0开始</td>
+</tr>
+<tr>
+<td>any</td>
+<td>任意类型</td>
+</tr>
+<tr>
+<td>void</td>
+<td>可以看成any的对立面，这个常在没有返回的函数那里看到，它表示没有任何类型</td>
+</tr>
+<tr>
+<td>Null 和 Undefined</td>
+<td>TypeScript里，undefined和null两者各自有自己的类型分别叫做undefined和null</td>
+</tr>
+<tr>
+<td>Never</td>
+<td>表示的是那些永不存在的值的类型，never类型是那些总是会抛出异常或根本就不会有返回值的函数表达式或箭头函数表达式的返回值类型</td>
+</tr>
+</tbody></table>
+<p>目前来说文档算是对类型讲的比较清楚</p>
+<h1 id="声明变量"><a href="#声明变量" class="headerlink" title="声明变量"></a>声明变量</h1><h2 id="let和const"><a href="#let和const" class="headerlink" title="let和const"></a>let和const</h2><p>区别在于let声明以后可以更改，而const不能。根据最小权限原则，除非你计划更改，那么就用const。</p>
+<h2 id="声明函数"><a href="#声明函数" class="headerlink" title="声明函数"></a>声明函数</h2><p>简单说，就是对函数的输入和输出进行一个约束。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">num1: number, num2: number</span>): <span class="title">number</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> num1 + num2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h1><p>接口我个人认为是typescript用的最多的东西之一，但是可能也是常规使用ts最容易遇到问题的地方之一，正常来讲我感觉说它最难应该也没啥问题？不过接口是在类型系统的基础上建立的，它的作用是对数据的结构体进行校验，而ts里面常规的类型系统，一般的类型校验都是对值或者函数的校验。</p>
+<p>接口这里个人感觉是一个熟能生巧的东西。</p>
+<h2 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">interface Person&#123;</span><br><span class="line">  name: <span class="string">&#x27;zhangsan&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getName</span>(<span class="params">person: Person</span>)</span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">`my name is <span class="subst">$&#123;persion.name&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="可选属性-amp-amp-只读属性"><a href="#可选属性-amp-amp-只读属性" class="headerlink" title="可选属性 &amp;&amp; 只读属性"></a>可选属性 &amp;&amp; 只读属性</h2><p>上面的实际上只是最简单的接口的例子，实际上应用的时候不会这样简单。<br>常见的场景就是有些属性有些对象有有些却没有有，这时候如果全部如上面那么写就会抛错。可选属性是写ts时候面临的第一个困惑我认为。<br>套用一下官方的例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">interface SquareConfig &#123;</span><br><span class="line">  color?: string;</span><br><span class="line">  width?: number;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个时候，color和width就都不是必须的了。可以根据情况来选择传不传。<br>另外就是只读属性</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">interface Point &#123;</span><br><span class="line">    readonly x: number;</span><br><span class="line">    readonly y: number;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> p1: Point = &#123; <span class="attr">x</span>: <span class="number">10</span>, <span class="attr">y</span>: <span class="number">20</span> &#125;;</span><br><span class="line">p1.x = <span class="number">5</span>; <span class="comment">// error!</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="额外的属性检查"><a href="#额外的属性检查" class="headerlink" title="额外的属性检查"></a>额外的属性检查</h2><p>接口默认是一种严格的校验，当一个数据结构符合一个接口时候(而不做特殊处理)，他的意思是严格的符合，不可以带『私货』。<br>所以说如下接口使用时候，可以给createSquare传{color:”xxxx”},可以传{width: 10}，也可以两个都传，但是不可以再加一个height;</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">interface SquareConfig &#123;</span><br><span class="line">    color?: string;</span><br><span class="line">    width?: number;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createSquare</span>(<span class="params">config: SquareConfig</span>): </span>&#123; color: string; area: number &#125; &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同理的，如下代码也是会抛错的</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a: SquareConfig = &#123;<span class="attr">color</span>: <span class="string">&quot;red&quot;</span>, <span class="attr">width</span>: <span class="number">10</span>&#125;;</span><br><span class="line">a.height = <span class="number">10</span>; <span class="comment">// error</span></span><br></pre></td></tr></table></figure>
+<p>此时可以加上<a href="#%E5%8F%AF%E7%B4%A2%E5%BC%95%E7%9A%84%E7%B1%BB%E5%9E%8B-%E7%B4%A2%E5%BC%95%E7%AD%BE%E5%90%8D">引索签名</a>来解决这个问题</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">interface SquareConfig &#123;</span><br><span class="line">    color?: string;</span><br><span class="line">    width?: number;</span><br><span class="line">    [propName: string]: any;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时可以给它传递任何类型的属性了，就像常规的的js对象一样。</p>
+<h2 id="函数接口-可调用签名"><a href="#函数接口-可调用签名" class="headerlink" title="函数接口(可调用签名)"></a>函数接口(可调用签名)</h2><p>上面的接口相关都是用来描述一个对象，一个数据结构是怎样的，但是没有说，一个函数该如何用接口描述；</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">interface SearchFunc &#123;</span><br><span class="line">  (source: string, <span class="attr">subString</span>: string): boolean;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> mySearch: SearchFunc;</span><br><span class="line">mySearch = <span class="function"><span class="keyword">function</span>(<span class="params">src, sub</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> result = src.search(sub);</span><br><span class="line">    <span class="keyword">return</span> result &gt; -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>函数接口这里定义还是比较简单，核心还是 <code>(source: string, subString: string): boolean;</code>, 冒号前面那块是参数，冒号后面则是返回值的类型。<br>这里有几个要点可以关注一下</p>
+<ul>
+<li>函数在声明时候设好了接口以后， 参数名不需要与接口里定义的名字相匹配，它是挨个匹配类型，而不是根据参数名</li>
+<li>定义了接口以后，函数定义时候， src, sub 参数这里可以不设置类型，而是通过ts自动推导出来。</li>
+</ul>
+<h2 id="可索引的类型-索引签名"><a href="#可索引的类型-索引签名" class="headerlink" title="可索引的类型(索引签名)"></a>可索引的类型(索引签名)</h2><p>除了描述对象、函数，接口也可以描述可引索的类型。这是一个名为索引签名的东西实现的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">interface StringArray &#123;</span><br><span class="line">  [index: number]: string;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> myArray: StringArray;</span><br><span class="line">myArray = [<span class="string">&quot;Bob&quot;</span>, <span class="string">&quot;Fred&quot;</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> myStr: string = myArray[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+<p>如上，这种签名如果只是为了处理数组，显然这是这没啥用的，因为不如 <code>let myArray: string[] = ["Bob", "Fred"];</code>好用也不如其整洁。我个人认为索引签名其实还是如上面提到的<a href="#%E9%A2%9D%E5%A4%96%E7%9A%84%E5%B1%9E%E6%80%A7%E6%A3%80%E6%9F%A5">额外的属性检查</a>这块的作用更大一些。</p>
+<h2 id="Class约束"><a href="#Class约束" class="headerlink" title="Class约束"></a>Class约束</h2><p>类的约束有两种情况：</p>
+<ul>
+<li>静态部分</li>
+<li>实例部分</li>
+</ul>
+<h3 id="静态部分"><a href="#静态部分" class="headerlink" title="静态部分"></a>静态部分</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">interface ClockInterface &#123;</span><br><span class="line">    currentTime: <span class="built_in">Date</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Clock</span> <span class="title">implements</span> <span class="title">ClockInterface</span> </span>&#123;</span><br><span class="line">    currentTime: <span class="built_in">Date</span>;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params">h: number, m: number</span>)</span> &#123; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="实例部分"><a href="#实例部分" class="headerlink" title="实例部分"></a>实例部分</h3><p>实例部分和静态部分接口是不通用的，实例这块最大的问题是构造器签名这块。<br>那么什么是一个『构造器签名』呢？如下代码，这就是一个很常规的构造器签名。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">interface ClockConstructor &#123;</span><br><span class="line">    <span class="keyword">new</span> (hour: number, <span class="attr">minute</span>: number): ClockInterface;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>说它和静态类型不能公用接口的意思是，构造器签名在类中，是不可implementable的。如下代码，就会抛出错误：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">interface ClockConstructor &#123;</span><br><span class="line">    <span class="keyword">new</span> (hour: number, <span class="attr">minute</span>: number);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Clock</span> <span class="title">implements</span> <span class="title">ClockConstructor</span> </span>&#123;</span><br><span class="line">    currentTime: <span class="built_in">Date</span>;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params">h: number, m: number</span>)</span> &#123; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以，正常情况需要两个签名才能完整定义实例部分，整个环节简单的描述就是定义静态接口和构造器接口，然后新增一个类工厂用其传入构造器并返回实例。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">interface ClockConstructor &#123;</span><br><span class="line">    <span class="keyword">new</span> (hour: number, <span class="attr">minute</span>: number): ClockInterface;</span><br><span class="line">&#125;</span><br><span class="line">interface ClockInterface &#123;</span><br><span class="line">    tick();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createClock</span>(<span class="params">ctor: ClockConstructor, hour: number, minute: number</span>): <span class="title">ClockInterface</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ctor(hour, minute);</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DigitalClock</span> <span class="title">implements</span> <span class="title">ClockInterface</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params">h: number, m: number</span>)</span> &#123; &#125;</span><br><span class="line">    <span class="function"><span class="title">tick</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&quot;beep beep&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> digital = createClock(DigitalClock, <span class="number">12</span>, <span class="number">17</span>);</span><br></pre></td></tr></table></figure>
+<p>这里官方的例子还是看得比较明晰，静态类型、构造器签名、还有工厂类，各司其职。不过可能还是有些人不喜欢这种写法，毕竟添加一个工厂类，也是麻烦的一种。</p>
+<p>此时，如果是在写npm包可以使用 d.ts 文件声明来处理这种情况。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">declare <span class="keyword">var</span> DigitalClock &#123;</span><br><span class="line">  <span class="keyword">new</span>(h: number, <span class="attr">m</span>: number): DigitalClock;</span><br><span class="line">  tick: ();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>不过思考之后觉得其实不使用构造器签名，其实问题也不大，因为构造器返回的还是构造好的实例，这个实例会依从静态类型那块的签名，传入的参数这里的类型校验是可以直接定义好的。</strong></p>
+<h2 id="继承接口"><a href="#继承接口" class="headerlink" title="继承接口"></a>继承接口</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">interface Shape &#123;</span><br><span class="line">    color: string;</span><br><span class="line">&#125;</span><br><span class="line">interface PenStroke &#123;</span><br><span class="line">    penWidth: number;</span><br><span class="line">&#125;</span><br><span class="line">interface Square <span class="keyword">extends</span> Shape, PenStroke &#123;</span><br><span class="line">    sideLength: number;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> square = &lt;Square&gt;&#123;&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><p>个人认为Typescript里面函数算是比较简单的一块。这里面需要注意的有:</p>
+<ul>
+<li>可选参数 &amp; 默认值</li>
+<li>动态参数个数(剩余参数)</li>
+<li>重载</li>
+</ul>
+<h2 id="可选参数-amp-默认值"><a href="#可选参数-amp-默认值" class="headerlink" title="可选参数 &amp; 默认值"></a>可选参数 &amp; 默认值</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">buildName</span>(<span class="params">firstName: string, lastName?: string</span>) </span>&#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">buildName</span>(<span class="params">firstName: string, lastName = <span class="string">&quot;Smith&quot;</span></span>) </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>此时第一行的参数lastName是可选的，而第二行lastName设置了初始值”Smith”，同时它也是可选值。</p>
+<h2 id="动态参数个数-剩余参数"><a href="#动态参数个数-剩余参数" class="headerlink" title="动态参数个数(剩余参数)"></a>动态参数个数(剩余参数)</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">buildName</span>(<span class="params">firstName: string, ...restOfName: string[]</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> firstName + <span class="string">&quot; &quot;</span> + restOfName.join(<span class="string">&quot; &quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="重载"><a href="#重载" class="headerlink" title="重载"></a>重载</h2><p>个人认为函数的重载实在很常见，尤其是非常流行的 lodash和 jQuery里面的api里面就重载得非常厉害。<br>举个简单的例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">LngLat2Address</span>(<span class="params">x: string</span>): <span class="title">string</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">LngLat2Address</span>(<span class="params">x: &#123;lng: number, lat: number&#125;</span>): <span class="title">string</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">LngLat2Address</span>(<span class="params">x</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> x == <span class="string">&quot;object&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&quot;</span></span><br><span class="line">  &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> address1 = LngLat2Address(<span class="string">&quot;113,23&quot;</span>);</span><br><span class="line"><span class="keyword">let</span> address2 = LngLat2Address(&#123;<span class="attr">lng</span>: <span class="number">111</span>, <span class="attr">lat</span>: <span class="number">23</span>&#125;);</span><br></pre></td></tr></table></figure>
+<p>如上面这段代码，它同时接受字符串和对象形式的经纬度，并转换为地址(过程代码略)，返回类型固定为string(实际上也可以返回不同的类型)。</p>
+<h1 id="泛型"><a href="#泛型" class="headerlink" title="泛型"></a>泛型</h1><p>泛型可以说是玩好TypeScript一个必须上的台阶。初步使用Ts时候不熟泛型也没啥问题，但是到了后面泛型其实也非常重要，因为它可以大大减少你重复自己的代码，减少写出重复的代码导致不好维护的问题。<br>简单的例子，比如常见的开发时候很多时候会请求一个列表展示，这里最简要的举个例子:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">interface User&#123;</span><br><span class="line">  name: string;</span><br><span class="line">  age: number</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getUserList</span>(<span class="params">cb: (Users: User[]) =&gt; <span class="keyword">void</span> <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">  $.ajax(&#123;</span><br><span class="line">    url: <span class="string">&#x27;abc.com/api/users&#x27;</span>,</span><br><span class="line">    method: <span class="string">&#x27;get&#x27;</span>,</span><br><span class="line">    success: （&#123;data&#125;: any）=&gt; &#123;</span><br><span class="line">      cb(data)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">interface Role&#123;</span><br><span class="line">  name: string;</span><br><span class="line">  level: number</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getRoleList</span>(<span class="params">cb: (Roles: Role[]) =&gt; <span class="keyword">void</span> <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">  $.ajax(&#123;</span><br><span class="line">    url: <span class="string">&#x27;abc.com/api/roles&#x27;</span>,</span><br><span class="line">    method: <span class="string">&#x27;get&#x27;</span>,</span><br><span class="line">    success: （&#123;data&#125;: any）=&gt; &#123;</span><br><span class="line">      cb(data)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很常规的需求，请求用户和角色列表。这里除了User和Role内部数据不一样其他都是一样，那么有没有办法可以避免写出重复度如此高的代码呢？很显然，这是可以的，这里就是泛型的意义之所在(提高复用性，不要重复自己)</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getList</span>&lt;<span class="title">T</span>&gt;(<span class="params">url: string, cb: (T[]) =&gt; <span class="keyword">void</span> <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">  $.ajax(&#123;</span><br><span class="line">    url,</span><br><span class="line">    method: <span class="string">&#x27;get&#x27;</span>,</span><br><span class="line">    success: （&#123;data&#125;: any）=&gt; &#123;</span><br><span class="line">      cb(data)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 此时就可以直接使用 getUserList和 getRolesList</span></span><br><span class="line">getList&lt;User&gt;(<span class="string">&#x27;abc.com/api/users&#x27;</span>, <span class="function">(<span class="params">User[]</span>) =&gt;</span> &#123;</span><br><span class="line">&#125;);</span><br><span class="line">getList&lt;Role&gt;(<span class="string">&#x27;abc.com/api/roles&#x27;</span>, <span class="function">(<span class="params">Role[]</span>) =&gt;</span> &#123;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h1 id="高级类型"><a href="#高级类型" class="headerlink" title="高级类型"></a>高级类型</h1><p>文档上高级类型看起来有很多。。。不过我这边用到过的也不多。。。这里就按自己相对熟悉一些的记录一下。</p>
+<h2 id="联合类型"><a href="#联合类型" class="headerlink" title="联合类型"></a>联合类型</h2><p>常见是一个函数同时可以接受 number和 string形式的参数，那么此时除了给它设为any之外，另一个方案就是设置为联合类型:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">toString</span>(<span class="params">s: number | string</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span> + s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="交叉类型"><a href="#交叉类型" class="headerlink" title="交叉类型"></a>交叉类型</h2><p>和联合类型很类似，不过交叉类型应该是对象形式的数据的联合。比如{a:1}, {b:2},的交叉，成为{a: 1, b: 2};<br>extend函数大家应该都用过，具体里面实现不表，它的定义应该是这样的，这就是一个非常典型的交叉类型。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">extend</span>&lt;<span class="title">T</span>, <span class="title">U</span>&gt;(<span class="params">first: T, second: U</span>): <span class="title">T</span> &amp; <span class="title">U</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="类型保护与区分类型"><a href="#类型保护与区分类型" class="headerlink" title="类型保护与区分类型"></a>类型保护与区分类型</h2><p>目前这个还没遇到过，不过觉得很有意思就记录一下，以便后面慢慢体会。<br>首先, 如果一个值是联合类型，我们只能访问此联合类型的所有类型里共有的成员。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">interface Bird &#123;</span><br><span class="line">    fly();</span><br><span class="line">    layEggs();</span><br><span class="line">&#125;</span><br><span class="line">interface Fish &#123;</span><br><span class="line">    swim();</span><br><span class="line">    layEggs();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getSmallPet</span>(<span class="params"></span>): <span class="title">Fish</span> | <span class="title">Bird</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> pet = getSmallPet();</span><br><span class="line">pet.layEggs(); <span class="comment">// okay</span></span><br><span class="line">pet.swim();    <span class="comment">// errors</span></span><br></pre></td></tr></table></figure>
+<p>所以上面这段代码就会在ts编译阶段就抛错，但是从业务逻辑环节来讲，这显然是很不合理的。但是换ts编译器的角度来说，这个到底抛错不抛错，也确实是个问题。——所以这里有了类型保护这个东西。<br>为了让上面代码运行，加入一个类型断言</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> pet = getSmallPet();</span><br><span class="line"><span class="keyword">if</span> ((&lt;Fish&gt;pet).swim) &#123;</span><br><span class="line">    (&lt;Fish&gt;pet).swim();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    (&lt;Bird&gt;pet).fly();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果这里反复判断的比较多，那么就需要用到自定义类型保护了，这样方便重用代码和保持代码清洁(毕竟这种格式我个人觉得也是很难看)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> pet = getSmallPet();</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isFish</span>(<span class="params">pet: Fish | Bird</span>): <span class="title">pet</span> <span class="title">is</span> <span class="title">Fish</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (&lt;Fish&gt;pet).swim !== <span class="literal">undefined</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (isFish(pet)） &#123;</span><br><span class="line">    pet.swim();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    pet.fly();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里有格式上的注意事项， pet is Fish是类型谓词，这里pet必须和签名里面参数的名称保持一致。</p>
+<h2 id="Index-types-amp-amp-Mapped-types"><a href="#Index-types-amp-amp-Mapped-types" class="headerlink" title="Index types &amp;&amp; Mapped types"></a>Index types &amp;&amp; Mapped types</h2><p>这两个大概是我个人认为比较具有黑魔法的地方，可能是在javascript里面数组和对象承担了太多责任，所以对它们的约束太灵活多变导致的。</p>
+<p>在这两个类型之间，个人私底下还是觉得可能是 <code>K extends keyof T</code> 和 <code>K in keyof T</code> 之间的区别</p>
+<h3 id="keyof"><a href="#keyof" class="headerlink" title="keyof"></a>keyof</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">interface Person &#123;</span><br><span class="line">    name: string;</span><br><span class="line">    age: number;</span><br><span class="line">    location: string;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type P1 = keyof Person; <span class="comment">// &quot;name&quot; | &quot;age&quot; | &quot;location&quot;</span></span><br></pre></td></tr></table></figure>
+<p>可以看到keyof返回了一个联合类型 这个联合类型的值是Person的key的组合</p>
+<h3 id="Index-types-amp-amp-extends-keyof"><a href="#Index-types-amp-amp-extends-keyof" class="headerlink" title="Index types &amp;&amp; extends keyof"></a>Index types &amp;&amp; extends keyof</h3><p>就<code>extends keyof</code>而言，可能官方例子的getProperty是一个非常好的理解途径</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getProperty</span>&lt;<span class="title">T</span>, <span class="title">K</span> <span class="title">extends</span> <span class="title">keyof</span> <span class="title">T</span>&gt;(<span class="params">o: T, name: K</span>): <span class="title">T</span>[<span class="title">K</span>] </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> o[name]; <span class="comment">// o[name] is of type T[K]</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> name: string = getProperty(person, <span class="string">&#x27;name&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>这里<code>K extends keyof T</code>断言了T内部的一个键名,只有T内部有的属性,才能检查通过</p>
+<h3 id="Mapped-types-amp-amp-in-keyof"><a href="#Mapped-types-amp-amp-in-keyof" class="headerlink" title="Mapped types &amp;&amp; in keyof"></a>Mapped types &amp;&amp; in keyof</h3><p>而<code>in keyof</code>呢，ts的es5标准库里面的Partial可能是一个非常好的例子</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">type Partial&lt;T&gt; = &#123;</span><br><span class="line">    [P <span class="keyword">in</span> keyof T]?: T[P];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">interface Person &#123;</span><br><span class="line">    name: string;</span><br><span class="line">    age: number;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type PersonPartial = Partial&lt;Person&gt;</span><br><span class="line"><span class="comment">// 相当于:</span></span><br><span class="line"><span class="comment">// interface Person &#123;</span></span><br><span class="line"><span class="comment">//     name?: string;</span></span><br><span class="line"><span class="comment">//     age?: number;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br></pre></td></tr></table></figure>
+<p>这里<code>索引签名</code>和<code>in keyof</code>的配合就将Person整体遍历了一次, 返回了一个继承它的、新的属性名和选的接口。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/typescript/" rel="tag"># typescript</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/13/ignite-note/" rel="prev" title="ignite-note">
+      <i class="fa fa-chevron-left"></i> ignite-note
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/15/react-build/" rel="next" title="react工程结构浅析">
+      react工程结构浅析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Typescript%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">Typescript的类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E%E5%8F%98%E9%87%8F"><span class="nav-number">2.</span> <span class="nav-text">声明变量</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#let%E5%92%8Cconst"><span class="nav-number">2.1.</span> <span class="nav-text">let和const</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">声明函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.</span> <span class="nav-text">接口</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="nav-number">3.1.</span> <span class="nav-text">简单的例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E9%80%89%E5%B1%9E%E6%80%A7-amp-amp-%E5%8F%AA%E8%AF%BB%E5%B1%9E%E6%80%A7"><span class="nav-number">3.2.</span> <span class="nav-text">可选属性 &amp;&amp; 只读属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E7%9A%84%E5%B1%9E%E6%80%A7%E6%A3%80%E6%9F%A5"><span class="nav-number">3.3.</span> <span class="nav-text">额外的属性检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E6%8E%A5%E5%8F%A3-%E5%8F%AF%E8%B0%83%E7%94%A8%E7%AD%BE%E5%90%8D"><span class="nav-number">3.4.</span> <span class="nav-text">函数接口(可调用签名)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E7%B4%A2%E5%BC%95%E7%9A%84%E7%B1%BB%E5%9E%8B-%E7%B4%A2%E5%BC%95%E7%AD%BE%E5%90%8D"><span class="nav-number">3.5.</span> <span class="nav-text">可索引的类型(索引签名)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Class%E7%BA%A6%E6%9D%9F"><span class="nav-number">3.6.</span> <span class="nav-text">Class约束</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E9%83%A8%E5%88%86"><span class="nav-number">3.6.1.</span> <span class="nav-text">静态部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B%E9%83%A8%E5%88%86"><span class="nav-number">3.6.2.</span> <span class="nav-text">实例部分</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%A7%E6%89%BF%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.7.</span> <span class="nav-text">继承接口</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">4.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E9%80%89%E5%8F%82%E6%95%B0-amp-%E9%BB%98%E8%AE%A4%E5%80%BC"><span class="nav-number">4.1.</span> <span class="nav-text">可选参数 &amp; 默认值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%8F%82%E6%95%B0%E4%B8%AA%E6%95%B0-%E5%89%A9%E4%BD%99%E5%8F%82%E6%95%B0"><span class="nav-number">4.2.</span> <span class="nav-text">动态参数个数(剩余参数)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E8%BD%BD"><span class="nav-number">4.3.</span> <span class="nav-text">重载</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B3%9B%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">泛型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E7%BA%A7%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">高级类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%81%94%E5%90%88%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.1.</span> <span class="nav-text">联合类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.2.</span> <span class="nav-text">交叉类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E4%BF%9D%E6%8A%A4%E4%B8%8E%E5%8C%BA%E5%88%86%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.3.</span> <span class="nav-text">类型保护与区分类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Index-types-amp-amp-Mapped-types"><span class="nav-number">6.4.</span> <span class="nav-text">Index types &amp;&amp; Mapped types</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#keyof"><span class="nav-number">6.4.1.</span> <span class="nav-text">keyof</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Index-types-amp-amp-extends-keyof"><span class="nav-number">6.4.2.</span> <span class="nav-text">Index types &amp;&amp; extends keyof</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mapped-types-amp-amp-in-keyof"><span class="nav-number">6.4.3.</span> <span class="nav-text">Mapped types &amp;&amp; in keyof</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

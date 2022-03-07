@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="之前玩过了react-start-kit这个同构应用，不过最近因为业务需要需要尽快做一个系统并部署上线。作为前端负责人虽然时间很赶，但是也只好硬着头皮上了。考虑到项目健壮性、紧急性以及后期维护，最后的选择是用dva-cli做手脚架，antd作为UI库来做这个系统。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于dva-cli&amp;antd的react项目实战">
+<meta property="og:url" content="http://www.que01.top/2016/11/20/dva-react/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="之前玩过了react-start-kit这个同构应用，不过最近因为业务需要需要尽快做一个系统并部署上线。作为前端负责人虽然时间很赶，但是也只好硬着头皮上了。考虑到项目健壮性、紧急性以及后期维护，最后的选择是用dva-cli做手脚架，antd作为UI库来做这个系统。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/login.png">
+<meta property="og:image" content="http://www.que01.top/images/initApp.png">
+<meta property="og:image" content="http://www.que01.top/images/breaccrumb.png">
+<meta property="og:image" content="http://www.que01.top/images/option1-list.png">
+<meta property="og:image" content="http://www.que01.top/images/rap.png">
+<meta property="article:published_time" content="2016-11-19T18:49:06.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.620Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta property="article:tag" content="dva">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/login.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/11/20/dva-react/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>基于dva-cli&antd的react项目实战 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/11/20/dva-react/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基于dva-cli&antd的react项目实战
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-11-20 02:49:06" itemprop="dateCreated datePublished" datetime="2016-11-20T02:49:06+08:00">2016-11-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/11/20/dva-react/" class="post-meta-item leancloud_visitors" data-flag-title="基于dva-cli&antd的react项目实战" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">之前玩过了react-start-kit这个同构应用，不过最近因为业务需要需要尽快做一个系统并部署上线。作为前端负责人虽然时间很赶，但是也只好硬着头皮上了。考虑到项目健壮性、紧急性以及后期维护，最后的选择是用dva-cli做手脚架，antd作为UI库来做这个系统。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>最近因为业务需要需要尽快做一个系统并部署上线。作为前端负责人虽然时间很赶，但是也只好硬着头皮上了。考虑到项目健壮性、紧急性以及后期维护，最后的选择是用dva-cli做手脚架，antd作为UI库来做这个系统。<br>并且，由于考虑到按照当前情况，前期后端接口不太可能跟得上前端进度，所以此时数据mock就显得非常重要了。并且作为一个前后端彻底分离的项目，rap在这里可以充分发挥其作用——数据mock、接口协定、文档生成。</p>
+<div style="color: red;">
+------------2018.11.5日修
+这篇文章到今天实际上改改还是可以用。不过考虑到rap1已经事实上无人维护频繁抛错所以数据可能会出不来。
+加之现在Typescript已经非常流行好用。所以又重新整理了一篇。[typescript在redux-react项目中的应用](/2018/11/05/2018-11-5-typescript-redux-starter/)。
+所谓上承下启，这篇依然保留，新的代码依然还是走的这篇一样的demo，但是建议采用的新的typescript方案，不过这之前 这篇文章建议还是参考看看。
+并且新的项目react升级到16 react-router和wepack都升级到4。
+</div>
+# 目标概览
+![dashboard](/images/dashboard.png)
+本文不是讲如何做出一个一模一样的app，而是讲如何去实现基础的逻辑
+
+<h1 id="代码和预览"><a href="#代码和预览" class="headerlink" title="代码和预览"></a>代码和预览</h1><p>相关代码已经托管到github,<a target="_blank" rel="noopener" href="https://github.com/que01/dva-demo">dva-demo</a>。同时,存在一个在线预览地址,因为rap不支持https,所以只好为gp-pages绑定了自定义域名,router因为没有配置IndexRoute,所以菜单一1需要点击才会生效,<a target="_blank" rel="noopener" href="http://github.que01.top/">点此前往</a></p>
+<h1 id="安装和初始化项目"><a href="#安装和初始化项目" class="headerlink" title="安装和初始化项目"></a>安装和初始化项目</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装:"></a>安装:</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g dva-cli</span><br></pre></td></tr></table></figure>
+<h2 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目:"></a>初始化项目:</h2><ul>
+<li>新目录中进行初始化: <code>dva new myApp</code></li>
+<li>已有目录中初始化: <code>mkdir myApp && cd myApp && dva init </code></li>
+</ul>
+<h2 id="手脚架代码自动生成"><a href="#手脚架代码自动生成" class="headerlink" title="手脚架代码自动生成"></a>手脚架代码自动生成</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> dva g route product-list <span class="comment">#添加router</span></span></span><br><span class="line"><span class="meta">$</span><span class="bash"> dva g model products     <span class="comment">#添加model</span></span></span><br><span class="line"><span class="meta">$</span><span class="bash"> dva g component title    <span class="comment">#添加模块</span></span></span><br><span class="line"><span class="meta">$</span><span class="bash"> dva g component title --no-css <span class="comment">#添加模块但是不生成css文件</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="antd集成"><a href="#antd集成" class="headerlink" title="antd集成"></a>antd集成</h2><p>dva-cli只是一个项目的宏观架构，内部默认并没有整合antd,所以需要手动整合进来。<br>首先: <code>npm install antd --save</code><br>然后安装webpack插件对antd按需加载: <code>npm install babel-plugin-import --save-dev</code><br>PS:如果使用了这个插件实际上并不需要手动安装antd,它会自动安装缺失的package<br>最后,修改 webpack.config.js文件(添加line40-43)：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> webpack = <span class="built_in">require</span>(<span class="string">&#x27;atool-build/lib/webpack&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">webpackConfig, env</span>) </span>&#123;</span><br><span class="line">  webpackConfig.babel.plugins.push(<span class="string">&#x27;transform-runtime&#x27;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Support hmr</span></span><br><span class="line">  <span class="keyword">if</span> (env === <span class="string">&#x27;development&#x27;</span>) &#123;</span><br><span class="line">    webpackConfig.devtool = <span class="string">&#x27;#eval&#x27;</span>;</span><br><span class="line">    webpackConfig.babel.plugins.push(<span class="string">&#x27;dva-hmr&#x27;</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    webpackConfig.babel.plugins.push(<span class="string">&#x27;dev-expression&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Don&#x27;t extract common.js and common.css</span></span><br><span class="line">  webpackConfig.plugins = webpackConfig.plugins.filter(<span class="function"><span class="keyword">function</span>(<span class="params">plugin</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !(plugin <span class="keyword">instanceof</span> webpack.optimize.CommonsChunkPlugin);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Support CSS Modules</span></span><br><span class="line">  <span class="comment">// Parse all less files as css module.</span></span><br><span class="line">  webpackConfig.module.loaders.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">loader, index</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> loader.test === <span class="string">&#x27;function&#x27;</span> &amp;&amp; loader.test.toString().indexOf(<span class="string">&#x27;\\.less$&#x27;</span>) &gt; -<span class="number">1</span>) &#123;</span><br><span class="line">      loader.include = <span class="regexp">/node_modules/</span>;</span><br><span class="line">      loader.test = <span class="regexp">/\.less$/</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (loader.test.toString() === <span class="string">&#x27;/\\.module\\.less$/&#x27;</span>) &#123;</span><br><span class="line">      loader.exclude = <span class="regexp">/node_modules/</span>;</span><br><span class="line">      loader.test = <span class="regexp">/\.less$/</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> loader.test === <span class="string">&#x27;function&#x27;</span> &amp;&amp; loader.test.toString().indexOf(<span class="string">&#x27;\\.css$&#x27;</span>) &gt; -<span class="number">1</span>) &#123;</span><br><span class="line">      loader.include = <span class="regexp">/node_modules/</span>;</span><br><span class="line">      loader.test = <span class="regexp">/\.css$/</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (loader.test.toString() === <span class="string">&#x27;/\\.module\\.css$/&#x27;</span>) &#123;</span><br><span class="line">      loader.exclude = <span class="regexp">/node_modules/</span>;</span><br><span class="line">      loader.test = <span class="regexp">/\.css$/</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  webpackConfig.babel.plugins.push([<span class="string">&#x27;import&#x27;</span>, &#123;</span><br><span class="line">      libraryName: <span class="string">&#x27;antd&#x27;</span>,</span><br><span class="line">      style: <span class="string">&#x27;css&#x27;</span>,</span><br><span class="line">  &#125;]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> webpackConfig;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>至此，antd就集成完毕了。</p>
+<p>这里来验证一下是否安装成功：<br>这里看router.js也就是路由文件里面关键的几句:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> IndexPage <span class="keyword">from</span> <span class="string">&#x27;./routes/IndexPage&#x27;</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span>(<span class="params">&#123; history &#125;</span>) </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> (</span><br><span class="line">     &lt;Router history=&#123;history&#125;&gt;</span><br><span class="line">       &lt;Route path=<span class="string">&quot;/&quot;</span> component=&#123;IndexPage&#125; /&gt;</span><br><span class="line">     &lt;/Router&gt;</span><br><span class="line">   );</span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure>
+<p>显然，根目录指向了routes/IndexPage，我们去里面修改试试:<br>目标是下面组件可以显示出来:<br><img src="/images/login.png" width=300 alt=""></p>
+<p>修改IndexPage.js,主要将官网的示例代码复制替换原来的就好了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component, PropTypes &#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; connect &#125; <span class="keyword">from</span> <span class="string">&#x27;dva&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; Link &#125; <span class="keyword">from</span> <span class="string">&#x27;dva/router&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> styles <span class="keyword">from</span> <span class="string">&#x27;./IndexPage.css&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; Form, Icon, Input, Button, Checkbox &#125; <span class="keyword">from</span> <span class="string">&#x27;antd&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> FormItem = Form.Item;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> NormalLoginForm = Form.create()(React.createClass(&#123;</span><br><span class="line">  <span class="function"><span class="title">handleSubmit</span>(<span class="params">e</span>)</span> &#123;</span><br><span class="line">    e.preventDefault();</span><br><span class="line">    <span class="built_in">this</span>.props.form.validateFields(<span class="function">(<span class="params">err, values</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!err) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">&#x27;Received values of form: &#x27;</span>, values);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; getFieldDecorator &#125; = <span class="built_in">this</span>.props.form;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">	  &lt;div style=&#123;&#123;<span class="attr">width</span>:<span class="string">&#x27;400px&#x27;</span>,<span class="attr">margin</span>:<span class="string">&quot;0 auto&quot;</span>&#125;&#125;&gt;</span><br><span class="line">		  &lt;Form onSubmit=&#123;<span class="built_in">this</span>.handleSubmit&#125; className=<span class="string">&quot;login-form&quot;</span>&gt;</span><br><span class="line">			&lt;FormItem&gt;</span><br><span class="line">			  &#123;getFieldDecorator(<span class="string">&#x27;userName&#x27;</span>, &#123;</span><br><span class="line">				rules: [&#123; <span class="attr">required</span>: <span class="literal">true</span>, <span class="attr">message</span>: <span class="string">&#x27;Please input your username!&#x27;</span> &#125;],</span><br><span class="line">			  &#125;)(</span><br><span class="line">				&lt;Input addonBefore=&#123;<span class="xml"><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;user&quot;</span> /&gt;</span></span>&#125; placeholder=<span class="string">&quot;Username&quot;</span> /&gt;</span><br><span class="line">			  )&#125;</span><br><span class="line">			&lt;/FormItem&gt;</span><br><span class="line">			&lt;FormItem&gt;</span><br><span class="line">			  &#123;getFieldDecorator(<span class="string">&#x27;password&#x27;</span>, &#123;</span><br><span class="line">				rules: [&#123; <span class="attr">required</span>: <span class="literal">true</span>, <span class="attr">message</span>: <span class="string">&#x27;Please input your Password!&#x27;</span> &#125;],</span><br><span class="line">			  &#125;)(</span><br><span class="line">				&lt;Input addonBefore=&#123;<span class="xml"><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;lock&quot;</span> /&gt;</span></span>&#125; type=<span class="string">&quot;password&quot;</span> placeholder=<span class="string">&quot;Password&quot;</span> /&gt;</span><br><span class="line">			  )&#125;</span><br><span class="line">			&lt;/FormItem&gt;</span><br><span class="line">			&lt;FormItem&gt;</span><br><span class="line">			  &#123;getFieldDecorator(<span class="string">&#x27;remember&#x27;</span>, &#123;</span><br><span class="line">				valuePropName: <span class="string">&#x27;checked&#x27;</span>,</span><br><span class="line">				initialValue: <span class="literal">true</span>,</span><br><span class="line">			  &#125;)(</span><br><span class="line">				&lt;Checkbox&gt;Remember me&lt;/Checkbox&gt;</span><br><span class="line">			  )&#125;</span><br><span class="line">			  &lt;a className=<span class="string">&quot;login-form-forgot&quot;</span>&gt;Forgot password&lt;/a&gt;</span><br><span class="line">			  &lt;Button type=<span class="string">&quot;primary&quot;</span> htmlType=<span class="string">&quot;submit&quot;</span> className=<span class="string">&quot;login-form-button&quot;</span>&gt;</span><br><span class="line">				Log <span class="keyword">in</span></span><br><span class="line">			  &lt;/Button&gt;</span><br><span class="line">			  Or &lt;a&gt;register now!&lt;/a&gt;</span><br><span class="line">			&lt;/FormItem&gt;</span><br><span class="line">		  &lt;/Form&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;));</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> connect()(NormalLoginForm) ;</span><br></pre></td></tr></table></figure>
+<p>最后运行结果成功，图基本如上就不再发。</p>
+<h1 id="项目构建"><a href="#项目构建" class="headerlink" title="项目构建"></a>项目构建</h1><p>接下来我们简单的按照项目图做个原型来一点点实现,本文项目中Antd组件相关代码,为了方便学习和讲解，全部直接或者轻微修改自官方文档。</p>
+<h2 id="栅格"><a href="#栅格" class="headerlink" title="栅格"></a>栅格</h2><p>删除IndexPage内部所有的测试代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component, PropTypes &#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; connect &#125; <span class="keyword">from</span> <span class="string">&#x27;dva&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; Link &#125; <span class="keyword">from</span> <span class="string">&#x27;dva/router&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> styles <span class="keyword">from</span> <span class="string">&#x27;./IndexPage.css&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; Row, Col &#125; <span class="keyword">from</span> <span class="string">&#x27;antd&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">props</span>)</span>&#123;</span><br><span class="line">    <span class="built_in">super</span>(props)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span>(</span><br><span class="line">      &lt;Row style=&#123;&#123;<span class="attr">width</span>:<span class="string">&#x27;1000px&#x27;</span>,<span class="attr">margin</span>:<span class="string">&#x27;0 auto&#x27;</span>&#125;&#125;&gt;</span><br><span class="line">        &lt;Col span=&#123;<span class="number">6</span>&#125;&gt;col-<span class="number">12</span>&lt;/Col&gt;</span><br><span class="line">        &lt;Col span=&#123;<span class="number">18</span>&#125;&gt;内容区域&lt;/Col&gt;</span><br><span class="line">      &lt;/Row&gt;</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> connect()(App) ;</span><br></pre></td></tr></table></figure>
+<h2 id="菜单"><a href="#菜单" class="headerlink" title="菜单"></a>菜单</h2><p>新建components/Silder.js文件：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; Menu, Icon &#125; <span class="keyword">from</span> <span class="string">&#x27;antd&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> SubMenu = Menu.SubMenu;</span><br><span class="line"><span class="keyword">const</span> MenuItemGroup = Menu.ItemGroup;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> Sider = React.createClass(&#123;</span><br><span class="line">  <span class="function"><span class="title">getInitialState</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      current: <span class="string">&#x27;1&#x27;</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="function"><span class="title">handleClick</span>(<span class="params">e</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;click &#x27;</span>, e);</span><br><span class="line">    <span class="built_in">this</span>.setState(&#123;</span><br><span class="line">      current: e.key,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;Menu onClick=&#123;<span class="built_in">this</span>.handleClick&#125;</span><br><span class="line">        style=&#123;&#123; <span class="attr">width</span>: <span class="number">240</span> &#125;&#125;</span><br><span class="line">        defaultOpenKeys=&#123;[<span class="string">&#x27;sub1&#x27;</span>]&#125;</span><br><span class="line">        selectedKeys=&#123;[<span class="built_in">this</span>.state.current]&#125;</span><br><span class="line">        mode=<span class="string">&quot;inline&quot;</span></span><br><span class="line">      &gt;</span><br><span class="line">        &lt;SubMenu key=<span class="string">&quot;sub1&quot;</span> title=&#123;<span class="xml"><span class="tag">&lt;<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;mail&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>菜单一<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>&#125;&gt;</span><br><span class="line">            &lt;Menu.Item key=<span class="string">&quot;3&quot;</span>&gt;菜单一<span class="number">1</span>&lt;/Menu.Item&gt;</span><br><span class="line">            &lt;Menu.Item key=<span class="string">&quot;4&quot;</span>&gt;菜单一<span class="number">2</span>&lt;/Menu.Item&gt;</span><br><span class="line">        &lt;/SubMenu&gt;</span><br><span class="line">        &lt;SubMenu key=<span class="string">&quot;sub2&quot;</span> title=&#123;<span class="xml"><span class="tag">&lt;<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;appstore&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>菜单二<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>&#125;&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;5&quot;</span>&gt;菜单二<span class="number">1</span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;6&quot;</span>&gt;菜单二<span class="number">2</span>&lt;/Menu.Item&gt;</span><br><span class="line">        &lt;/SubMenu&gt;</span><br><span class="line">        &lt;SubMenu key=<span class="string">&quot;sub4&quot;</span> title=&#123;<span class="xml"><span class="tag">&lt;<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;setting&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>菜单三<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>&#125;&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;9&quot;</span>&gt;菜单三<span class="number">1</span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;10&quot;</span>&gt;菜单三<span class="number">2</span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;11&quot;</span>&gt;菜单三<span class="number">3</span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;12&quot;</span>&gt;菜单三<span class="number">4</span>&lt;/Menu.Item&gt;</span><br><span class="line">        &lt;/SubMenu&gt;</span><br><span class="line">      &lt;/Menu&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> Sider</span><br></pre></td></tr></table></figure>
+<p>修改IndexPage,import之,并在左侧的Col内部插入这个Silder</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">import</span> Silder <span class="keyword">from</span> <span class="string">&#x27;../components/Silder&#x27;</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">        &lt;Col span=&#123;<span class="number">6</span>&#125;&gt;<span class="xml"><span class="tag">&lt;<span class="name">Silder</span> /&gt;</span></span>&lt;/Col&gt;</span><br><span class="line">        &lt;Col span=&#123;<span class="number">18</span>&#125;&gt;内容区域&lt;/Col&gt;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>现在项目是这样的：<br><img src="/images/initApp.png" alt="initApp"></p>
+<h2 id="路由配置"><a href="#路由配置" class="headerlink" title="路由配置"></a>路由配置</h2><p>做完这些之后我们需要开始做些路由配置了。简单点说,点击每个菜单时候，刷新右侧内容区域内容。</p>
+<p>首先理清一下逻辑:</p>
+<ol>
+<li>默认的IndexPage内容区域需要默认内容</li>
+<li>点击菜单后仅仅局部刷新右侧内容区域</li>
+<li>点击刷新需要做一下相关配置</li>
+</ol>
+<p>针对第一和第二，我们来对右侧Col做一下配置</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;Col span=&#123;<span class="number">18</span>&#125;&gt;</span><br><span class="line">  &#123;<span class="built_in">this</span>.props.children||<span class="string">&#x27;内容区域&#x27;</span>&#125;</span><br><span class="line">&lt;/Col&gt;</span><br></pre></td></tr></table></figure>
+<p>然后我们新建以下文件：1-1.js、1-2.js、2-1.js、2-2.js、3-1.js、3-2.js、3-3.js、3-4.js,文件放到routes目录下，内容基本如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> Option = <span class="function">(<span class="params">props</span>)=&gt;</span>(</span><br><span class="line">  &lt;div&gt;菜单一<span class="number">1</span>&lt;/div&gt;</span><br><span class="line">)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> Option</span><br></pre></td></tr></table></figure>
+<p>然后修改router.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span>(<span class="params">&#123; history &#125;</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;Router hjsistory=&#123;history&#125;&gt;</span><br><span class="line">      &lt;Route path=<span class="string">&quot;/&quot;</span> component=&#123;IndexPage&#125;&gt;</span><br><span class="line">        &#123;<span class="comment">/* 添加一个路由，嵌套进我们想要嵌套的 UI 里 */</span>&#125;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;11&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/1-1.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;12&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/1-2.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;21&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/2-1.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;22&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/2-2.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;31&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/3-1.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;32&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/3-2.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;33&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/3-3.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">        &lt;Route path=<span class="string">&quot;34&quot;</span> component=&#123;<span class="built_in">require</span>(<span class="string">&#x27;./routes/3-4.js&#x27;</span>)&#125; /&gt;</span><br><span class="line">      &lt;/Route&gt;</span><br><span class="line">    &lt;/Router&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>最后给左侧菜单加点击切换路由效果,也就是Link标签<br>修改Silder.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">import</span> &#123; Link &#125; <span class="keyword">from</span> <span class="string">&#x27;dva/router&#x27;</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;Menu onClick=&#123;<span class="built_in">this</span>.handleClick&#125;</span><br><span class="line">        style=&#123;&#123; <span class="attr">width</span>: <span class="number">240</span> &#125;&#125;</span><br><span class="line">        defaultOpenKeys=&#123;[<span class="string">&#x27;sub1&#x27;</span>]&#125;</span><br><span class="line">        selectedKeys=&#123;[<span class="built_in">this</span>.state.current]&#125;</span><br><span class="line">        mode=<span class="string">&quot;inline&quot;</span></span><br><span class="line">      &gt;</span><br><span class="line">        &lt;SubMenu key=<span class="string">&quot;sub1&quot;</span> title=&#123;<span class="xml"><span class="tag">&lt;<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;mail&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>菜单一<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>&#125;&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;1&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;11&quot;</span>&gt;</span>菜单一1<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;2&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;12&quot;</span>&gt;</span>菜单一2<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">        &lt;/SubMenu&gt;</span><br><span class="line">        &lt;SubMenu key=<span class="string">&quot;sub2&quot;</span> title=&#123;<span class="xml"><span class="tag">&lt;<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;appstore&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>菜单二<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>&#125;&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;3&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;21&quot;</span>&gt;</span>菜单二1<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;4&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;22&quot;</span>&gt;</span>菜单二2<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">        &lt;/SubMenu&gt;</span><br><span class="line">        &lt;SubMenu key=<span class="string">&quot;sub4&quot;</span> title=&#123;<span class="xml"><span class="tag">&lt;<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">Icon</span> <span class="attr">type</span>=<span class="string">&quot;setting&quot;</span> /&gt;</span><span class="tag">&lt;<span class="name">span</span>&gt;</span>菜单三<span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span>&#125;&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;5&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;31&quot;</span>&gt;</span>菜单三1<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;6&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;32&quot;</span>&gt;</span>菜单三2<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;7&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;33&quot;</span>&gt;</span>菜单三3<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">          &lt;Menu.Item key=<span class="string">&quot;8&quot;</span>&gt;<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&quot;34&quot;</span>&gt;</span>菜单三4<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>&lt;/Menu.Item&gt;</span><br><span class="line">        &lt;/SubMenu&gt;</span><br><span class="line">      &lt;/Menu&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>至此,我们的APP基本有那么一个样子了。</p>
+<h2 id="加个面包屑"><a href="#加个面包屑" class="headerlink" title="加个面包屑"></a>加个面包屑</h2><p>作为后台系统面包屑还是必不可少,而且面包屑作为全局共用组件,需要在不同路由下显示不同的路径,所以非常适合用来讲解如何进行组件之间进行通讯——每个内容区域和面包屑都是独立的,但是内容区域内部需要向面包屑通知新的路径数据。</p>
+<p>最简单的面包屑是一个写死的面包屑,做如下修改：<br>IndexPage.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">import</span> &#123; Row, Col, Breadcrumb &#125; <span class="keyword">from</span> <span class="string">&#x27;antd&#x27;</span>;</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">&lt;Row style=&#123;&#123;<span class="attr">width</span>:<span class="string">&#x27;1000px&#x27;</span>,<span class="attr">margin</span>:<span class="string">&#x27;0 auto&#x27;</span>&#125;&#125;&gt;</span><br><span class="line">  &lt;Col span=&#123;<span class="number">24</span>&#125;&gt;</span><br><span class="line">    &lt;Breadcrumb&gt;</span><br><span class="line">      &lt;Breadcrumb.Item&gt;Home&lt;/Breadcrumb.Item&gt;</span><br><span class="line">      &lt;Breadcrumb.Item&gt;<span class="xml"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>Application Center<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span>&lt;/Breadcrumb.Item&gt;</span><br><span class="line">      &lt;Breadcrumb.Item&gt;<span class="xml"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>Application List<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span>&lt;/Breadcrumb.Item&gt;</span><br><span class="line">      &lt;Breadcrumb.Item&gt;An Application&lt;/Breadcrumb.Item&gt;</span><br><span class="line">    &lt;/Breadcrumb&gt;</span><br><span class="line">  &lt;/Col&gt;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>不过显然没有数据驱动的面包屑没有任何意义，现在来改一下，实现数据驱动。<br>新建components/breadcrumb.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; Breadcrumb &#125; <span class="keyword">from</span> <span class="string">&#x27;antd&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; Link &#125; <span class="keyword">from</span> <span class="string">&#x27;dva/router&#x27;</span></span><br><span class="line"><span class="keyword">const</span> breadcrumb = <span class="function">(<span class="params">props</span>)=&gt;</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;Breadcrumb&gt;</span><br><span class="line">      &#123;</span><br><span class="line">        props.data.map(<span class="function">(<span class="params">v,i</span>)=&gt;</span>(</span><br><span class="line">          &lt;Breadcrumb.Item key=&#123;i&#125;&gt;</span><br><span class="line">            &#123;v.path?(<span class="xml"><span class="tag">&lt;<span class="name">Link</span> <span class="attr">to</span>=<span class="string">&#123;v.path&#125;</span>&gt;</span>&#123;v.name&#125;<span class="tag">&lt;/<span class="name">Link</span>&gt;</span></span>):v.name&#125;</span><br><span class="line">          &lt;/Breadcrumb.Item&gt;</span><br><span class="line">        ))</span><br><span class="line">      &#125;</span><br><span class="line">    &lt;/Breadcrumb&gt;</span><br><span class="line">  )</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> breadcrumb;</span><br></pre></td></tr></table></figure>
+
+<p>然后修改IndexPage.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">import</span> CustomBreadcrumb <span class="keyword">from</span> <span class="string">&#x27;../components/breadcrumb&#x27;</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">const</span> breadcrumbData = [</span><br><span class="line">    &#123;</span><br><span class="line">      name:<span class="string">&#x27;首页&#x27;</span>,</span><br><span class="line">      path:<span class="string">&#x27;/&#x27;</span></span><br><span class="line">    &#125;,&#123;</span><br><span class="line">      name:<span class="string">&#x27;菜单21&#x27;</span>,</span><br><span class="line">      path:<span class="string">&#x27;/21&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">];</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">&lt;Col span=&#123;<span class="number">24</span>&#125;&gt;</span><br><span class="line">  &lt;CustomBreadcrumb data=&#123;breadcrumbData&#125; /&gt;</span><br><span class="line">&lt;/Col&gt;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>至此,数据驱动面包屑完工。下一步要处理组件通讯了。也就是在1-1.js这些文件中驱动面包屑动态改变，而不是写死在IndexPage.js</p>
+<p>首先我们先建立一个model文件，执行 <code>dva g model common</code>，它会在models下建立一个common.js,并注入到index.js。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.model(<span class="built_in">require</span>(<span class="string">&quot;./models/common&quot;</span>));</span><br></pre></td></tr></table></figure>
+<p>现在我们来修改这个文件，将它和面包屑关联起来。<br>修改models/common.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  namespace: <span class="string">&#x27;common&#x27;</span>,</span><br><span class="line">  state: &#123;</span><br><span class="line">    breadcrumb:[</span><br><span class="line">      &#123;</span><br><span class="line">        name:<span class="string">&#x27;首页&#x27;</span>,</span><br><span class="line">        path:<span class="string">&#x27;/&#x27;</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  reducers: &#123;</span><br><span class="line">    <span class="function"><span class="title">changeBreadcrumb</span>(<span class="params">state,&#123; payload: breadcrumb &#125;</span>)</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123;...state, ...breadcrumb&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  effects: &#123;&#125;,</span><br><span class="line">  subscriptions: &#123;&#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这就是面包屑的主要数据逻辑。然后将它和面包屑关联起来:修改IndexPage.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line">  &lt;Col span=&#123;<span class="number">24</span>&#125;&gt;</span><br><span class="line">    &lt;CustomBreadcrumb data=&#123;<span class="built_in">this</span>.props.common.breadcrumb&#125; /&gt;</span><br><span class="line">  &lt;/Col&gt;</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">mapStateToProps</span>(<span class="params">&#123; common &#125;</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;common&#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">export</span> <span class="keyword">default</span> connect(mapStateToProps)(App);</span><br></pre></td></tr></table></figure>
+<p>至此，我们的的关联就做好了。现在去往1-1.js这些文件(其他文件同理不在赘述)，进行通讯，使其动态改变。因为需要使用到生命周期，所以之前用到stateless写法要改动一下。并且因为需要通讯,所以需要使用redux连接一下。<br>1-1.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">import React from &#39;react&#39;;</span><br><span class="line">import &#123; connect &#125; from &#39;dva&#39;;</span><br><span class="line">class Option extends React.Component&#123;</span><br><span class="line">  constructor(props)&#123;</span><br><span class="line">    super(props)</span><br><span class="line">  &#125;</span><br><span class="line">  render()&#123;</span><br><span class="line">    return (&lt;div&gt;菜单一1&lt;&#x2F;div&gt;)</span><br><span class="line">  &#125;</span><br><span class="line">  componentDidMount()&#123;</span><br><span class="line">    const breadcrumbData &#x3D; &#123;</span><br><span class="line">      breadcrumb:[</span><br><span class="line">        &#123;</span><br><span class="line">          name:&#39;首页&#39;,</span><br><span class="line">          path:&#39;&#x2F;&#39;</span><br><span class="line">        &#125;,&#123;</span><br><span class="line">          name:&#39;菜单一1&#39;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">    this.props.dispatch(&#123;</span><br><span class="line">      type:&#39;common&#x2F;changeBreadcrumb&#39;,</span><br><span class="line">      payload:breadcrumbData</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">function mapStateToProps(&#123; common &#125;) &#123;</span><br><span class="line">  return &#123;common&#125;;</span><br><span class="line">&#125;</span><br><span class="line">export default connect(mapStateToProps)(Option);</span><br></pre></td></tr></table></figure>
+<p>到此,我们的app目前是这样子的:<br><img src="/images/breaccrumb.png"><br>虽然它仍旧非常简陋,但是如你所见,虽然他不太好看,但是一个可以作画的画板已经准备好了。它已经可以在点击菜单的时候局部更新内容区域并更新面包屑了。</p>
+<h2 id="做个列表页"><a href="#做个列表页" class="headerlink" title="做个列表页"></a>做个列表页</h2><p>画布既然已经铺好，接下来我们往上面做点画。这里做个最最常见的的列表。<br>修改1-1.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line">import React from &#39;react&#39;;</span><br><span class="line">import &#123; connect &#125; from &#39;dva&#39;;</span><br><span class="line">import &#123;Table,Icon&#125; from &#39;antd&#39;;</span><br><span class="line"></span><br><span class="line">const columns &#x3D; [</span><br><span class="line">  &#123;</span><br><span class="line">    title: &#39;Name&#39;,</span><br><span class="line">    dataIndex: &#39;name&#39;,</span><br><span class="line">    key: &#39;name&#39;,</span><br><span class="line">    render: text &#x3D;&gt; &lt;a href&#x3D;&quot;#&quot;&gt;&#123;text&#125;&lt;&#x2F;a&gt;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    title: &#39;Age&#39;,</span><br><span class="line">    dataIndex: &#39;age&#39;,</span><br><span class="line">    key: &#39;age&#39;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    title: &#39;Address&#39;,</span><br><span class="line">    dataIndex: &#39;address&#39;,</span><br><span class="line">    key: &#39;address&#39;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    title: &#39;Action&#39;,</span><br><span class="line">    key: &#39;action&#39;,</span><br><span class="line">    render: (text, record) &#x3D;&gt; (</span><br><span class="line">      &lt;span&gt;</span><br><span class="line">        &lt;a href&#x3D;&quot;#&quot;&gt;Action 一 &#123;record.name&#125;&lt;&#x2F;a&gt;</span><br><span class="line">        &lt;span className&#x3D;&quot;ant-divider&quot; &#x2F;&gt;</span><br><span class="line">        &lt;a href&#x3D;&quot;#&quot;&gt;Delete&lt;&#x2F;a&gt;</span><br><span class="line">        &lt;span className&#x3D;&quot;ant-divider&quot; &#x2F;&gt;</span><br><span class="line">        &lt;a href&#x3D;&quot;#&quot; className&#x3D;&quot;ant-dropdown-link&quot;&gt;</span><br><span class="line">          More actions&lt;Icon type&#x3D;&quot;down&quot; &#x2F;&gt;</span><br><span class="line">        &lt;&#x2F;a&gt;</span><br><span class="line">      &lt;&#x2F;span&gt;</span><br><span class="line">    ),</span><br><span class="line">  &#125;</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line">const data &#x3D; [</span><br><span class="line">  &#123;</span><br><span class="line">    key: &#39;1&#39;,</span><br><span class="line">    name: &#39;John Brown&#39;,</span><br><span class="line">    age: 32,</span><br><span class="line">    address: &#39;New York No. 1 Lake Park&#39;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    key: &#39;2&#39;,</span><br><span class="line">    name: &#39;Jim Green&#39;,</span><br><span class="line">    age: 42,</span><br><span class="line">    address: &#39;London No. 1 Lake Park&#39;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    key: &#39;3&#39;,</span><br><span class="line">    name: &#39;Joe Black&#39;,</span><br><span class="line">    age: 32,</span><br><span class="line">    address: &#39;Sidney No. 1 Lake Park&#39;,</span><br><span class="line">  &#125;</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line">class Option extends React.Component&#123;</span><br><span class="line">  constructor(props)&#123;</span><br><span class="line">    super(props)</span><br><span class="line">  &#125;</span><br><span class="line">  render()&#123;</span><br><span class="line">    return (&lt;Table columns&#x3D;&#123;columns&#125; dataSource&#x3D;&#123;data&#125; &#x2F;&gt;)</span><br><span class="line">  &#125;</span><br><span class="line">  componentDidMount()&#123;</span><br><span class="line">    const breadcrumbData &#x3D; &#123;</span><br><span class="line">      breadcrumb:[</span><br><span class="line">        &#123;</span><br><span class="line">          name:&#39;首页&#39;,</span><br><span class="line">          path:&#39;&#x2F;&#39;</span><br><span class="line">        &#125;,&#123;</span><br><span class="line">          name:&#39;菜单一1&#39;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">    this.props.dispatch(&#123;</span><br><span class="line">      type:&#39;common&#x2F;changeBreadcrumb&#39;,</span><br><span class="line">      payload:breadcrumbData</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">function mapStateToProps(&#123; common &#125;) &#123;</span><br><span class="line">  return &#123;common&#125;;</span><br><span class="line">&#125;</span><br><span class="line">export default connect(mapStateToProps)(Option);</span><br></pre></td></tr></table></figure>
+<p>现在它是这样的：<br><img src="/images/option1-list.png" alt="option"></p>
+<h2 id="数据mock"><a href="#数据mock" class="headerlink" title="数据mock"></a>数据mock</h2><p>到这里就要开始联调了。毕竟这个Table不能老是假数据，而且如果老用假数据也不太好测试翻页功能。所以这里上rap了。</p>
+<p>首先，给出一下rap的数据详情看看<br><img src="/images/rap.png" alt="rap"><br>简单说一下这个接口的主要逻辑设计逻辑:</p>
+<ol>
+<li>请求参数包括页数页每页条数</li>
+<li>返回的json中data.info包含必须的数据分页数据,包括第几页，每页条数，和总数据数</li>
+<li>data.results则是一个对象数组,包含需要展示的数据。</li>
+</ol>
+<h3 id="拦截请求"><a href="#拦截请求" class="headerlink" title="拦截请求"></a>拦截请求</h3><p>接下来来我们做一些配置，用来将rap相关的数据配置化，不要写死。在项目根目录建立配置文件 <code>cd src && mkdir config && touch config/config.js</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> config = &#123;</span><br><span class="line">  rapHost:<span class="string">&#x27;http://rap.taobao.org/mockjs/5889/&#x27;</span>,</span><br><span class="line">  rapFlag:<span class="literal">false</span>,</span><br><span class="line">  onlinePath:<span class="string">&#x27;/api/&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> config</span><br></pre></td></tr></table></figure>
+<p>其中rapHost是rap的地址，这个可以参考rap文档找出。rapFlag则用来标志是否rap的mock请求，如果不是则请求真实的地址,至于onlinePath则是加载真实地址前的前缀，例如要请求真实接口/aboutus,实际会请求/api/aboutUs——之所以这样，是为了方便配置nginx反向代理时候进行路由匹配。</p>
+<p>dva-cli的utils目录内有个封装好的request.js用来做请求类，不过它并不支持rap，所以需要改造一下。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> fetch <span class="keyword">from</span> <span class="string">&#x27;dva/fetch&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> safeeval <span class="keyword">from</span> <span class="string">&#x27;safe-eval&#x27;</span></span><br><span class="line"><span class="keyword">import</span> Mock <span class="keyword">from</span> <span class="string">&#x27;mockjs&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">parseText</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> response.text();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkStatus</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (response.status &gt;= <span class="number">200</span> &amp;&amp; response.status &lt; <span class="number">300</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> response;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> error = <span class="keyword">new</span> <span class="built_in">Error</span>(response.statusText);</span><br><span class="line">  error.response = response;</span><br><span class="line">  <span class="keyword">throw</span> error;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Requests a URL, returning a promise.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param  <span class="type">&#123;string&#125;</span> </span>url       The URL we want to request</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param  <span class="type">&#123;object&#125;</span> </span>[options] The options we want to pass to &quot;fetch&quot;</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param  <span class="type">&#123;boolean&#125;</span> </span>rap       是否是rap请求 true是 false 否</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return <span class="type">&#123;object&#125;</span>           </span>An object containing either &quot;data&quot; or &quot;err&quot;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">request</span>(<span class="params">url, options,rap</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(!rap)&#123;rap = <span class="literal">false</span>;&#125;</span><br><span class="line">  <span class="keyword">return</span> fetch(url, options)</span><br><span class="line">    .then(checkStatus)</span><br><span class="line">    .then(parseText)</span><br><span class="line">    .then(<span class="function">(<span class="params">data</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span>(rap)&#123;</span><br><span class="line">        <span class="keyword">return</span> Mock.mock(safeeval(data))</span><br><span class="line">      &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> safeeval(data)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">    .catch(<span class="function">(<span class="params">err</span>) =&gt;</span> (&#123; err &#125;));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要修改的是parseJSON函数，将它从response.json()变成了response.text().并添加了mockjs对rap返回的mock模板进行解析(虽然rap可以直接返回数据而不是模板,不过据官方旺旺群里的说法,这个后期会被废弃)。</p>
+<p>这样request.js已经可以用了，不过鉴于fetch参数比较多，默认还不带cookie没法使用session了,这样基于session的后端权限体系基本就废了,作为管理平台这显然是无法接受的。所以在它基础上再加一层。新建utils/query.js文件。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> request <span class="keyword">from</span> <span class="string">&#x27;../utils/request&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> qs ,&#123; parse &#125; <span class="keyword">from</span> <span class="string">&#x27;qs&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> FormdataWrapper <span class="keyword">from</span> <span class="string">&#x27;object-to-formdata&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> merge <span class="keyword">from</span> <span class="string">&#x27;merge-object&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;rapHost, onlinePath&#125; <span class="keyword">from</span> <span class="string">&#x27;../config/config&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> cookieTrue = &#123;</span><br><span class="line">  credentials: <span class="string">&#x27;include&#x27;</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">const</span> jsonConf = &#123;</span><br><span class="line">  headers: &#123;</span><br><span class="line">    <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getUrl</span>(<span class="params">smarturl,flag</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(flag)&#123;</span><br><span class="line">    <span class="keyword">return</span> rapHost + <span class="string">&#x27;/&#x27;</span> + smarturl;</span><br><span class="line">  &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> onlinePath + smarturl;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">POST</span>(<span class="params">url,params,rapFlag,isJson</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(isJson == <span class="literal">undefined</span>)&#123;isJson = <span class="literal">false</span>&#125;;</span><br><span class="line">  <span class="keyword">return</span> request( getUrl(url,rapFlag),rapFlag?&#123;  <span class="comment">//如果为rap请求 就去掉 credentials: &#x27;include&#x27;来允许跨域</span></span><br><span class="line">    method: <span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">    body:isJson?<span class="built_in">JSON</span>.stringify(params):FormdataWrapper(params),</span><br><span class="line">  &#125;:merge(&#123;</span><br><span class="line">    method: <span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">    body:isJson?<span class="built_in">JSON</span>.stringify(params):FormdataWrapper(params),</span><br><span class="line">  &#125;,isJson?merge(jsonConf,cookieTrue):cookieTrue),rapFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">GET</span>(<span class="params">url,params,rapFlag</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> request( getUrl(url,rapFlag) + <span class="string">`?<span class="subst">$&#123;qs.stringify(params)&#125;</span>`</span>,rapFlag?&#123;</span><br><span class="line">    method: <span class="string">&#x27;GET&#x27;</span>,</span><br><span class="line">  &#125;:merge(&#123;</span><br><span class="line">    method: <span class="string">&#x27;GET&#x27;</span>,</span><br><span class="line">  &#125;,cookieTrue),rapFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> &#123;</span><br><span class="line">  POST,GET</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个封装在post请求时候可以发送formdata和json,并且发送真实请求时候(rapFlag在部署打包时候需要改成false)会带上cookie以方便后端实现基于session的权限校验，并且由于此处的async,所以可以做一些处理后，可以同步代码一样使用。另外由于用了webpack插件,这里用到的npm包都不需要手动安装。<br>现在，可以这样使用fetch做请求了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let &#123; code,data &#125; &#x3D; yield POST(&#39;user&#x2F;1&#39;,&#123;disable:false&#125;,false)</span><br></pre></td></tr></table></figure>
+<p>请求类封装完毕，现在可以使用model将模块和rap对接起来了。运行<code>dva g model 11</code></p>
+<p style="color:red">
+注:当我写完本文再去看dva文档时候我最后发现dva-cli实际上已经提供了更好的方案选择，那就是dora-plugin-proxy，使用dora-plugin-proxy确实会让代码更加干净。但是限于当时没有时间折腾,所以当时也没有能使用这个方案。但是写这篇文章时候，我已经开始在项目中使用它来替代上面的拦截方案。下面是记录。
+</p>
+首先需要说明的这里撤回了上文说到的request.js文件的改动，因为这里不在需要了。
+而query.js文件，现在是这样的。只是简单的去除了rapFlag。
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">POST</span>(<span class="params">url,params,isJson</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(isJson == <span class="literal">undefined</span>)&#123;isJson = <span class="literal">false</span>&#125;;</span><br><span class="line">  <span class="keyword">return</span> request( url,merge(&#123;</span><br><span class="line">    method: <span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">    body:isJson?<span class="built_in">JSON</span>.stringify(params):FormdataWrapper(params),</span><br><span class="line">  &#125;,isJson?merge(jsonConf,cookieTrue):cookieTrue),rapFlag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">GET</span>(<span class="params">url,params</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> request( url + <span class="string">`?<span class="subst">$&#123;qs.stringify(params)&#125;</span>`</span>,merge(&#123;</span><br><span class="line">    method: <span class="string">&#x27;GET&#x27;</span>,</span><br><span class="line">  &#125;,cookieTrue));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+接下来我们修改mock/example.js
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> co = <span class="built_in">require</span>(<span class="string">&#x27;co&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> fetch = <span class="built_in">require</span>(<span class="string">&#x27;node-fetch&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> safeeval = <span class="built_in">require</span>(<span class="string">&#x27;safe-eval&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> mockjs = <span class="built_in">require</span>(<span class="string">&#x27;mockjs&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> Host = <span class="string">&#x27;http://rap.taobao.org/mockjs/5889&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mockMapFun</span>(<span class="params">req,res</span>)</span>&#123;</span><br><span class="line">  co(<span class="function"><span class="keyword">function</span> *(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">var</span> response = <span class="keyword">yield</span> fetch(Host + req.url);</span><br><span class="line">      <span class="keyword">var</span> mockTpl = <span class="keyword">yield</span> response.text();</span><br><span class="line">      res.json( mockjs.mock(safeeval(mockTpl))[<span class="string">&#x27;data&#x27;</span>] );</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="string">&#x27;GET /member/list&#x27;</span>: mockMapFun</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+co和fetch配合使用让它更加接近于同步的写法。然后使用res.json返回了mockjs解析模板后的数据。
+
+<p>当然,写了两个方案,当然是自己的更挫一些,不过因为还是有参考价值就不再删除了。如果对这里有混乱，请直接爬代码。毕竟就不到50行代码量。</p>
+<h3 id="连接组件"><a href="#连接组件" class="headerlink" title="连接组件"></a>连接组件</h3><p>编辑这个models/11.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">import &#123; GET &#125; from &#39;..&#x2F;utils&#x2F;query&#39;</span><br><span class="line">import &#123; rapFlag, onlinePath &#125; from &#39;..&#x2F;config&#x2F;config&#39;;</span><br><span class="line">const API &#x3D; &#39;member&#x2F;list&#39;</span><br><span class="line">export default &#123;</span><br><span class="line">  namespace: &#39;test&#39;,</span><br><span class="line">  state: &#123;</span><br><span class="line">    list:&#123;</span><br><span class="line">      data:[],</span><br><span class="line">      loading:true,</span><br><span class="line">    &#125;,</span><br><span class="line">    pagination:&#123;</span><br><span class="line">      current:1,</span><br><span class="line">      pageSize:10,</span><br><span class="line">      total:null</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  reducers: &#123;</span><br><span class="line">    fetchList(state, action) &#123;</span><br><span class="line">      return &#123; ...state, ...action.payload &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  effects: &#123;</span><br><span class="line">    *fetchRemote(&#123; payload &#125;, &#123; call, put &#125;) &#123;</span><br><span class="line">      let &#123;current,pageSize&#125; &#x3D; payload;</span><br><span class="line">      let &#123; data &#125; &#x3D; yield call(GET,API,&#123;</span><br><span class="line">        pageNum:current,</span><br><span class="line">        pageSize:pageSize,</span><br><span class="line">      &#125;,rapFlag);</span><br><span class="line">      if (data) &#123;</span><br><span class="line">        yield put(&#123;</span><br><span class="line">          type: &#39;fetchList&#39;,</span><br><span class="line">          payload: &#123;</span><br><span class="line">            list: &#123;</span><br><span class="line">              data:data.results,</span><br><span class="line">              loading:false</span><br><span class="line">            &#125;,</span><br><span class="line">            pagination: data.info</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  subscriptions: &#123;&#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关于Effects,可以参考此处<a target="_blank" rel="noopener" href="https://github.com/dvajs/dva-docs/blob/master/v1/zh-cn/tutorial/07-%E6%B7%BB%E5%8A%A0Effects.md">官方文档</a><br>然后将它和1-1.js对应模块对接起来，进行部分修改：<br>1-1.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">import React from &#39;react&#39;;</span><br><span class="line">import &#123; connect &#125; from &#39;dva&#39;;</span><br><span class="line">import &#123;Table,Icon&#125; from &#39;antd&#39;;</span><br><span class="line"></span><br><span class="line">const columns &#x3D; [</span><br><span class="line">  &#123;</span><br><span class="line">    title: &#39;Name&#39;,</span><br><span class="line">    dataIndex: &#39;name&#39;,</span><br><span class="line">    key: &#39;name&#39;,</span><br><span class="line">    render: text &#x3D;&gt; &lt;a href&#x3D;&quot;#&quot;&gt;&#123;text&#125;&lt;&#x2F;a&gt;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    title: &#39;Age&#39;,</span><br><span class="line">    dataIndex: &#39;age&#39;,</span><br><span class="line">    key: &#39;age&#39;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    title: &#39;Address&#39;,</span><br><span class="line">    dataIndex: &#39;address&#39;,</span><br><span class="line">    key: &#39;address&#39;,</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    title: &#39;LastLogin&#39;,</span><br><span class="line">    dataIndex: &#39;lastLogin&#39;,</span><br><span class="line">    key: &#39;lastLogin&#39;,</span><br><span class="line">  &#125;</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line">class Option extends React.Component&#123;</span><br><span class="line">  constructor(props)&#123;</span><br><span class="line">    super(props)</span><br><span class="line">  &#125;</span><br><span class="line">  render()&#123;</span><br><span class="line">    let &#123;data,loading&#125; &#x3D; this.props.test.list;</span><br><span class="line">    let pagination &#x3D; this.props.test.pagination;</span><br><span class="line">    return (</span><br><span class="line">      &lt;Table</span><br><span class="line">        columns&#x3D;&#123;columns&#125;</span><br><span class="line">        dataSource&#x3D;&#123;data&#125;</span><br><span class="line">        pagination&#x3D;&#123;pagination&#125;</span><br><span class="line">        onChange&#x3D;&#123;this.handleTableChange.bind(this)&#125;</span><br><span class="line">        loading&#x3D;&#123;loading&#125;</span><br><span class="line">      &#x2F;&gt;</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">  handleTableChange(pagination, filters, sorter)&#123;</span><br><span class="line">    this.props.dispatch(&#123;</span><br><span class="line">      type:&#39;test&#x2F;changePage&#39;,</span><br><span class="line">      payload:&#123;</span><br><span class="line">        pagination:&#123;</span><br><span class="line">          current:pagination.current,</span><br><span class="line">          pageSize:pagination.pageSize,</span><br><span class="line">          showQuickJumper: true,</span><br><span class="line">          loading:true</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    this.fetch(pagination.current)</span><br><span class="line">  &#125;</span><br><span class="line">  fetch(current)&#123;</span><br><span class="line">    &#x2F;&#x2F; 更新列表</span><br><span class="line">    this.props.dispatch(&#123;</span><br><span class="line">      type:&#39;test&#x2F;fetchRemote&#39;,</span><br><span class="line">      payload:&#123;</span><br><span class="line">        current:current,</span><br><span class="line">        pageSize:10,</span><br><span class="line">        loading:false,</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  componentDidMount()&#123;</span><br><span class="line">    const breadcrumbData &#x3D; &#123;</span><br><span class="line">      breadcrumb:[</span><br><span class="line">        &#123;</span><br><span class="line">          name:&#39;首页&#39;,</span><br><span class="line">          path:&#39;&#x2F;&#39;</span><br><span class="line">        &#125;,&#123;</span><br><span class="line">          name:&#39;菜单一1&#39;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">    this.props.dispatch(&#123;</span><br><span class="line">      type:&#39;common&#x2F;changeBreadcrumb&#39;,</span><br><span class="line">      payload:breadcrumbData</span><br><span class="line">    &#125;);</span><br><span class="line">    this.fetch(1);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">function mapStateToProps(&#123; common,test &#125;) &#123;</span><br><span class="line">  return &#123;common,test&#125;;</span><br><span class="line">&#125;</span><br><span class="line">export default connect(mapStateToProps)(Option);</span><br></pre></td></tr></table></figure>
+
+<h1 id="代码打包部署"><a href="#代码打包部署" class="headerlink" title="代码打包部署"></a>代码打包部署</h1><h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>经过上文一些讲解，基本上构建简单的react项目已经没有问题了。所以接下来讲一下代码部署。</p>
+<p>react-router本身支持两中路由，一种基于hashchange的路由，类似<code><a href="http://www.que01.top/#/11">www.que01.top/#/11</a></code>,但是也支持传统的路由类似<code><a href="http://www.que01.top/11">www.que01.top/11</a></code></p>
+<p>虽然hashchange部署更简单，但是作为一个「有追求」的开发者，我们应该在条件允许的情况下，毫不犹豫的使用后者。</p>
+<p>但是这需要服务器端配置。以nginx配置为例：<br>nginx.conf,关键部分</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">    server &#123;</span><br><span class="line">        listen 8888;</span><br><span class="line">        server_name &quot;&quot;;</span><br><span class="line">        root &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;dist;</span><br><span class="line"></span><br><span class="line">        gzip_static on;</span><br><span class="line"></span><br><span class="line">        location &#x2F; &#123;</span><br><span class="line">          try_files $uri $uri&#x2F; &#x2F;index.html;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">       location &#x2F;api &#123;</span><br><span class="line">            proxy_set_header  X-Real-IP  $remote_addr;</span><br><span class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">            proxy_pass http:&#x2F;&#x2F;backend:800&#x2F;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中,root是项目部署的目录,<code>try_files $uri $uri/ /index.html;</code>这段的意思是,如果请求资源/about,首先在服务器上查找/about资源,如果没有，继续查找/about/index.html资源，如果还是没有，最后返回index.html资源。</p>
+<p>至于<code>location /api</code>这段，是一个反向代理。将它映射到真实的后端路径即可。这里就是之前为什么要在config.js内部配置一个onlinePath的原因。她需要同这里的反向代理的路由一致。</p>
+<h2 id="打包"><a href="#打包" class="headerlink" title="打包"></a>打包</h2><p>关于打包，直接运行<code>npm run build</code>即可，不过默认的打包是不带文件指纹的，为了实现强缓存，我们修改package.json,如下代码，修改build,为build命令添加–hash选项。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;scripts&quot;: &#123;</span><br><span class="line">  &quot;start&quot;: &quot;dora --plugins \&quot;proxy,webpack,webpack-hmr\&quot;&quot;,</span><br><span class="line">  &quot;build&quot;: &quot;atool-build --hash&quot;,</span><br><span class="line">  &quot;test&quot;: &quot;atool-test-mocha .&#x2F;src&#x2F;**&#x2F;*-test.js&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不过这个选项仅仅是用来生成文件指纹,index.html内部的html依然引入的是没有指纹的文件，直接这样打包会导致内部引入的资源404，所以要对webpack配置文件改动一番。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">const</span> HtmlWebpackPlugin = <span class="built_in">require</span>(<span class="string">&#x27;html-webpack-plugin&#x27;</span>);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">if</span> (env === <span class="string">&#x27;development&#x27;</span>) &#123;</span><br><span class="line">  webpackConfig.devtool = <span class="string">&#x27;#eval&#x27;</span>;</span><br><span class="line">  webpackConfig.babel.plugins.push([<span class="string">&#x27;dva-hmr&#x27;</span>, &#123;</span><br><span class="line">    entries: [</span><br><span class="line">      <span class="string">&#x27;./src/index.js&#x27;</span>,</span><br><span class="line">    ],</span><br><span class="line">  &#125;]);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  webpackConfig.babel.plugins.push(<span class="string">&#x27;dev-expression&#x27;</span>);</span><br><span class="line">  webpackConfig.plugins.push(</span><br><span class="line">    <span class="keyword">new</span> HtmlWebpackPlugin(&#123;</span><br><span class="line">      inject: <span class="literal">false</span>,</span><br><span class="line">      template: <span class="built_in">require</span>(<span class="string">&#x27;html-webpack-template&#x27;</span>),</span><br><span class="line">      title: <span class="string">&#x27;Dva Demo&#x27;</span>,</span><br><span class="line">      appMountId: <span class="string">&#x27;root&#x27;</span>,</span><br><span class="line">      minify: &#123;</span><br><span class="line">        removeComments: <span class="literal">true</span>,</span><br><span class="line">        collapseWhitespace: <span class="literal">true</span></span><br><span class="line">      &#125;,</span><br><span class="line">      links:[<span class="string">&#x27;//at.alicdn.com/t/font_xxxxxxxx.css&#x27;</span>]</span><br><span class="line">    &#125;)</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>主要的改动就是html-webpack-template这个插件的引入,改动后，手动安装一下插件 <code>npm i html-webpack-template html-webpack-plugin --save-dev</code></p>
+<p>这个配置用途就是动态注入css和js,这个只依靠html-webpack-plugin就可以实现,不过html-webpack-template基于html-webpack-plugin,并且让可配置性更好了。例如可以配置links,全局引入字体图标(这个项目里面用到很多),当然,频繁修改这个修改任务文件里面的links可不是什么好主意,所以你完全可以将这个抽出来放到config/config.js里面去——随你喜欢。</p>
+<h2 id="按需加载"><a href="#按需加载" class="headerlink" title="按需加载"></a>按需加载</h2><p>按上面的做完配置之后基本就没什么需要弄的了。但是还有个对中型和大型项目非常重要的一点，那就是按需加载——大抵你不会希望访问一下/aboutUs这个路由，就需要下载整个/allInOne的js代码；还有就是commonChunk代码抽离——你也不会希望明明可以公用的代码，在每一个路由里面都重复打包一次,这会导致项目体积虚胖和流量浪费，同时这也意味这更慢的打开速度。</p>
+<p>首先我们将react-router配置改一下，让它按需加载而不是将所有路由代码都打包到一个里面去。<br>src/router.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">const</span> r11 = <span class="function">(<span class="params">location, callback</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">require</span>.ensure([<span class="string">&#x27;./routes/1-1&#x27;</span>], <span class="function"><span class="params">require</span> =&gt;</span> &#123;callback(<span class="literal">null</span>,</span><br><span class="line">    )&#125;, <span class="string">&#x27;11&#x27;</span>)</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">&lt;Router hjsistory=&#123;history&#125;&gt;</span><br><span class="line">  &lt;Route path=<span class="string">&quot;/&quot;</span> component=&#123;IndexPage&#125;&gt;</span><br><span class="line">    &#123;<span class="comment">/* 添加一个路由，嵌套进我们想要嵌套的 UI 里 */</span>&#125;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;11&quot;</span> getComponent=&#123;r11&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;12&quot;</span> getComponent=&#123;r12&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;21&quot;</span> getComponent=&#123;r21&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;22&quot;</span> getComponent=&#123;r22&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;31&quot;</span> getComponent=&#123;r31&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;32&quot;</span> getComponent=&#123;r32&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;33&quot;</span> getComponent=&#123;r33&#125; /&gt;</span><br><span class="line">    &lt;Route path=<span class="string">&quot;34&quot;</span> getComponent=&#123;r34&#125; /&gt;</span><br><span class="line">  &lt;/Route&gt;</span><br><span class="line">&lt;/Router&gt;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p><code>require.ensure</code>这个是依赖webpack的代码切片,而<code><Route path="11" getComponent=&#123;r11&#125; /></code>这个里面的getComponent,则是react-router内部的异步接口。结合这两个，至此,代码就可以按照路由进行按需加载了。接下来我们把react作为commonChunk抽出来,这样会显著缩小部署体积——项目越大就会越明显。</p>
+<p>这里的r11定义得看起来有些愚蠢,然而require这个函数有些特殊,无法向它内部传递变量,到目前为止,也只好这样了。</p>
+<p>抽出公共代码其实还是很容易。dva-cli内部实际上已经留下了这个接口。<br>修改package.json,添加common对象,如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&quot;entry&quot;: &#123;</span><br><span class="line">    &quot;index&quot;: &quot;.&#x2F;src&#x2F;index.js&quot;,</span><br><span class="line">    &quot;common&quot;: [</span><br><span class="line">      &quot;react&quot;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br></pre></td></tr></table></figure>
+<p>到此,一个基于dva-cli的react项目,从基础骨架、组件通讯、ajax异步请求数据、数据mock、按需加载、公共代码抽离、打包部署，都完毕了。本文页到此也就完整了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+              <a href="/tags/dva/" rel="tag"># dva</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/11/15/docker-compose/" rel="prev" title="docker-compose实战笔记">
+      <i class="fa fa-chevron-left"></i> docker-compose实战笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/12/31/bye-bye-2016/" rel="next" title="bye-bye-2016">
+      bye-bye-2016 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%92%8C%E9%A2%84%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">代码和预览</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.</span> <span class="nav-text">安装和初始化项目</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">3.1.</span> <span class="nav-text">安装:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.2.</span> <span class="nav-text">初始化项目:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%8B%E8%84%9A%E6%9E%B6%E4%BB%A3%E7%A0%81%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90"><span class="nav-number">3.3.</span> <span class="nav-text">手脚架代码自动生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#antd%E9%9B%86%E6%88%90"><span class="nav-number">3.4.</span> <span class="nav-text">antd集成</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E6%9E%84%E5%BB%BA"><span class="nav-number">4.</span> <span class="nav-text">项目构建</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%85%E6%A0%BC"><span class="nav-number">4.1.</span> <span class="nav-text">栅格</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8F%9C%E5%8D%95"><span class="nav-number">4.2.</span> <span class="nav-text">菜单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E9%85%8D%E7%BD%AE"><span class="nav-number">4.3.</span> <span class="nav-text">路由配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E4%B8%AA%E9%9D%A2%E5%8C%85%E5%B1%91"><span class="nav-number">4.4.</span> <span class="nav-text">加个面包屑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%81%9A%E4%B8%AA%E5%88%97%E8%A1%A8%E9%A1%B5"><span class="nav-number">4.5.</span> <span class="nav-text">做个列表页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AEmock"><span class="nav-number">4.6.</span> <span class="nav-text">数据mock</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%A6%E6%88%AA%E8%AF%B7%E6%B1%82"><span class="nav-number">4.6.1.</span> <span class="nav-text">拦截请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9E%E6%8E%A5%E7%BB%84%E4%BB%B6"><span class="nav-number">4.6.2.</span> <span class="nav-text">连接组件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%89%93%E5%8C%85%E9%83%A8%E7%BD%B2"><span class="nav-number">5.</span> <span class="nav-text">代码打包部署</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2"><span class="nav-number">5.1.</span> <span class="nav-text">部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E5%8C%85"><span class="nav-number">5.2.</span> <span class="nav-text">打包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%89%E9%9C%80%E5%8A%A0%E8%BD%BD"><span class="nav-number">5.3.</span> <span class="nav-text">按需加载</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

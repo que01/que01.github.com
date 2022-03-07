@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="源码阅读是一件枯燥而富有挑战性的事情，特别是React这类大型的源码。当我把15.6大体的东西读得稍有心得的时候，此时版本迭代已经到了16.8.6。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="v16的开始 || react-Fiber">
+<meta property="og:url" content="http://www.que01.top/2019/07/15/react-Fiber/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="源码阅读是一件枯燥而富有挑战性的事情，特别是React这类大型的源码。当我把15.6大体的东西读得稍有心得的时候，此时版本迭代已经到了16.8.6。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-07-15T06:26:30.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.674Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="React Fiber">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/07/15/react-Fiber/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>v16的开始 || react-Fiber | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/07/15/react-Fiber/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          v16的开始 || react-Fiber
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-15 14:26:30" itemprop="dateCreated datePublished" datetime="2019-07-15T14:26:30+08:00">2019-07-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/07/15/react-Fiber/" class="post-meta-item leancloud_visitors" data-flag-title="v16的开始 || react-Fiber" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">源码阅读是一件枯燥而富有挑战性的事情，特别是React这类大型的源码。当我把15.6大体的东西读得稍有心得的时候，此时版本迭代已经到了16.8.6。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="一段废话"><a href="#一段废话" class="headerlink" title="一段废话"></a>一段废话</h1><p>我当我把v15.6.2大体的东西读得稍有心得的时候(当时选定React版本时其正陷于许可证争论)，此时版本迭代已经到了16.8.6。</p>
+<p>不得不感慨前端库迭代的速度，这一年间，React Fiber 和 React Hook特性正式发布了。工程化上React也放弃了Gulp构建转而换为了Rollup。</p>
+<p>读完的时候很多东西已经落时，但是当我写到这里的时候心里也并没有后悔。把React大体的读一遍，一则算是个人对峰顶的一次仰望，二则也算是圆了自己充舒适区走出来的想法，三来React再更新，最核心的地方也算是没有白理解。</p>
+<p>感慨完毕之后，这里主要是准备换地图继续看新特性了。<strong>目标版本是16.8.6</strong>。</p>
+<p>在15.6.2的源码阅读过程中，学会了很多很多深入理解的小技巧，迷茫时候也曾参考别人的文章，无处参考时候也无数次硬啃过各个难点。回想之前种种，阅读源码这事，真的有些如鱼饮水冷暖自知。</p>
+<p>故这里小小记录，以为记。</p>
+<p>​                        ——(by 2019.7.15)</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这一小节想想了还是列一下想从v16中了解的部分。</p>
+<ul>
+<li>React新的工程架构</li>
+<li>React Fiber</li>
+<li>render <strong>可以返回字符串，数组，数字</strong></li>
+<li>Error Boundary</li>
+<li>新的生命周期</li>
+<li>React Portal</li>
+<li>Fragement</li>
+<li>React Hook</li>
+</ul>
+<p>这里最想知道的还是React的Fiber部分，在React15上实际已经有了相关代码，但是没有正式发布。</p>
+<p>所以这一篇暂时从Fiber开始。</p>
+<h1 id="Fiber的动机"><a href="#Fiber的动机" class="headerlink" title="Fiber的动机"></a>Fiber的动机</h1><p>虚拟DOM的理念在设计上个人认为已经接近理想性能的极致了，但是后来它还是遇到了现实意义上的瓶颈——当应用越来越大，卡顿现象也就会多起来。</p>
+<p>之前我们认真研读了React15.6.2的reconciler源码，以及Diff算法。基于这些理解，可以很容易明白在React15的机制中，这个相关的调和过程，实际是树状、一路递归到子节点的。虽然Diff算法已经设计得非常高效，但是依然会面对递归大型的树时候，因为密集的计算导致主线程堵塞，进而对动画相关处理无法响应，造成了卡顿。</p>
+<p>除此以外，当应用响应用户交互时候，绑定的事件过多，基于V15版本关于这块回调是归总并顺序同步执行，如果事件回调耗时过久，导致后来页面触发的更新渲染过慢，如此再三累计起来，卡顿现象就会更为明显。</p>
+<p>想要改变这个现状，就必须在数据结构上有所创新——树结构无法预测它后面会有多少层、每层也无法预知会有多少子节点。所以Fiber采用了扁平化的数据结构，这样操作长度就可以被预知，卡顿的现象就有了处理的余地。</p>
+<p>概念上这块这里就不再继续说了，因为这里不想画图，所以给大家一个别人写的<a target="_blank" rel="noopener" href="https://juejin.im/post/5be969656fb9a049ad76931f">浅析</a>。</p>
+<p>这里提一下概念上的东西，v15的reconciler叫做stack reconciler，v16的reconciler叫做fiber reconciler。</p>
+<h1 id="Fiber的拆分"><a href="#Fiber的拆分" class="headerlink" title="Fiber的拆分"></a>Fiber的拆分</h1><p>在React15中，调和的过程实质上是组件的Diff，最后批量进行patch的过程。</p>
+<p>这个Diff是可以中间停下来的，而patch批量处理批量处理，当然也是可以停下的，但是这不会有什么实质意义。</p>
+<p>就上一小节的Fiber点动机来说，V15中Diff是对一棵树的一个不可预见、不能停止的遍历、递归的diff，它如果面临了过于庞大的树，这个Diff就会长时间占用主进程，页面就会卡，所以对它的拆分，可能是最好的选择。</p>
+<p>其次就是patch一次执行太多事情，可能也会导致丢帧，这里也应该是通过上层diff的拆分来是实现。</p>
+<p>stack reconciler和fiber reconciler本质的区别在于，fiber reconciler不再像stack reconciler那样直接以树结构遍历实例树，而是改用链表的方式来实现它们。<strong>这个从树到链表的变化，是Fiber的本质改进</strong>。</p>
+<p>说实话，将树改成链表，这实际上是一个有点反人类的做法，不过它确实能解决性能上的问题——树的递归是无法中途暂停的(因为上层递归操作依赖下级递归操作的返回值)，但是链表可以。</p>
+<p>但是不管是stack reconciler还是fiber reconciler，不变的是，依然是对组件树的遍历的实现。</p>
+<p>ps: 如果这块大家理解上有困难，那么可能需要对浏览器的宏任务和微任务有基础认识。我们在react里面的各种diff操作以及事件的集中执行这些都是微任务的范畴，而浏览器的刷新则属于宏任务的范畴。浏览器每次执行宏任务之前都会确保所有的微任务被全部执行完毕。这块知识属于EventLoop的范畴。</p>
+<h1 id="Fiber的遍历"><a href="#Fiber的遍历" class="headerlink" title="Fiber的遍历"></a>Fiber的遍历</h1><p>Fiber的遍历是异步的遍历。这个遍历其实非常有意思，这让我想起《javascript忍者秘籍第二版》里面提到的，使用generator函数来进行DOM树的遍历。这块的代码部分主要从书上直接抄过来。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt; 　</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">traverseDOM</span>(<span class="params">element, callback</span>) </span>&#123; 　　</span><br><span class="line">    callback(element); 　　⇽---　用回调函数处理当前节点 　　</span><br><span class="line">    element = element.firstElementChild; 　　</span><br><span class="line">    <span class="keyword">while</span> (element) &#123; 　　　</span><br><span class="line">      traverseDOM(element, callback); 　　　</span><br><span class="line">      element = element.nextElementSibling; 　　</span><br><span class="line">    &#125;　　⇽---　遍历每个子树 　</span><br><span class="line">  &#125; 　</span><br><span class="line">  <span class="keyword">const</span> subTree = <span class="built_in">document</span>.getElementById(<span class="string">&quot;subTree&quot;</span>); 　</span><br><span class="line">  traverseDOM(subTree, <span class="function"><span class="keyword">function</span>(<span class="params">element</span>) </span>&#123; 　　</span><br><span class="line">    assert(element !== <span class="literal">null</span>, element.nodeName); 　</span><br><span class="line">  &#125;);　　⇽---　通过调用traverseDOM方法从根节点开始遍历 </span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码是一个简单的，同步递归。本质上，也就是stack reconciler采用的办法。</p>
+<p>如果换成生成器是这样:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">DomTraversal</span>(<span class="params">element</span>)</span>&#123; 　</span><br><span class="line">  <span class="keyword">yield</span> element; 　</span><br><span class="line">  element = element.firstElementChild; 　</span><br><span class="line">  <span class="keyword">while</span> (element) &#123; 　　</span><br><span class="line">    <span class="keyword">yield</span>* DomTraversal(element);　</span><br><span class="line">    element = element.nextElementSibling; 　</span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">let</span> element <span class="keyword">of</span> DomTraversal(subTree)) &#123; 　</span><br><span class="line">  assert(element !== <span class="literal">null</span>, element.nodeName); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这中间有什么区别呢？区别在于，for…of这个函数的实现。或者说再往根源上说，在于迭代器的本质。</p>
+<p>迭代器会有next方法，当我们执行<code>DomTraversal.next()</code>时候，返回值的类型是<code>&#123;done: boolean; value: any&#125;</code>这样的结构。直到到达终点，这个done===true。</p>
+<p>而for…of则是对迭代器的遍历。它相当于:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>(!(<span class="keyword">let</span> item = weaponsIterator.next()).done) &#123;</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以在这个异步的流程中，我们可以随自己心意，随时随地去执行next()，而不需要像同步代码那样，必须一口气，处理到底。</p>
+<p>这中间，可以斡旋的余地，就完全可以满足Fiber这种需要了。</p>
+<p><strong>以上是原理性说明。</strong>并不是实际实现办法，仅作思路引导。实际上React内部的Fiber节点并不是利用这种方法实现。具体实现可以看看后面的文章。</p>
+<h1 id="Fiber节点"><a href="#Fiber节点" class="headerlink" title="Fiber节点"></a>Fiber节点</h1><h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    stateNode: <span class="keyword">new</span> Bar, <span class="comment">// 组件的类实例、DOM 节点或与 Fiber&lt;ReactNode&gt;</span></span><br><span class="line">    type: Bar | HTMLDivElement, <span class="comment">// 定义此 Fiber 节点的函数或类</span></span><br><span class="line">    alternate: <span class="literal">null</span>,	<span class="comment">// 这是当前fiberNode节点的副本</span></span><br><span class="line">    key: <span class="literal">null</span>,			<span class="comment">// 唯一标识符 Tree Diff用得上</span></span><br><span class="line">    updateQueue: <span class="literal">null</span>,  <span class="comment">// state更新队列和回调相关</span></span><br><span class="line">    memoizedState: any, <span class="comment">// PrevComponent State</span></span><br><span class="line">    pendingProps: &#123;&#125;,   <span class="comment">// NextComponent Props</span></span><br><span class="line">    memoizedProps: &#123;&#125;,  <span class="comment">// PrevComponent Props</span></span><br><span class="line">    tag: <span class="number">1</span>, 			<span class="comment">// Fiber 的类型</span></span><br><span class="line">    effectTag: <span class="number">0</span>,		<span class="comment">// Enum Effect 副作用类型标记 这里和之前Diff实现中标记有部分吻合</span></span><br><span class="line">    nextEffect: <span class="literal">null</span>,	<span class="comment">// 链表 指向下一个具有Side-Effect的Fiber节点</span></span><br><span class="line">    <span class="keyword">return</span>: Fiber | <span class="literal">null</span>, <span class="comment">// 指向虚拟DOM上一级节点</span></span><br><span class="line">    child: Fiber | <span class="literal">null</span>,  <span class="comment">// 相当于虚拟DOM树上该节点的firstElementChild</span></span><br><span class="line">  	sibling: Fiber | <span class="literal">null</span>,<span class="comment">// 下一个子节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/facebook/react/blob/769b1f270e1251d9dbdce0fcbd9e92e502d059b8/packages/shared/ReactWorkTags.js">tag类型相关</a>可以参见这里。</p>
+<h2 id="基于Fiber的Diff算法-理论篇"><a href="#基于Fiber的Diff算法-理论篇" class="headerlink" title="基于Fiber的Diff算法-理论篇"></a>基于Fiber的Diff算法-理论篇</h2><p>在说Fiber的链表Diff实现之前，还是可以考虑一下v16版本之前的基于Tree的Diff算法。</p>
+<p>在基于树的对比策略下，v15版本采用的更新策略是: 根据更新逻辑, 从VDOM上确定一个尽可能小范围但是包含所有更新的节点作为对比根节点，然后从根到child节点遍历进行组件对比、Tree对比、Element对比，完成之后执行Patch。关于这个环节更具体的细节可以参考之前的文章。</p>
+<p>那么在Fiber下是怎样的操作呢？因为这里不再以Tree作为对比的数据结构，所以之前的Diff实现需要有新的实现(感觉思路上其实倒是类似)。</p>
+<p>因为基于链表的设置，这里Diff可以不用尽可能的将对比根节点往下面层级缩小，每次的对比都可以直接从根节点开始，而且因为基于对链表的设计，没什么损耗。</p>
+<h1 id="Fiber和ReactElement"><a href="#Fiber和ReactElement" class="headerlink" title="Fiber和ReactElement"></a>Fiber和ReactElement</h1><p>不管如何，当标记更新之后，还是要执行Patch处理，只有这样才会将计算结果反馈到UI，对比才有现实意义。</p>
+<p>所以理解Fiber和ReactElement的对应是一个很重要的环节。</p>
+<p>同时，他也是衔接v15和v16源码理解的重要线索。</p>
+<p>这里它们之间关键联结在FiberNode三个属性上。当渲染的render阶段结束，commit阶段开始</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">memoizedProps: 保存旧节点的ReactElement</span><br><span class="line">pendingProps:  保存新节点的ReactElement</span><br><span class="line">stateNode:	   保存新节点的ReactElement对应的DOM(当然这只是特定场景下的)</span><br></pre></td></tr></table></figure>
+
+<p>关于这个属性，还得牵扯到updateQueue。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/React-Fiber/" rel="tag"># React Fiber</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/07/10/react-Event-System-Design/" rel="prev" title="React事件体系设计">
+      <i class="fa fa-chevron-left"></i> React事件体系设计
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/07/react-v16-render/" rel="next" title="react-fiber-render">
+      react-fiber-render <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E6%AE%B5%E5%BA%9F%E8%AF%9D"><span class="nav-number">1.</span> <span class="nav-text">一段废话</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">2.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fiber%E7%9A%84%E5%8A%A8%E6%9C%BA"><span class="nav-number">3.</span> <span class="nav-text">Fiber的动机</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fiber%E7%9A%84%E6%8B%86%E5%88%86"><span class="nav-number">4.</span> <span class="nav-text">Fiber的拆分</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fiber%E7%9A%84%E9%81%8D%E5%8E%86"><span class="nav-number">5.</span> <span class="nav-text">Fiber的遍历</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fiber%E8%8A%82%E7%82%B9"><span class="nav-number">6.</span> <span class="nav-text">Fiber节点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">6.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8EFiber%E7%9A%84Diff%E7%AE%97%E6%B3%95-%E7%90%86%E8%AE%BA%E7%AF%87"><span class="nav-number">6.2.</span> <span class="nav-text">基于Fiber的Diff算法-理论篇</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fiber%E5%92%8CReactElement"><span class="nav-number">7.</span> <span class="nav-text">Fiber和ReactElement</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

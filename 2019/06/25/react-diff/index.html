@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="React Diff算法是React得到大力推崇的核心所在，不过这个Diff算法内部是如何实现的，如果不深究很难理解，这里记录一下对Diff算法的学习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React Diff算法">
+<meta property="og:url" content="http://www.que01.top/2019/06/25/react-diff/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="React Diff算法是React得到大力推崇的核心所在，不过这个Diff算法内部是如何实现的，如果不深究很难理解，这里记录一下对Diff算法的学习。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/aaa.png">
+<meta property="article:published_time" content="2019-06-25T07:58:08.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.665Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/aaa.png">
+
+<link rel="canonical" href="http://www.que01.top/2019/06/25/react-diff/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React Diff算法 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/06/25/react-diff/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React Diff算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-25 15:58:08" itemprop="dateCreated datePublished" datetime="2019-06-25T15:58:08+08:00">2019-06-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/06/25/react-diff/" class="post-meta-item leancloud_visitors" data-flag-title="React Diff算法" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">React Diff算法是React得到大力推崇的核心所在，不过这个Diff算法内部是如何实现的，如果不深究很难理解，这里记录一下对Diff算法的学习。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="React-Diff算法"><a href="#React-Diff算法" class="headerlink" title="React Diff算法"></a>React Diff算法</h1><h2 id="算法对比"><a href="#算法对比" class="headerlink" title="算法对比"></a>算法对比</h2><h3 id="传统树对比O-N-3-算法"><a href="#传统树对比O-N-3-算法" class="headerlink" title="传统树对比O(N^3)算法"></a>传统树对比O(N^3)算法</h3><p>计算一棵树形结构转换成另一棵树形结构的最少操作。传统diff 算法通过循环递归对节点进行依次对比，效率低下，算法复杂度达到 O(n^3)。</p>
+<p>这里仅仅简单列一下其原理上的复杂度。其基本原理是先寻找差异，然后计算计算最小转换方式。其中寻找差异的做法是遍历旧的树上的每一个节点，和新的树节点上每个节点遍历对比，这是为了寻找差异节点(判断是不是移动到那个位置去了)，仔细思考一下就可以知道这个过程的算法复杂度已经达到O(N^2), 找到这个差异节点之后还要计算最小的转换方式，最终复杂度为O(N^3)——这个从O(N^2)到O(N^3)的过程是一个复杂且值得研究的问题，这里就不做钻研了。</p>
+<h3 id="React-Diff的O-N-算法"><a href="#React-Diff的O-N-算法" class="headerlink" title="React Diff的O(N)算法"></a>React Diff的O(N)算法</h3><p>传统的树对比算法实际上就问题本质的研究来说已经是最理想了，但是这里需要更加高效的算法。算法本身没问题，所以需要对问题本身做出限制以便生成更高效的方案，幸运的是React虚拟DOM方案可以根据方案需要本身做出预设以完成这个设想，并且这些设想经过无数WEB开发的验证证明是合理的。  </p>
+<p>针对算法复杂度太高的问题，FB的开发者做出了三个预设：</p>
+<ul>
+<li>跨层级操作少到忽略不计——所以对比算法只需要对比树当前所在的层级</li>
+<li>不同类型(Component)的树有不同的结构，这是在虚拟DOM层次上的设计</li>
+<li>同层级的节点通过设置唯一key识别——不需要遍历当前层所有的节点</li>
+</ul>
+<p>基于这三个假设，diff算法分为Tree Diff、Component Diff、Element Diff三个层面。</p>
+<p>这里且不通过代码而是从理论上进行分析它是如何实现让这个算法达到O(N)的——实际上上面已经把所有已经指出了，这里再分析一次。</p>
+<p>首先预设1和预设2完美将整个对比压平成了N,他们一个使对比不需要多层级对比，一个通过Key使得同层级的节点通过自身的Key就能直接找到变化后的节点。这算是Tree Diff。</p>
+<p>而Component Diff这个算法的预设是针对不同组件涉及了不同的树结构，这样进一步在最小转换上提高了效率减少了对比误差——而一旦确认了是不同组件，那么React在这个最小转换方式计算上采取了<strong>最高效粗暴的方式对这个节点以及下层所有节点整个删除+替换</strong>。</p>
+<p>反之，如果是相同的组件，那么就会进入Element Diff这个层面，ReactDomComponent本质上是没有Diff的(因为一旦更新那肯定是直接就替换式更新了)，但是可以在更新前判定更新谁删除谁添加谁，这是Element Diff的意义所在。</p>
+<h2 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h2><h3 id="Component-Diff"><a href="#Component-Diff" class="headerlink" title="Component Diff"></a>Component Diff</h3><p>这一块逻辑就3个:</p>
+<ul>
+<li><p>如果是相同类型，继续进行比较(这个比较可能是根据元素类型进行3种比较策略的组合)</p>
+</li>
+<li><p>如果不同类型 直接替换后面子节点(ReactCompositeComponent._updateRenderedComponent)</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 已删除细节代码  </span></span><br><span class="line">_updateRenderedComponent: <span class="function"><span class="keyword">function</span>(<span class="params">transaction, context</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) &#123;</span><br><span class="line">      ReactReconciler.receiveComponent(</span><br><span class="line">        prevComponentInstance,</span><br><span class="line">        nextRenderedElement,</span><br><span class="line">        transaction,</span><br><span class="line">        <span class="built_in">this</span>._processChildContext(context),</span><br><span class="line">      );</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">var</span> nextMarkup = ReactReconciler.mountComponent(</span><br><span class="line">        child,</span><br><span class="line">        transaction,</span><br><span class="line">        <span class="built_in">this</span>._hostParent,</span><br><span class="line">        <span class="built_in">this</span>._hostContainerInfo,</span><br><span class="line">        <span class="built_in">this</span>._processChildContext(context),</span><br><span class="line">        debugID,</span><br><span class="line">      );</span><br><span class="line">      <span class="built_in">this</span>._replaceNodeWithMarkup(</span><br><span class="line">        oldHostNode,</span><br><span class="line">        nextMarkup,</span><br><span class="line">        prevComponentInstance,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>shouldComponentUpdate Hook函数自行设置是否更新</p>
+</li>
+</ul>
+<p>关于更新渲染是如何产生的，可以看<a href="/2018/04/26/react-lifecycle/#%E6%9B%B4%E6%96%B0-Updation">React生命周期分析</a>里面的部分。这里直说结论，回到组件层面，不管是state更新还是props更新，它最终会执行到<code>ReactCompositeComponent.updateComponent</code>。</p>
+<p>PS: 可能<a href="/2018/04/26/react-lifecycle/#%E6%9B%B4%E6%96%B0-Updation">React生命周期分析</a>里面关于props更新关联了state会让人疑虑，那么可以仔细看看<a href="/2019/06/15/react-redux-saga/">React生态 react-redux|redux-saga</a>加以思考，大家会发现，不管props还是state的更新，归根结底还是setState触发的更新。在React-Redux也无非是在自定义组件上层的connect返回的HOC里面执行了setState。</p>
+<p>下面看看源代码这块，看看调用路径:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ReactCompositeComponent.updateComponent</span><br><span class="line">  -&gt;ReactCompositeComponent._updateRenderedComponent</span><br><span class="line">    -&gt; ReactCompositeComponent.receiveComponent</span><br><span class="line">      -&gt; ReactCompositeComponent.updateComponent</span><br><span class="line">        -&gt;ReactCompositeComponent._performComponentUpdate</span><br><span class="line">          -&gt;ReactCompositeComponent._updateRenderedComponent</span><br><span class="line">            -&gt;internalInstance.receiveComponent</span><br><span class="line">              -&gt;internalInstance.updateComponent</span><br></pre></td></tr></table></figure>
+
+<p>这里调用上有一些地方值得注意<code>ReactReconciler.receiveComponent</code>接到的参数是一个<code>nextElement</code>也就是新元素做对比，<code>ReactReconciler.updateComponent</code>则接受这两个新旧element进行对比,但是在这两个函数调用和定义上。前者是调用后者时候传入的是两个新旧元素，但是后者参数逻辑上，是视为新旧ParentElement处理。</p>
+<p>截下来是<code>ReactCompositeComponent._performComponentUpdate</code>,这个函数接受element、props、state,将其赋值给当前自定义组件(就虚拟DOM来讲，这样就已经更新完毕了)，然后调用<code>_updateRenderedComponent</code>进行更新。这个函数就是调用它的<code>render</code>函数并更新对应DOM了。用于对比度新旧元素。这是该函数对比的元素:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> prevRenderedElement = prevComponentInstance._currentElement;</span><br><span class="line"><span class="keyword">var</span> nextRenderedElement = <span class="built_in">this</span>._renderValidatedComponent();</span><br></pre></td></tr></table></figure>
+
+<p>因为这新旧两个节点都是一棵虚拟DOM树，这棵树是多种节点的组合。此时我们就可以进行Tree Diff分析了。</p>
+<h3 id="Tree-Diff"><a href="#Tree-Diff" class="headerlink" title="Tree Diff"></a>Tree Diff</h3><p>续接ComponentDiff的逻辑，当<code>_updateRenderedComponent</code>执行时候，核心调用是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ReactReconciler.receiveComponent(</span><br><span class="line">    prevComponentInstance,</span><br><span class="line">    nextRenderedElement,</span><br><span class="line">    transaction,</span><br><span class="line">    <span class="built_in">this</span>._processChildContext(context),</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>而这个<code>ReactReconciler.receiveComponent</code>函数调用里面，核心代码如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"> receiveComponent: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">   internalInstance,</span></span></span><br><span class="line"><span class="function"><span class="params">   nextElement,</span></span></span><br><span class="line"><span class="function"><span class="params">   transaction,</span></span></span><br><span class="line"><span class="function"><span class="params">   context,</span></span></span><br><span class="line"><span class="function"><span class="params"> </span>) </span>&#123;</span><br><span class="line">   <span class="keyword">var</span> prevElement = internalInstance._currentElement;</span><br><span class="line"><span class="comment">// 如果两个元素完全一样 且 上下文不变，那么什么都不做</span></span><br><span class="line">   <span class="keyword">if</span> (nextElement === prevElement &amp;&amp; context === internalInstance._context) &#123;</span><br><span class="line">     <span class="keyword">return</span>;</span><br><span class="line">   &#125;</span><br><span class="line"><span class="comment">// 否则进行更新</span></span><br><span class="line">   internalInstance.receiveComponent(nextElement, transaction, context);</span><br><span class="line">   <span class="keyword">if</span> (</span><br><span class="line">     refsChanged &amp;&amp;</span><br><span class="line">     internalInstance._currentElement &amp;&amp;</span><br><span class="line">     internalInstance._currentElement.ref != <span class="literal">null</span></span><br><span class="line">   ) &#123;</span><br><span class="line">     transaction.getReactMountReady().enqueue(attachRefs, internalInstance);</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这里更新调用的<code>internalInstance.receiveComponent</code>,这个<code>internalInstance</code> 最常见、主要的指向是ReactCompositeComponent 和 ReactDomComponent这种。</p>
+<p>这里把关注点重新放到<code>_updateRenderedComponent</code>函数里面两个新旧元素上，一如ComponentDiff里面提到的。不管是<code>_currentElement</code>还是<code>this._renderValidatedComponent</code>(实质上就是对this._instance.render()的包装)，返回都是自定义组件的render执行结果(这<strong>里必须意识到上级render会递归将子节点的render全部递归执行到根节点位置然后冒泡将值递归返回回来</strong>)，也就是说，可以理解他们进行了脱壳(因为对比的是render结果，而不是该组件本身)，返回了其下级虚拟dom节点。</p>
+<p>再看看这个函数简略代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">_updateRenderedComponent: <span class="function"><span class="keyword">function</span>(<span class="params">transaction, context</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> prevComponentInstance = <span class="built_in">this</span>._renderedComponent;</span><br><span class="line">  <span class="keyword">var</span> prevRenderedElement = prevComponentInstance._currentElement;</span><br><span class="line">  <span class="keyword">var</span> nextRenderedElement = <span class="built_in">this</span>._renderValidatedComponent();</span><br><span class="line">  <span class="keyword">if</span> (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) &#123;</span><br><span class="line">    ReactReconciler.receiveComponent(</span><br><span class="line">      prevComponentInstance,</span><br><span class="line">      nextRenderedElement,</span><br><span class="line">      transaction,</span><br><span class="line">      <span class="built_in">this</span>._processChildContext(context),</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以，一个正常更新的ReactCompositeComponent节点，在更新执行到这个环节时候，一定会执行到这个<code>ReactReconciler.receiveComponent</code>指向<code>ReactDomComponent.receiveComponent</code>那一刻——因为即使不论你的自定义组件如何复杂，即使它们一个嵌套一个(此时<code>ReactReconciler.receiveComponent</code>持续指向<code>ReactCompositeComponent.receiveComponent</code>，两个receiveComponent递归调用)，最坏的情况是执行到终点的render，也必然会指向一个ReactDomComponent。</p>
+<p>所以这里关注点可以放到<code>ReactDomComponent.receiveComponent</code>上来了。</p>
+<p>接下来这里需要关注的调用栈:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ReactDomComponent.receiveComponent</span><br><span class="line"> -&gt;ReactDomComponent.updateComponent</span><br><span class="line">   -&gt;ReactDomComponent._updateDOMChildren</span><br><span class="line">     -&gt;ReactChildReconciler.updateChildren</span><br></pre></td></tr></table></figure>
+
+<p>仔细看了一下源码，同层级对比这个环节在<code>ReactChildReconciler.updateChildren</code>中。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">updateChildren: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  prevChildren,</span></span></span><br><span class="line"><span class="function"><span class="params">  nextChildren,</span></span></span><br><span class="line"><span class="function"><span class="params">  mountImages,</span></span></span><br><span class="line"><span class="function"><span class="params">  removedNodes,</span></span></span><br><span class="line"><span class="function"><span class="params">  transaction,</span></span></span><br><span class="line"><span class="function"><span class="params">  hostParent,</span></span></span><br><span class="line"><span class="function"><span class="params">  hostContainerInfo,</span></span></span><br><span class="line"><span class="function"><span class="params">  context,</span></span></span><br><span class="line"><span class="function"><span class="params">  selfDebugID, <span class="comment">// 0 in production and for roots</span></span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!nextChildren &amp;&amp; !prevChildren) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> name;</span><br><span class="line">  <span class="keyword">var</span> prevChild;</span><br><span class="line">  <span class="comment">// 遍历新节点树</span></span><br><span class="line">  <span class="keyword">for</span> (name <span class="keyword">in</span> nextChildren) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!nextChildren.hasOwnProperty(name)) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 遍历nextChildren key并获取节点相同key属性</span></span><br><span class="line">    prevChild = prevChildren &amp;&amp; prevChildren[name]; </span><br><span class="line">    <span class="keyword">var</span> prevElement = prevChild &amp;&amp; prevChild._currentElement;</span><br><span class="line">    <span class="keyword">var</span> nextElement = nextChildren[name];</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      <span class="comment">// 两个目标元素都同时存在 且 shouldUpdateReactComponent返回true</span></span><br><span class="line">      prevChild != <span class="literal">null</span> &amp;&amp;</span><br><span class="line">      shouldUpdateReactComponent(prevElement, nextElement)</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="comment">// 旧节点更新</span></span><br><span class="line">      ReactReconciler.receiveComponent(</span><br><span class="line">        prevChild,</span><br><span class="line">        nextElement,</span><br><span class="line">        transaction,</span><br><span class="line">        context,</span><br><span class="line">      );</span><br><span class="line">      nextChildren[name] = prevChild;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (prevChild) &#123;</span><br><span class="line">        removedNodes[name] = ReactReconciler.getHostNode(prevChild);</span><br><span class="line">        ReactReconciler.unmountComponent(prevChild, <span class="literal">false</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// The child must be instantiated before it&#x27;s mounted.</span></span><br><span class="line">      <span class="comment">// 重新实例化节点并替换</span></span><br><span class="line">      <span class="keyword">var</span> nextChildInstance = instantiateReactComponent(nextElement, <span class="literal">true</span>);</span><br><span class="line">      nextChildren[name] = nextChildInstance;</span><br><span class="line">      <span class="comment">// Creating mount image now ensures refs are resolved in right order</span></span><br><span class="line">      <span class="comment">// (see https://github.com/facebook/react/pull/7101 for explanation).</span></span><br><span class="line">      <span class="keyword">var</span> nextChildMountImage = ReactReconciler.mountComponent(</span><br><span class="line">        nextChildInstance,</span><br><span class="line">        transaction,</span><br><span class="line">        hostParent,</span><br><span class="line">        hostContainerInfo,</span><br><span class="line">        context,</span><br><span class="line">        selfDebugID,</span><br><span class="line">      );</span><br><span class="line">      mountImages.push(nextChildMountImage);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// Unmount children that are no longer present.</span></span><br><span class="line">  <span class="keyword">for</span> (name <span class="keyword">in</span> prevChildren) &#123;</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      prevChildren.hasOwnProperty(name) &amp;&amp;</span><br><span class="line">      !(nextChildren &amp;&amp; nextChildren.hasOwnProperty(name))</span><br><span class="line">    ) &#123;</span><br><span class="line">      prevChild = prevChildren[name];</span><br><span class="line">      removedNodes[name] = ReactReconciler.getHostNode(prevChild);</span><br><span class="line">      ReactReconciler.unmountComponent(prevChild, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>代码并不长 主要是进行了同层级对比。如果两个目标元素都同时存在并且<code>shouldUpdateReactComponent</code>返回true，那么调用<code>ReactReconciler.receiveComponent</code>进行更新。否则则通过<code>instantiateReactComponent</code>生成新的React元素并渲染替换原来的(通过removedNodes进行收集并在后面一起unmountComponent)。</p>
+<p>而取消跨层级对比这个，实质上是通过良好的规划解决了。比如上一节提到的Component Diff,它对比的是<code>inst._currentElement</code>和render返回值。相同的类型它会一直<code>ReactReconciler.receiveComponent</code>调用直到终点，开始或者中途因为组件不同，那么直接覆盖替换。</p>
+<p>由于变更是一个从父组件到子组件一直到最终节点的过程，所以ReactReconciler.updateChildren在运行过程中调用ReactReconciler.receiveComponent最终在遇到还有下层节点时候回返回再次调用自身一直到最终节点。</p>
+<p>另外就是这个updateChildren会维护一个removedNodes数组，并在这个调用过程中会一路以参数形式往下传递直到最终节点一起unMound。那么这个removedNodes从哪开始呢？从ReactMultiChild.updateChildren开始。我们梳理一下调用路径,知道这个removeNodes如何维护的还是很重要的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">ReactMultiChild.updateChildren</span><br><span class="line">-&gt;ReactMultiChild._updateChildren -&gt;声明:removedNodes = &#123;&#125;</span><br><span class="line">--&gt;ReactMultiChild._reconcilerUpdateChildren() &lt;- 传入:removedNodes = &#123;&#125;;</span><br><span class="line">----&gt;ReactChildReconciler.updateChildren</span><br><span class="line"><span class="comment">// 该函数在该逻辑的核心代码</span></span><br><span class="line">ReactChildReconciler.updateChildren () &#123;</span><br><span class="line">    <span class="keyword">for</span> (name <span class="keyword">in</span> nextChildren) &#123;</span><br><span class="line">        <span class="keyword">if</span> (</span><br><span class="line">          prevChild != <span class="literal">null</span> &amp;&amp;</span><br><span class="line">          shouldUpdateReactComponent(prevElement, nextElement)</span><br><span class="line">        )&#123;</span><br><span class="line">          ReactReconciler.receiveComponent(</span><br><span class="line">            prevChild,</span><br><span class="line">            nextElement,</span><br><span class="line">            transaction,</span><br><span class="line">            context,</span><br><span class="line">          );</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (prevChild) &#123;</span><br><span class="line">            <span class="comment">// removedNodes是被传入前是一个对象(引用类型) 传值参考&quot;Call By Share&quot;</span></span><br><span class="line">            <span class="comment">// 总之它会直接修改来自ReactMultiChild._updateChildren的removedNodes值</span></span><br><span class="line">            removedNodes[name] = ReactReconciler.getHostNode(prevChild);</span><br><span class="line">            ReactReconciler.unmountComponent(prevChild, <span class="literal">false</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Tree Diff时候就直接计算出nextChild中有、prevChild也有、但是不相等的节点，存到removeNodes中。</p>
+<p>这里实际上不会如传统的算法那么追求完美，就像之前提到的，他基本上遇到新的树上出现新的节点后如果在旧的节点上查到同名的，那么会进行shouldUpdateReactComponent判断，这个判断涉及主要设计type&amp;key。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">shouldUpdateReactComponent</span>(<span class="params">prevElement, nextElement</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> prevEmpty = prevElement === <span class="literal">null</span> || prevElement === <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">var</span> nextEmpty = nextElement === <span class="literal">null</span> || nextElement === <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">if</span> (prevEmpty || nextEmpty) &#123;</span><br><span class="line">    <span class="keyword">return</span> prevEmpty === nextEmpty;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> prevType = <span class="keyword">typeof</span> prevElement;</span><br><span class="line">  <span class="keyword">var</span> nextType = <span class="keyword">typeof</span> nextElement;</span><br><span class="line">  <span class="keyword">if</span> (prevType === <span class="string">&#x27;string&#x27;</span> || prevType === <span class="string">&#x27;number&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> nextType === <span class="string">&#x27;string&#x27;</span> || nextType === <span class="string">&#x27;number&#x27;</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      nextType === <span class="string">&#x27;object&#x27;</span> &amp;&amp;</span><br><span class="line">      prevElement.type === nextElement.type &amp;&amp;</span><br><span class="line">      prevElement.key === nextElement.key</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果没有的话直接生成新的并挂载。</p>
+<p>Tree Diff到这里应该可以结束了，接下来是Element Diff。</p>
+<h3 id="Element-Diff"><a href="#Element-Diff" class="headerlink" title="Element Diff"></a>Element Diff</h3><p>这个Element Diff包括三种操作: 插入、删除、移动。这里为了方便表述先说移动。</p>
+<h4 id="移动"><a href="#移动" class="headerlink" title="移动"></a>移动</h4><p><strong>这里需要强调的是这个算法，属于同层级下的子节点对比算法。</strong></p>
+<p>接上一节的调用路径，这里接下路径是：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ReactDomComponent.receiveComponent</span><br><span class="line">-&gt;ReactDomComponent.updateComponent</span><br><span class="line">   -&gt; ReactDomComponent._updateDOMChildren</span><br><span class="line">     -&gt; ReactMultiChild._updateChildren</span><br></pre></td></tr></table></figure>
+
+<p><code>ReactDomComponent.updateComponent</code>这个函数核心调用之前文章有提到过，是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>._updateDOMProperties(lastProps, nextProps, transaction);</span><br><span class="line"><span class="built_in">this</span>._updateDOMChildren(lastProps, nextProps, transaction, context);</span><br></pre></td></tr></table></figure>
+
+<p><code>_updateDOMChildren</code>里调用的<code>this.updateChildren(nextChildren, transaction, context);</code>方法，来自<code>ReactMultiChild.Mixin</code>。这个函数里面完整的实现了Element Diff。</p>
+<p>关于Element Diff，可以这么说，我们进行Tree Diff和Component Diff是从顶层设计上降低了算法复杂度，而Element Diff则是那个跑前跑后赚辛苦钱的那个小喽啰，当然，这并不是说它不重要，反而正是在突出其工作的相对复杂性。理解这段话，可以理解为Tree Diff和Component Diff是深谙其中五味的领导，为办事员指明了工作最优方向，但是对于办事员来讲，让然跑不了领导一张嘴下面跑断腿的情景。</p>
+<p>关于这个算法，《深入React技术栈》有非常详尽的<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20346379?refer=purerender">说明</a>，但是个人觉得如果基于硬啃每一行代码的角度去理解算法的话，理解这个diff算法反而变得过于复杂了。</p>
+<p>基于《深入React技术栈》的例子这里自己说下对这个算法排序上的理解。</p>
+<p><img src="/images/aaa.png" alt="example"></p>
+<p>新旧节点的例子就是如上图所示，我们从ABCD变成了BADC这样的结构，这个算法最后计算出的差异是移动A和C到对应位置。这里问题是如何进行这个计算。</p>
+<p>这里我们可以假设ABCD分别代表一个常数变量</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 旧节点 此时最优排序是 ABCD 可以设其分别为0123四个值</span></span><br><span class="line">A B C D</span><br><span class="line"><span class="comment">// 新节点 此时最优排序是 BADC 为了实现排序 就可以设ABCD分别为1032</span></span><br><span class="line">B A D C <span class="comment">// 当ABCD按照值大小排序完毕 就是BADC的顺序了</span></span><br><span class="line"><span class="comment">// 这里设置一个排序规则: 使ABCD根据其代表的值进行排位。这样就可以进行抽象排序了。</span></span><br></pre></td></tr></table></figure>
+
+<p>这里就可以逆向思考一下，React是如何设计这个算法了。<strong>当我们重设了ABCD的值，计算新的顺序和现有顺序差异时候，并且将要排序但是还没排序时候</strong>，下面对应的索引、值、元素是按下面关系对应的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">index  <span class="number">0</span> <span class="number">1</span> <span class="number">2</span> <span class="number">3</span></span><br><span class="line">       A B C D</span><br><span class="line">value  <span class="number">1</span> <span class="number">0</span> <span class="number">3</span> <span class="number">2</span></span><br><span class="line"></span><br><span class="line">done:  B A D C</span><br></pre></td></tr></table></figure>
+
+<p>此时很容易发现了，我们的value的值实际上就是每个元素排序后应该所处的索引，而事实上的索引，则是排序之前的索引。我们需要做的，是把索引正确的(value &lt; index)放着不动，而把错误的(value &gt; index)挑出来，并把排序方案记录下来。</p>
+<p>这里操作办法很简单，如果当前值比索引大，那么说明这个位置是错误的需要移动，把这个值移动到值对应的索引上，如果值比当前索引小，那么说明可以不动它(<strong>这里采取只移动实际位置比自己正确位置靠前的元素的策略</strong>，当把这些元素一一归位到对应值的索引的时候，这个排序就完成了)。</p>
+<p>但是这里需要说一下，当我们进行对比的时候，实际上BADC的顺序已经是确定的，我们实际的路径是已知变动后的BADC和变动前的ABCD，求这个变动的最小集合。<strong>这个过程中，已经确定变动后的BADC的顺序，可以理解成，上诉排序中，对ABCD重新赋值的过程。</strong></p>
+<p>这里看看关于移动的核心代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 核心代码</span></span><br><span class="line"><span class="keyword">var</span> nextIndex = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">var</span> lastIndex = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (name <span class="keyword">in</span> nextChildren) &#123;</span><br><span class="line">  <span class="keyword">var</span> prevChild = prevChildren &amp;&amp; prevChildren[name];</span><br><span class="line">  <span class="keyword">var</span> nextChild = nextChildren[name];</span><br><span class="line">  <span class="keyword">if</span> (prevChild === nextChild) &#123;</span><br><span class="line">    updates = enqueue(</span><br><span class="line">      updates,</span><br><span class="line">      <span class="built_in">this</span>.moveChild(prevChild, lastPlacedNode, nextIndex, lastIndex), <span class="comment">// 标记移动</span></span><br><span class="line">    );</span><br><span class="line">    lastIndex = <span class="built_in">Math</span>.max(prevChild._mountIndex, lastIndex);</span><br><span class="line">    prevChild._mountIndex = nextIndex;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">nextIndex++;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用到的调用函数</span></span><br><span class="line">moveChild: <span class="function"><span class="keyword">function</span>(<span class="params">child, afterNode, toIndex, lastIndex</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// If the index of `child` is less than `lastIndex`, then it needs to</span></span><br><span class="line">  <span class="comment">// be moved. Otherwise, we do not need to move it because a child will be</span></span><br><span class="line">  <span class="comment">// inserted or moved before `child`.</span></span><br><span class="line">  <span class="keyword">if</span> (child._mountIndex &lt; lastIndex) &#123;</span><br><span class="line">    <span class="keyword">return</span> makeMove(child, afterNode, toIndex);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 用到的调用函数</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeMove</span>(<span class="params">child, afterNode, toIndex</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> Null values reduce hidden classes.</span></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    type: <span class="string">&#x27;MOVE_EXISTING&#x27;</span>,</span><br><span class="line">    content: <span class="literal">null</span>,</span><br><span class="line">    fromIndex: child._mountIndex,</span><br><span class="line">    fromNode: ReactReconciler.getHostNode(child),</span><br><span class="line">    toIndex: toIndex,</span><br><span class="line">    afterNode: afterNode,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里简要分析一下，moveChild函数判断<code>child._mountIndex &lt; lastIndex</code>,如果符合条件那么调用<code>makeMove</code>将这个元素标记为移动。这个移动过程和上面提到的原理是一致的，唯一需要理解的是<code>nextIndex</code>和<code>lastIndex</code>两个变量。这里代码上差异分析过程是以新的BADC为目标，分析ABCD到BADC的过程。</p>
+<p>这里可以简单代入分析一下。</p>
+<ul>
+<li><p>首先按BADC顺序，取B(排序后index也就是<code>nextIndex === 0</code>), 这时候，此时<code>prevChild._mountIndex</code>也就是key为1，此时mounIndex(1) &gt; lastIndex(0) 不满足移动标记条件，不标记。lastIndex=0。</p>
+<ul>
+<li><p><code>lastIndex = Math.max(prevChild._mountIndex, lastIndex);</code>设置lastIndex为遍历过得节点里mountIndex的最大值。</p>
+</li>
+<li><p><code>prevChild._mountIndex = nextIndex;</code>虚拟dom上节点完成移动。</p>
+<p><font color="red">★</font> 这里要注意到<code>nextIndex</code>是满足条件后 要移动到的索引值。lastIndex则记录遍历过的节点在旧结构中的最大索引值。<code>nextIndex</code>相当于之前ABCD=0123赋值过程中的index, <code>lastIndex</code>则相当于value。</p>
+</li>
+</ul>
+</li>
+<li><p>取A(<code>nextIndex === 1</code>)，同上此时mounIndex(0) &lt; lastIndex(Math.Max(0, 1) === 1)，那么标记A从0移动到1，lastIndex=1。</p>
+</li>
+<li><p>取D(<code>nextIndex === 2</code>)，此时mounIndex(3) = lastIndex(Math.Max(3, 2) === 3), 不标记。lastIndex=3。</p>
+</li>
+<li><p>取C(<code>nextIndex === 3</code>)，此时mounIndex(2) &lt; lastIndex(Math.Max(2, 3) === 3), 标记移动到3，lastIndex = 2。</p>
+</li>
+</ul>
+<p>这里需要重点理解lastIndex，它的意义在于确保设置一个动态的值用于对比。当我们根据新的结构按照nextIndex累加往后移动计算差异时候，我们必须有一个尺度用来进行排序，这和我们之前给ABCD重新赋值是一个道理。只不过这里采用了lastIndex的方式。</p>
+<p>lastIndex在这里，记录了最大的<code>prevChild._mountIndex</code>，它配合从0开始累加的nextIndex,顺序将新节点在旧结构中的索引记录下来(如果它比前面的都更大，否则忽略)，然后随着nextIndex累加，新结构中的节点一一出现，如果它的mountIndex小于这个lastIndex，就统统往后移动，否则就不需要移动。</p>
+<p>这里再来两个例子看看，这里需要注意，只有<code>&lt;</code>符号出现才需要移动，<code>x</code>代表不需要移动，<code>*</code>表示需要标记移动</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 例子1: 12345 =&gt; 53421 </span></span><br><span class="line"><span class="number">1</span>   <span class="number">2</span>   <span class="number">3</span>   <span class="number">4</span>   <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="number">4</span>&gt;<span class="number">0</span> <span class="number">2</span>&lt;<span class="number">4</span> <span class="number">3</span>&lt;<span class="number">4</span> <span class="number">1</span>&lt;<span class="number">4</span> <span class="number">0</span>&lt;<span class="number">4</span></span><br><span class="line"> x   *   *   *   *</span><br><span class="line"></span><br><span class="line"> <span class="number">5</span>   <span class="number">3</span>   <span class="number">4</span>   <span class="number">2</span>   <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 例子2: 12345 =&gt; 14253</span></span><br><span class="line"> <span class="number">1</span>   <span class="number">2</span>   <span class="number">3</span>   <span class="number">4</span>   <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="number">0</span>=<span class="number">0</span> <span class="number">3</span>&gt;<span class="number">0</span> <span class="number">1</span>&lt;<span class="number">3</span> <span class="number">4</span>&gt;<span class="number">3</span> <span class="number">2</span>&lt;<span class="number">4</span></span><br><span class="line"> x   x   *   x   *</span><br><span class="line"></span><br><span class="line"> <span class="number">1</span>   <span class="number">4</span>   <span class="number">2</span>   <span class="number">5</span>   <span class="number">3</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p>继续刚才业务代码逻辑，这里核心是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 核心业务代码</span></span><br><span class="line"><span class="keyword">if</span> (prevChild === nextChild) &#123; <span class="comment">// 如果节点更新前后没有变化</span></span><br><span class="line">  <span class="comment">// 略 这里是移动逻辑</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123; <span class="comment">// 如果有变化</span></span><br><span class="line">  <span class="keyword">if</span> (prevChild) &#123; <span class="comment">// 关注点:A 如果该节点在变化之前也有</span></span><br><span class="line">    <span class="comment">// Update `lastIndex` before `_mountIndex` gets unset by unmounting.</span></span><br><span class="line">    lastIndex = <span class="built_in">Math</span>.max(prevChild._mountIndex, lastIndex);</span><br><span class="line">    <span class="comment">// 通过遍历 removedNodes 删除子节点 prevChild</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// The child must be instantiated before it&#x27;s mounted.</span></span><br><span class="line">  updates = enqueue(</span><br><span class="line">    updates,</span><br><span class="line">    <span class="built_in">this</span>._mountChildAtIndex(</span><br><span class="line">      nextChild,</span><br><span class="line">      mountImages[nextMountIndex],</span><br><span class="line">      lastPlacedNode,</span><br><span class="line">      nextIndex,</span><br><span class="line">      transaction,</span><br><span class="line">      context,</span><br><span class="line">    ),</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Remove children that are no longer present.</span></span><br><span class="line"><span class="keyword">for</span> (name <span class="keyword">in</span> removedNodes) &#123;</span><br><span class="line">  <span class="keyword">if</span> (removedNodes.hasOwnProperty(name)) &#123;</span><br><span class="line">    updates = enqueue(</span><br><span class="line">      updates,</span><br><span class="line">      <span class="built_in">this</span>._unmountChild(prevChildren[name], removedNodes[name]),</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 相关调用代码</span></span><br><span class="line">_mountChildAtIndex: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params"> child,</span></span></span><br><span class="line"><span class="function"><span class="params"> mountImage,</span></span></span><br><span class="line"><span class="function"><span class="params"> afterNode,</span></span></span><br><span class="line"><span class="function"><span class="params"> index,</span></span></span><br><span class="line"><span class="function"><span class="params"> transaction,</span></span></span><br><span class="line"><span class="function"><span class="params"> context,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">    child._mountIndex = index;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.createChild(child, afterNode, mountImage);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 相关调用代码</span></span><br><span class="line">createChild: <span class="function"><span class="keyword">function</span>(<span class="params">child, afterNode, mountImage</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> makeInsertMarkup(mountImage, afterNode, child._mountIndex);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 相关调用代码</span></span><br><span class="line">_unmountChild: <span class="function"><span class="keyword">function</span>(<span class="params">child, node</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> update = <span class="built_in">this</span>.removeChild(child, node);</span><br><span class="line">    child._mountIndex = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">return</span> update;</span><br><span class="line">&#125;,</span><br><span class="line">removeChild: <span class="function"><span class="keyword">function</span>(<span class="params">child, node</span>) </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> makeRemove(child, node);</span><br><span class="line">&#125;,</span><br><span class="line"><span class="comment">// 相关调用代码</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeInsertMarkup</span>(<span class="params">markup, afterNode, toIndex</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> Null values reduce hidden classes.</span></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    type: <span class="string">&#x27;INSERT_MARKUP&#x27;</span>,</span><br><span class="line">    content: markup,</span><br><span class="line">    fromIndex: <span class="literal">null</span>,</span><br><span class="line">    fromNode: <span class="literal">null</span>,</span><br><span class="line">    toIndex: toIndex,</span><br><span class="line">    afterNode: afterNode,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 相关调用代码</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeRemove</span>(<span class="params">child, node</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> Null values reduce hidden classes.</span></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    type: <span class="string">&#x27;REMOVE_NODE&#x27;</span>,</span><br><span class="line">    content: <span class="literal">null</span>,</span><br><span class="line">    fromIndex: child._mountIndex,</span><br><span class="line">    fromNode: node,</span><br><span class="line">    toIndex: <span class="literal">null</span>,</span><br><span class="line">    afterNode: <span class="literal">null</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先必须说一说，插入和删除很多时候是混合进行的。</p>
+<p>比如我们原来结构式ABCD，后来变化成了AECD，这样在diff算法中，会删除B然后插入一个E。</p>
+<p>和上面的移动差不多，这个操作都是标记操作，先标记B为删除，然后标记E为添加——但是不管是不是移动，这里lastIndex逻辑还是和上面一样，所以代码进入了[关注点A]标记的逻辑的话，那么说明这个节点就必须标记删除了(因为他们已经不相等了，类似上面B变成E)。关于<strong>标记添加这个很好理解，主要是拿到nextIndex和nextChild之后标记为添加就可以了。</strong></p>
+<p>而删除则有另外一套逻辑。</p>
+<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><p>删除逻辑相对复杂一些，整体逻辑是从removeNodes里面遍历，然后获取对应的变更前元素mountIndex,挨个进行标记删除。关于这个removeNodes数组，可以回过头参考Tree Diff细节。当我们开始更新时候，TreeDiff在最上游，它在最上游Diff环节已经归集好了removeNodes。</p>
+<p>这个removeNodes归集过程参考Tree Diff环节。</p>
+<h3 id="更新到DOM"><a href="#更新到DOM" class="headerlink" title="更新到DOM"></a>更新到DOM</h3><p>无论如何，浏览器不认识虚拟DOM，最终它还是要是要具现化到浏览器的UI层。</p>
+<p><code>DOMChildrenOperations.js</code>文件中<code>DOMChildrenOperations.processUpdates</code>内部。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">processUpdates: <span class="function"><span class="keyword">function</span>(<span class="params">parentNode, updates</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> k = <span class="number">0</span>; k &lt; updates.length; k++) &#123;</span><br><span class="line">    <span class="keyword">var</span> update = updates[k];</span><br><span class="line">    <span class="keyword">switch</span> (update.type) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;INSERT_MARKUP&#x27;</span>:</span><br><span class="line">        insertLazyTreeChildAt(</span><br><span class="line">          parentNode,</span><br><span class="line">          update.content,</span><br><span class="line">          getNodeAfter(parentNode, update.afterNode),</span><br><span class="line">        );</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;MOVE_EXISTING&#x27;</span>:</span><br><span class="line">        moveChild(</span><br><span class="line">          parentNode,</span><br><span class="line">          update.fromNode,</span><br><span class="line">          getNodeAfter(parentNode, update.afterNode),</span><br><span class="line">        );</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;SET_MARKUP&#x27;</span>:</span><br><span class="line">        setInnerHTML(parentNode, update.content);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;TEXT_CONTENT&#x27;</span>:</span><br><span class="line">        setTextContent(parentNode, update.content);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&#x27;REMOVE_NODE&#x27;</span>:</span><br><span class="line">        removeChild(parentNode, update.fromNode);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这个函数被调用的路径:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ReactMultiChild.Minxin._updateChildren</span><br><span class="line">-&gt;processQueue(<span class="built_in">this</span>, updates)</span><br><span class="line">  -&gt;ReactComponentEnvironment.processChildrenUpdates(inst, updateQueue)</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>processChildrenUpdates</code>是在ReactDefautlInject.js中注入的，最终引用的是<code>ReactDOMIDOperations.dangerouslyProcessChildrenUpdates</code>,这个函数里面调用了<code>DOMChildrenOperations.processUpdates</code>。</p>
+<p>而顶部的<code>ReactMultiChild.Minxin._updateChildren</code>是上面ElementDiff环节的核心调用。</p>
+<p>最后是<code>processUpdates</code>函数本身, 因为做标记时候，就是按顺序进行标记加入队列，所以这个函数直接进行遍历，然后根据type进行分支处理就完事了,并不会出现意外情况。</p>
+<h1 id="Diff算法的层次和例子"><a href="#Diff算法的层次和例子" class="headerlink" title="Diff算法的层次和例子"></a>Diff算法的层次和例子</h1><p>我们已经知道了三种Diff，但是这里还是要将其思考一番，了解他们在整体上是如何运行的。</p>
+<p>这里思考: <strong>React程序什么会进行更新？如果触发了更新三种Diff又是怎么样配合运作的呢？</strong></p>
+<h2 id="分析一"><a href="#分析一" class="headerlink" title="分析一"></a>分析一</h2><p>这里写个例子:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>bar<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    index: <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">  onClick = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.setState(</span><br><span class="line">      index: <span class="built_in">this</span>.state.index + <span class="number">1</span></span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">  render () &#123;</span><br><span class="line">    &lt;div&gt;</span><br><span class="line">      &lt;button onClick=&#123;<span class="built_in">this</span>.onClick&#125;&gt;click me&lt;/button&gt;</span><br><span class="line">      &lt;span&gt;Foo, <span class="attr">Index</span>: &#123;<span class="built_in">this</span>.state.index&#125;&lt;/span&gt;</span><br><span class="line">      &lt;Bar /&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">ReactDom.render(Foo, <span class="built_in">document</span>.body);</span><br></pre></td></tr></table></figure>
+
+<p>当按钮被点击，此时Diff是如何计算呢？可以参考之前提到的声明周期的文章，当setState被触发，那么组件会被标记脏组件，然后后面会调用<code>runBatchedUpdates</code>批量更新。接下最后每个脏组件会被遍历，然后调用<code>internalInstance.performUpdateIfNecessary(transaction);</code>。就本例来讲，他会遵循下面的调用栈</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ReactCompositeComponent.performUpdateIfNecessary</span><br><span class="line">-&gt;ReactReconciler.receiveComponent</span><br><span class="line">  -&gt;ReactCompositeComponent.receiveComponent</span><br><span class="line">    -&gt; ReactCompositeComponent.updateComponent</span><br><span class="line">      -&gt;ReactCompositeComponent._performComponentUpdate</span><br><span class="line">        -&gt;ReactCompositeComponent._updateRenderedComponent</span><br><span class="line">          -&gt;internalInstance.receiveComponent</span><br><span class="line">            -&gt;internalInstance.updateComponent</span><br></pre></td></tr></table></figure>
+
+<p>后面这一截调用栈和ComponentDiff一致。</p>
+<p>此时第一时间触发的是ComponentDiff。此时这个internalInstance明显指向ReactCompositeComponent</p>
+<p>调用路径:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ComponentDiff</span></span><br><span class="line">ReactCompositeComponent.updateComponent</span><br><span class="line">  -&gt;ReactCompositeComponent._updateRenderedComponent</span><br><span class="line">    -&gt; ReactCompositeComponent.receiveComponent</span><br><span class="line">      -&gt; ReactCompositeComponent.updateComponent</span><br><span class="line">        -&gt;ReactCompositeComponent._performComponentUpdate</span><br><span class="line">          -&gt;ReactCompositeComponent._updateRenderedComponent</span><br></pre></td></tr></table></figure>
+
+<p>到了这里，接下就是TreeDiff，此时_updateRenderedComponent对比的是新旧Foo节点。这个节点的结构是:</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;div&gt; <span class="comment">// A</span></span><br><span class="line">  &lt;button onClick=&#123;<span class="built_in">this</span>.onClick&#125;&gt;click me&lt;<span class="regexp">/button&gt; /</span><span class="regexp">/ B</span></span><br><span class="line"><span class="regexp">  &lt;span&gt;Foo, Index: &#123;this.state.index&#125;&lt;/</span>span&gt; <span class="comment">// C</span></span><br><span class="line">  &lt;Bar /&gt; <span class="comment">// D</span></span><br><span class="line">&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+
+<p>因为节点变化了，所以这个ReactDomcomponent要开始进行对比。也就是<code>ReactDomComponent.receiveComponent</code>开始执行。</p>
+<p>路线：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Element Diff</span></span><br><span class="line">ReactDomComponent.receiveComponent</span><br><span class="line">-&gt;ReactDomComponent.updateComponent</span><br><span class="line">   -&gt; ReactDomComponent._updateDOMChildren</span><br><span class="line">     -&gt; ReactMultiChild._updateChildren</span><br></pre></td></tr></table></figure>
+
+<p>此时这个ReactDomComponent指向A。其子节点 B &amp; D没有变化，按照ElementDiff不变，而C变化了，实例化<strong>新节点C</strong>并标记添加，<strong>removedNodes中含有的C后面被删除</strong>。</p>
+<p>这些完成之后，通过更新到DOM，就完成了整体更新。</p>
+<h2 id="分析二"><a href="#分析二" class="headerlink" title="分析二"></a>分析二</h2><p>分析一大致的分析比较浅的DOM树。接下来分析一个相对复杂的。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>A&#123;this.props.children&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>B&#123;this.props.children&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// C D 走一样逻辑</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    index: <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">  onClick = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.setState(</span><br><span class="line">      index: <span class="built_in">this</span>.state.index + <span class="number">1</span></span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">  render () &#123;</span><br><span class="line">    &lt;div&gt; <span class="comment">// 1</span></span><br><span class="line">      &lt;button onClick=&#123;<span class="built_in">this</span>.onClick&#125;&gt;click me&lt;<span class="regexp">/button&gt; /</span><span class="regexp">/ 1</span></span><br><span class="line"><span class="regexp">      &lt;span&gt;Foo, Index: &#123;this.state.index&#125;&lt;/</span>span&gt; <span class="comment">// 2</span></span><br><span class="line">      &lt;A index=&#123;<span class="built_in">this</span>.state.index&#125;&gt; <span class="comment">// 3</span></span><br><span class="line">          &lt;B&gt;<span class="xml"><span class="tag">&lt;<span class="name">C</span> <span class="attr">index</span>=<span class="string">&#123;this.state.index&#125;</span>&gt;</span>123<span class="tag">&lt;/<span class="name">C</span>&gt;</span></span>&lt;/B&gt;</span><br><span class="line">      &lt;/A&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">ReactDom.render(Foo, <span class="built_in">document</span>.body);</span><br></pre></td></tr></table></figure>
+
+<p>现在捋一下，如果点击click me按钮，会发生如下事情:</p>
+<p>Foo启动Component Diff</p>
+<p>然后新旧两颗VirtualDom开始进行Tree Diff， Tree Diff开始判定这两棵树下级子节点里面的差异节点。这里1不变2、3变化，所以旧节点23三个地方都会被放到removeNodes里面备删除，因为1、2节点在新旧节点里面都存在且shouldUpdateReactComponent，所以两个个节点接下来都直接触发ReactReconciler.receiveComponent，这三个节点分别是ReactDomComponent、ReactCompositeComponent。</p>
+<p>接下来三个调用分别触发<code>ReactDomComponent.receiveComponent</code>、<code>ReactCompositeComponent.receiveComponent</code>。</p>
+<p>此时节点2变化的是内部文本。当<code>ReactDomComponent.receiveComponent</code>一路走到<code>_updateDOMChildren</code>,因为内部节点都是字符串所以，<code>_updateDOMChildren</code>执行到<code>this.updateTextContent(&#39;&#39; + nextContent);</code>就结束了。</p>
+<p>接下是节点3。因为节点3传入的props变化了，所以<code>ReactCompositeComponent.receiveComponent</code>,在随后的<code>this._updateRenderedComponent</code>调用栈中，进行了结构<code>&lt;div&gt;A&lt;B&gt;&lt;C /&gt;&lt;/B&gt;&lt;/div&gt;</code>的虚拟DOM对比。</p>
+<p>接下来因为这两棵树根节点又是ReactDomComponent又进入了<code>ReactDomComponent.receiveComponent</code>，此时执行到<code>_updateDOMChildren</code>,新旧节点就不是字符串了，所以它调用了<code>ReactDomComponent.updateChildren</code>,它指向<code>ReatMultiChild.updateChildren</code>,那么树对比开始,此时因为节点3变更了，而且新旧结构里面都有，所以React这里直接将旧的3放到removeNodes里面，然后标记新的节点3为添加。</p>
+<p>到此时整个Diff就完事了。</p>
+<p> <font color="red">★</font>接下来我们思考: B组件并没有变更，如果我们想B不动的情况下更新C，也就是给B加上<code>shouldComponentUpdate = () =&gt; false</code>,会怎样去走这个Diff呢？</p>
+<p>接着上面提到的<code>&lt;div&gt;A&lt;B&gt;&lt;C /&gt;&lt;/B&gt;&lt;/div&gt;</code>的虚拟DOM对比开始。因为此时根节点又是ReactDomComponent，所以引入<code>ReactDomComponent.receiveComponent</code>,进而执行了<code>_updateDOMChildren</code>,此时这个函数执行到了<code>this.updateChildren(nextChildren, transaction, context)</code>，也就是<code>ReactMultiChild.updateChildren(nextChildren, transaction, context)</code>。这个函数下级的调用里面有<code>ReactMultiChild._updateChildren</code>里面有一个调用: </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> nextChildren = <span class="built_in">this</span>._reconcilerUpdateChildren(</span><br><span class="line">    prevChildren,</span><br><span class="line">    nextNestedChildrenElements,</span><br><span class="line">    mountImages,</span><br><span class="line">    removedNodes,</span><br><span class="line">    transaction,</span><br><span class="line">    context,</span><br><span class="line">);</span><br><span class="line"><span class="comment">// 此时。。。</span></span><br><span class="line">_reconcilerUpdateChildren</span><br><span class="line">--&gt;ReactChildReconciler.updateChildren</span><br><span class="line">----&gt;ReactReconciler.receiveComponent</span><br><span class="line">------&gt;ReactCompositeComponent.receiveComponent</span><br><span class="line">-------&gt;ReactCompositeComponent.updateComponent</span><br></pre></td></tr></table></figure>
+
+<p>最后在<code>ReactCompositeComponent.updateComponent</code>有这么一段:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (shouldUpdate) &#123;</span><br><span class="line">  <span class="built_in">this</span>._pendingForceUpdate = <span class="literal">false</span>;</span><br><span class="line">  <span class="comment">// Will set `this.props`, `this.state` and `this.context`.</span></span><br><span class="line">  <span class="comment">// 会调用_updateRenderedComponent将ReactCompositeComponent脱壳成ReactDomComponent</span></span><br><span class="line">  <span class="comment">// 然后ReactDomComponent.receiveComponent-&gt;ReactDomComponent._updateDOMChildren</span></span><br><span class="line">  <span class="built_in">this</span>._performComponentUpdate( </span><br><span class="line">    nextParentElement,</span><br><span class="line">    nextProps,</span><br><span class="line">    nextState,</span><br><span class="line">    nextContext,</span><br><span class="line">    transaction,</span><br><span class="line">    nextUnmaskedContext,</span><br><span class="line">  );</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// If it&#x27;s determined that a component should not update, we still want</span></span><br><span class="line">  <span class="comment">// to set props and state but we shortcut the rest of the update.</span></span><br><span class="line">  <span class="built_in">this</span>._currentElement = nextParentElement;</span><br><span class="line">  <span class="built_in">this</span>._context = nextUnmaskedContext;</span><br><span class="line">  inst.props = nextProps;</span><br><span class="line">  inst.state = nextState;</span><br><span class="line">  inst.context = nextContext;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很显然 第二个分支直接给旧节点进行修改赋值而没有去替换它。正常的更新则会直接用新的替代。</p>
+<p>关于这个nextParentElement，需要清晰意思到之前在它之前调用的ReactDomComponent更新调用到的<code>_updateDOMChildren</code>函数，里面直接使用的<code>nextProps.children</code>。关于这个<code>nextProps.children</code>其实就是<code>var nextChildren = this._reconcilerUpdateChildren()</code>。</p>
+<p><font color="red">★</font>这里有需要对<span id="reconcilerUpdateChildren"><code>_reconcilerUpdateChildren</code></span>有个清晰认识。一方面它是diff过程中的一个环节(计算nextChildren备用)，一方面它又是Diff计算的结果，它计算nextChildren过程中会也会进行Diff，然后将Diff后的结果返回来(这也是为什么, shouldComponentUpdate返回false，可以直接进行currentElement赋值的原因)。</p>
+<h1 id="一些小思考"><a href="#一些小思考" class="headerlink" title="一些小思考"></a>一些小思考</h1><ul>
+<li><p>Q: React jsx内部如何处理以下语法的:</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;div&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].map(<span class="function"><span class="params">v</span> =&gt;</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>&#123;v&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>)</span><br><span class="line">    &#125;</span><br><span class="line">&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+
+<p>A: <code>ReactMultiChild._reconcilerUpdateChildren</code>内部<code>flattenChildren</code>函数的调用。</p>
+</li>
+<li><p>Q：React 虚拟Dom在Diff过程中如何处理标签单节点反复嵌套，<code>_updateDOMChildren</code>函数毕竟是处理多个节点的。</p>
+<p>A: <code>_updateDOMChildren</code>会调用起<code>ReactMultiChild._reconcilerUpdateChildren</code>，它内部包含<code>ReactChildReconciler.updateChildren</code>函数的调用。如下面结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;div&gt;&lt;div&gt;&lt;div&gt;1234&lt;&#x2F;div&gt;&lt;&#x2F;div&gt;&lt;&#x2F;div&gt;</span><br></pre></td></tr></table></figure>
+
+<p>它会<code>ReactChildReconciler.updateChildren</code>会触发以下调用链：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ReactDomComponent.updateChildren <span class="comment">// 第一层</span></span><br><span class="line">-&gt;_updateDOMChildren</span><br><span class="line">--&gt;ReactDomComponent.updateChildren <span class="comment">// 第二层</span></span><br><span class="line">---&gt;updateDOMChildren</span><br><span class="line">----&gt;ReactDomComponent.updateChildren <span class="comment">// 第三层</span></span><br><span class="line">-----&gt;updateDOMChildren</span><br></pre></td></tr></table></figure>
+
+<p>一直到终点进行文本节点更新。当然，如果中途第二层如果有变化，它就会直接被删除然后被新渲染的节点直接替换不走第三层了。</p>
+</li>
+</ul>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="https://book.douban.com/subject/26918038/">《深入React技术栈》</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/17/react-table-of-react/" rel="prev" title="React笔记大纲导航">
+      <i class="fa fa-chevron-left"></i> React笔记大纲导航
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/28/react-ReactCurrentOwner/" rel="next" title="React ReactCurrentOwner">
+      React ReactCurrentOwner <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#React-Diff%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">React Diff算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="nav-number">1.1.</span> <span class="nav-text">算法对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E6%A0%91%E5%AF%B9%E6%AF%94O-N-3-%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.1.</span> <span class="nav-text">传统树对比O(N^3)算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#React-Diff%E7%9A%84O-N-%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.2.</span> <span class="nav-text">React Diff的O(N)算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E8%BF%87%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">实现过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Component-Diff"><span class="nav-number">1.2.1.</span> <span class="nav-text">Component Diff</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tree-Diff"><span class="nav-number">1.2.2.</span> <span class="nav-text">Tree Diff</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Element-Diff"><span class="nav-number">1.2.3.</span> <span class="nav-text">Element Diff</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">移动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8F%92%E5%85%A5"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">插入</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">删除</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E5%88%B0DOM"><span class="nav-number">1.2.4.</span> <span class="nav-text">更新到DOM</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Diff%E7%AE%97%E6%B3%95%E7%9A%84%E5%B1%82%E6%AC%A1%E5%92%8C%E4%BE%8B%E5%AD%90"><span class="nav-number">2.</span> <span class="nav-text">Diff算法的层次和例子</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E4%B8%80"><span class="nav-number">2.1.</span> <span class="nav-text">分析一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E4%BA%8C"><span class="nav-number">2.2.</span> <span class="nav-text">分析二</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%B0%8F%E6%80%9D%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">一些小思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

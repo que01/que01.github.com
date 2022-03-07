@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="React v17.0.2.hooks部分之 useEffect 的阅读整理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-17.0.2-hooks 之 useEffect">
+<meta property="og:url" content="http://www.que01.top/2021/06/18/2021-6-18-react-17-0-2-hooks-useEffect/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="React v17.0.2.hooks部分之 useEffect 的阅读整理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-06-18T02:03:22.000Z">
+<meta property="article:modified_time" content="2022-03-07T02:31:27.813Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2021/06/18/2021-6-18-react-17-0-2-hooks-useEffect/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-17.0.2-hooks 之 useEffect | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2021/06/18/2021-6-18-react-17-0-2-hooks-useEffect/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-17.0.2-hooks 之 useEffect
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-06-18 10:03:22" itemprop="dateCreated datePublished" datetime="2021-06-18T10:03:22+08:00">2021-06-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-07 10:31:27" itemprop="dateModified" datetime="2022-03-07T10:31:27+08:00">2022-03-07</time>
+              </span>
+
+          
+            <span id="/2021/06/18/2021-6-18-react-17-0-2-hooks-useEffect/" class="post-meta-item leancloud_visitors" data-flag-title="react-17.0.2-hooks 之 useEffect" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">React v17.0.2.hooks部分之 useEffect 的阅读整理。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="开头"><a href="#开头" class="headerlink" title="开头"></a>开头</h1><p>这一篇主要是 useEffect的细节分析整理。因为 hooks 部分有点长也就分开了。关于 useState的部分可以看上一篇。这里入口函数的分析也在上一篇里面，如果有不明需要返回参考。</p>
+<h1 id="useEffect-细节"><a href="#useEffect-细节" class="headerlink" title="useEffect 细节"></a>useEffect 细节</h1><p>在常见的hooks 函数里面useEffect使用频度和 useState 是不相上下的。</p>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">import React from &#39;react&#39;;</span><br><span class="line"></span><br><span class="line">export default () &#x3D;&gt; &#123;</span><br><span class="line">  const [text, setText] &#x3D; useState(&#39;hello&#39;);</span><br><span class="line">  </span><br><span class="line">  useEffect(() &#x3D;&gt; &#123;</span><br><span class="line">    console.log(&#39;Hello World&#39;);</span><br><span class="line">  &#125;, [text]); </span><br><span class="line">  </span><br><span class="line">  return &lt;div onClick&#x3D;&#123;() &#x3D;&gt; setText(&#39;Hello&#39;)&#125;&gt;click&lt;&#x2F;div&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 以上是一个非常常见且典型的useEffect使用场景。</p>
+<p>在这个使用例子中，useEffect 传入了一个函数作为第一个参数，传入一个state数组做为第二个参数。</p>
+<h2 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h2><p>我们承袭前一片的分析，可以得知，当初次mount时候，useEffect 指向mountEffect函数，当 update 的时候，则指向updateEffect函数。</p>
+<h3 id="mountEffect"><a href="#mountEffect" class="headerlink" title="mountEffect"></a>mountEffect</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mountEffect</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  create: () =&gt; (() =&gt; <span class="keyword">void</span>) | <span class="keyword">void</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  deps: <span class="built_in">Array</span>&lt;mixed&gt; | <span class="keyword">void</span> | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (__DEV__ &amp;&amp; enableDoubleInvokingEffects) &#123;</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> mountEffectImpl(</span><br><span class="line">      PassiveEffect | PassiveStaticEffect,</span><br><span class="line">      HookPassive,</span><br><span class="line">      create,</span><br><span class="line">      deps,</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 引用到的mountEffectImpl</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mountEffectImpl</span>(<span class="params">fiberFlags, hookFlags, create, deps</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> hook = mountWorkInProgressHook();</span><br><span class="line">  <span class="keyword">const</span> nextDeps = deps === <span class="literal">undefined</span> ? <span class="literal">null</span> : deps;</span><br><span class="line">  currentlyRenderingFiber.flags |= fiberFlags;</span><br><span class="line">  hook.memoizedState = pushEffect(</span><br><span class="line">    HookHasEffect | hookFlags,</span><br><span class="line">    create,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    nextDeps,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里可以看出，在源码中，我们传入的函数称为 create，数组则称为 deps。</p>
+<p>这里函数里面涉及到一些位运算的 flag,这里暂且略过对核心路径进行解读。</p>
+<p>当这一路调用下来，通过mountWorkInProgressHook函数，它得到一个workInProgressHook，并在其memoizedState属性上挂载了一个新的空白Hook 实例。</p>
+<p>接下来就是pushEffect函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">pushEffect</span>(<span class="params">tag, create, destroy, deps</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> effect: Effect = &#123;</span><br><span class="line">    tag,</span><br><span class="line">    create,</span><br><span class="line">    destroy,</span><br><span class="line">    deps,</span><br><span class="line">    <span class="comment">// Circular</span></span><br><span class="line">    next: (<span class="literal">null</span>: any),</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">let</span> componentUpdateQueue: <span class="literal">null</span> | FunctionComponentUpdateQueue = (currentlyRenderingFiber.updateQueue: any);</span><br><span class="line">  <span class="keyword">if</span> (componentUpdateQueue === <span class="literal">null</span>) &#123;</span><br><span class="line">    componentUpdateQueue = createFunctionComponentUpdateQueue();</span><br><span class="line">    currentlyRenderingFiber.updateQueue = (componentUpdateQueue: any);</span><br><span class="line">    componentUpdateQueue.lastEffect = effect.next = effect;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> lastEffect = componentUpdateQueue.lastEffect;</span><br><span class="line">    <span class="keyword">if</span> (lastEffect === <span class="literal">null</span>) &#123;</span><br><span class="line">      componentUpdateQueue.lastEffect = effect.next = effect;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> firstEffect = lastEffect.next;</span><br><span class="line">      lastEffect.next = effect;</span><br><span class="line">      effect.next = firstEffect;</span><br><span class="line">      componentUpdateQueue.lastEffect = effect;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> effect;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果前面对 useState那篇还有印象的话，大致可以看到这里主要是对updateQueue属性的处理，而 useState 则主要是对queue属性的处理。</p>
+<p>这里还是简述一下过程</p>
+<ul>
+<li>当 hook上updateQueue属性没有有效值时候，创建一个空 updateQueue，并将它的lastEffect属性设置为由之前传入的 create 和 deps 构成的 Effect 实例，这个 Effect 是一个循环链表，这里将首尾都链到它自己。</li>
+<li>当有有效值时候将之前传入的 create 和 deps 构成的 Effect 实例，塞到firstEffect前面，并将它本身设为firstEffect。</li>
+</ul>
+<h3 id="updateEffect"><a href="#updateEffect" class="headerlink" title="updateEffect"></a>updateEffect</h3><p>这里看一下细节:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateEffect</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  create: () =&gt; (() =&gt; <span class="keyword">void</span>) | <span class="keyword">void</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  deps: <span class="built_in">Array</span>&lt;mixed&gt; | <span class="keyword">void</span> | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> updateEffectImpl(PassiveEffect, HookPassive, create, deps);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 调用的updateEffectImpl</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateEffectImpl</span>(<span class="params">fiberFlags, hookFlags, create, deps</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> hook = updateWorkInProgressHook();</span><br><span class="line">  <span class="keyword">const</span> nextDeps = deps === <span class="literal">undefined</span> ? <span class="literal">null</span> : deps;</span><br><span class="line">  <span class="keyword">let</span> destroy = <span class="literal">undefined</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (currentHook !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> prevEffect = currentHook.memoizedState;</span><br><span class="line">    destroy = prevEffect.destroy;</span><br><span class="line">    <span class="keyword">if</span> (nextDeps !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> prevDeps = prevEffect.deps;</span><br><span class="line">      <span class="keyword">if</span> (areHookInputsEqual(nextDeps, prevDeps)) &#123;</span><br><span class="line">        pushEffect(hookFlags, create, destroy, nextDeps);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  currentlyRenderingFiber.flags |= fiberFlags;</span><br><span class="line"></span><br><span class="line">  hook.memoizedState = pushEffect(</span><br><span class="line">    HookHasEffect | hookFlags,</span><br><span class="line">    create,</span><br><span class="line">    destroy,</span><br><span class="line">    nextDeps,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里很显然就又回到了pushEffect，这里分支就是之前提到的</p>
+<blockquote>
+<p>当有有效值时候将之前传入的 create 和 deps 构成的 Effect 实例，塞到firstEffect前面，并将它本身设为firstEffect。</p>
+</blockquote>
+<p>这里处理的核心，归根结底，还是在于updateQueue属性。</p>
+<p>PS: 当我写完这篇之后，自己再看一遍其实也还是感觉言之未尽。但是hooks这个机制呢，它本身说到底，其实还是针对函数组件中的各种状态进行一个临时的状态保存。</p>
+<p>这里的保存，有闭包，也有直接的在属性上进行挂载。处理完毕这些之后在后续的更新里面对它进行读取、处理，并反馈到 View 上(说穿了其实有些兴味索然。。。)。</p>
+<h2 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h2><p>pushEffect函数处理了hook.updateQueue的赋值，并将生成的 effect 赋值给到hook.memoizedState。</p>
+<p>这里没有像 useState 那里那样，还有过一次直接计算和直接触发更新。究其根本，useEffect 在 mount 之后，并不一定真的会执行这个 create 函数，他就像一个订阅器，当我们执行了 setXXX(‘new Val’)之后，通过对应的 setXXX开始更新流程，并在这个流程中对比 deps，并针对性的执行 create。</p>
+<p>然而这个流程，就是更新层面的逻辑了。回头看看很久之前分析过的update 环节，实在有些怅然。</p>
+<p><a href="/2019/08/07/react-v16-Update-renderPhase/">《react-v16-Update renderPhase篇》</a> </p>
+<p><a href="/2019/08/07/react-v16-Update-commitPhase/">《react-v16-Update-commitPhase》</a></p>
+<p>hooks 部分写到这里实在有些兴味索然，就这样做个收尾吧。这里的收获是，知道 fiber 节点上一些属性(updateQueue|memoizedState|pending之类)，是如何变化、反馈到View层面的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/13/2021-6-13-react-17-0-2-hooks/" rel="prev" title="react-17.0.2-hooks 之 useState">
+      <i class="fa fa-chevron-left"></i> react-17.0.2-hooks 之 useState
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%80%E5%A4%B4"><span class="nav-number">1.</span> <span class="nav-text">开头</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#useEffect-%E7%BB%86%E8%8A%82"><span class="nav-number">2.</span> <span class="nav-text">useEffect 细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%86%E8%8A%82"><span class="nav-number">2.2.</span> <span class="nav-text">细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mountEffect"><span class="nav-number">2.2.1.</span> <span class="nav-text">mountEffect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#updateEffect"><span class="nav-number">2.2.2.</span> <span class="nav-text">updateEffect</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E7%BB%AD"><span class="nav-number">2.3.</span> <span class="nav-text">后续</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

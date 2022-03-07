@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="错配的nginx——web缓存问题探究">
+<meta property="og:url" content="http://www.que01.top/2016/07/15/http-cache/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/%E7%BC%93%E5%AD%98.png">
+<meta property="article:published_time" content="2016-07-15T13:10:07.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.604Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="http-cache">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/%E7%BC%93%E5%AD%98.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/07/15/http-cache/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>错配的nginx——web缓存问题探究 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/07/15/http-cache/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          错配的nginx——web缓存问题探究
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-15 21:10:07" itemprop="dateCreated datePublished" datetime="2016-07-15T21:10:07+08:00">2016-07-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/07/15/http-cache/" class="post-meta-item leancloud_visitors" data-flag-title="错配的nginx——web缓存问题探究" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这篇是项目相关的一个总结。起源于一个错误配置的nginx。这篇文章记录了个人在项目中遇到的一个诡异的问题，和最后的答案。顺便也讲了一下http缓存知识。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>随着项目的推进，渐渐的要上https，要从tomcat服务器转换到nginx+tomcat组合的方式了。 nginx有个问题就是缓存太”严重”,我认为这其实是一个大的优化，如果用好了可以对项目体验起到很好的催化，这也是nginx作为服务器的前端的意义所在。 但是往往当开发人员对http理解薄弱的，就会对此很搓火。因为过强的缓存会导致页面滞后，debug时候很多东西无法及时出来，只能动不动强制清缓存，大大破坏了开发体验。</p>
+<h1 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h1><p>其实一直一来都在做强缓存。新起的项目都做好了资源的hash。但是如果不是这次错配的nginx导致个人寻根结底找原因，也不会有这篇关于http缓存的文章。 HTTP的文章其实网上已经有很多了。个人完全不认为会比那些无比详细和成系列的雄文对比。仅仅是个人对知识体系的一个总结吧。</p>
+<p>言归正传。问题的由来其实是因为nginx的响应头配置有问题，它里面既没有 Cache-Control,也没有Expires。导致很多资源无端200(from cache)而不304，使得资源存在更新不及时的问题.</p>
+<p>举个栗子,这是清空缓存后第一次访问资源的http响应头：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Server</span>: Apache-Coyote/1.1</span><br><span class="line"><span class="attribute">Accept-Ranges</span>: bytes</span><br><span class="line"><span class="attribute">ETag</span>: W/&quot;2477-1467900381000&quot;</span><br><span class="line"><span class="attribute">Last-Modified</span>: Thu, 07 Jul 2016 14:06:21 GMT</span><br><span class="line"><span class="attribute">Content-Type</span>: image/png</span><br><span class="line"><span class="attribute">Content-Length</span>: 2477</span><br><span class="line"><span class="attribute">Date</span>: Fri, 15 Jul 2016 14:00:41 GMT</span><br></pre></td></tr></table></figure>
+
+<p>这是对应的请求头:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Accept:image/webp,image/*,*/*;q=0.8</span><br><span class="line">Accept-Encoding:gzip, deflate, sdch</span><br><span class="line">Accept-Language:zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4</span><br><span class="line">Cache-Control:max-age=0</span><br><span class="line"><span class="attribute">Connection:keep-alive</span></span><br><span class="line">Cookie:CNZZDATA1256284005=647609082-1468586434-%7C1468586434</span><br><span class="line"><span class="attribute">Host:www.xxx.com</span></span><br><span class="line"><span class="attribute">Referer:http://www.xxx.com/</span></span><br><span class="line">User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36</span><br></pre></td></tr></table></figure>
+
+<p>然后在地址栏敲回车以后以后，返回的200(from cache),而我不是猜想的304 总之一句话就是这个问题的关键在于：响应头里既没有 Cache-Control也没有Expires的时候，是如何在新鲜度检测阶段直接认为新鲜度没有问题的。</p>
+<h1 id="问题的抛出"><a href="#问题的抛出" class="headerlink" title="问题的抛出"></a>问题的抛出</h1><p>在搞清整个问题之前我觉得还是要将HTTP缓存机制好好整理处理作为问题解决的前提和疑问抛出的前提。</p>
+<p>用最简单的话来说，服务器缓存启用是存在两个判断机制的：</p>
+<ol>
+<li>新鲜度检测阶段 需要依赖响应头的Cache-Control和Expires，通过才会返回200(from cache)</li>
+<li>资源二次校验阶段 校验资源一致性,如果一致返回304,如果不一致返回200,当然，如果没有找到返回404</li>
+</ol>
+<p>现在的问题就抛出来了，为什么，响应头里面没有Cache-Control和Expires,那么按照上诉的缓存启用机制，返回的状态吗可能是304,可能是200,可能是404或者更多的，但是就是不可能是200(from cache)。但是现实用惨淡的现实告诉我们，结果就是200(from cache)！这是为什么呢？</p>
+<h1 id="HTTP缓存"><a href="#HTTP缓存" class="headerlink" title="HTTP缓存"></a>HTTP缓存</h1><h2 id="用户操作对缓存的影响"><a href="#用户操作对缓存的影响" class="headerlink" title="用户操作对缓存的影响"></a>用户操作对缓存的影响</h2><p>用户不同的操作是对缓存存在固有影响，正常链接点入、新tab打开网址/窗口、F5刷新、前进后退、Ctrl+F5强刷，对缓存都会不同的表现</p>
+<table>
+<thead>
+<tr>
+<th align="left">用户操作</th>
+<th align="left">Exprires/Cache-Control</th>
+<th align="left">Last-Modified/Etag</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">地址栏回车</td>
+<td align="left">有效</td>
+<td align="left">有效</td>
+</tr>
+<tr>
+<td align="left">页面链接转跳</td>
+<td align="left">有效</td>
+<td align="left">有效</td>
+</tr>
+<tr>
+<td align="left">新开窗口</td>
+<td align="left">有效</td>
+<td align="left">有效</td>
+</tr>
+<tr>
+<td align="left">前进后退</td>
+<td align="left">无效</td>
+<td align="left">有效</td>
+</tr>
+<tr>
+<td align="left">Ctrl+F5强刷</td>
+<td align="left">无效</td>
+<td align="left">无效</td>
+</tr>
+</tbody></table>
+<h2 id="缓存机制"><a href="#缓存机制" class="headerlink" title="缓存机制"></a>缓存机制</h2><p>缓存总体上的流程是这样的(原图来自《http权威指南》,个人有涂鸦)：<br><img src="/images/%E7%BC%93%E5%AD%98.png"></p>
+<h3 id="新鲜度检测"><a href="#新鲜度检测" class="headerlink" title="新鲜度检测"></a>新鲜度检测</h3><p><strong>Cache-Control与Expires</strong> 是新鲜度检测的关键:</p>
+<p>Cache-Control与Expires的作用一致，都是指明当前资源的有效期。只不过Cache-Control的选择更多，设置更细致，如果同时设置的话，其优先级高于Expires。<br>详细一点说明的话，Expires是http/1.0定义的资源有效期，它是一个历史遗留产物。它的值是一个绝对值，它显示指定了一个日期作为过期时间。然而经过一段时间实践之后，Bug就出来了：当客户端可服务器时间不一致，那么到底怎么处理呢？</p>
+<p>Cache-Control是http/1.1定义的，功能很多，但是核心的我认为还是还是改变了资源有效期的表达方式，我认为最大的意义是Cache-Control是Expires的bugfix产物(作为bugfix优先级当然会更高)。它使用max-age来根据最后时间加上这个max-age动态计算了过期时间，这样就不存在Expires的Bug了。</p>
+<p><strong>Cache-Control可选值:</strong>(偷懒摘自《翻译：web制作、开发人员需知的Web缓存知》)</p>
+<ul>
+<li>**max-age=[秒]**：表示在这个时间范围内缓存是新鲜的无需更新。类似Expires时间，不过这个时间是相对的，而不是绝对的。也就是某次请求成功后多少秒内缓存是新鲜的。</li>
+<li>**s-maxage=[秒]**：类似max-age, 除了仅应用于共享缓存（如代理）。</li>
+<li><strong>public</strong>：标记认证的响应才能够被缓存。一般而言，需要认证HTTP请求内容会自动私有化（不会被缓存Add）。</li>
+<li><strong>private</strong>：允许缓存专门为某一个用户存储响应，比方说在浏览器中；共享缓存一般不会，例如在代理中。</li>
+<li><strong>no-cache</strong>：每次在释放缓存副本之前都强制发送请求给源服务器进行验证，这在确保认证有效性上很管用（和public结合使用）或者保证内容必须是即时的，不得无视缓存的所有优点，如国内的微博、twitter等的刷新显示Add。</li>
+<li><strong>no-store</strong>：强制缓存在任何情况下都不要保留任何副本。</li>
+<li><strong>must-revalidate</strong>：告诉缓存，我给你准备了一些关于新鲜度的信息，在表现的时候要严格遵循之。HTTP允许缓存在某些特定情况下返回过期数据，指定了这个属性，相对于告诉缓存，你丫必须严格遵循我的规则。</li>
+<li><strong>proxy-revalidate</strong>：类似must-revalidate，除了只能应用于代理缓存。</li>
+</ul>
+<p><b style="color:red">个人注:</b>理想的情况下，Cache-Control与Expires可以都标明以达到最优兼容，但是这不是必须都有的，多数可以只有其中一个也不会有什么大问题(如果引起BUG就另说了)，但是——不要两个都没有，不然会引起相对诡异的现象，如果本文的例子。<br><b style="color:red">——但是你硬要这么干，确实可以两个都没有.</b></p>
+<h3 id="资源二次校验"><a href="#资源二次校验" class="headerlink" title="资源二次校验"></a>资源二次校验</h3><p><strong>Last-Modified/ETag</strong> 这两个数据用于确定数据是否改变<br>Last-Modified嘛，很好理解，文件最后修改时间。如果这个东西那么好用的话其实Etag不过画蛇添足罢了，但是很可惜的Last-Modified的时间度量单位是秒——这意味着一秒内的修改服务器分辨不出来——股票行情系统和金融系统对此有利益攸关的需求。<br>所以就有了ETag，这个东西就是类似文件hash的东西，在服务器上用于分辨文件是不是同一个。</p>
+<p>Last-Modified与ETag是可以一起使用的，<strong>服务器会优先验证ETag</strong>。一致的情况下，才会继续比对Last-Modified，最后才决定是否返回304</p>
+<p><b style="color:red">个人注:</b>如果你想用304，Last-Modified和ETag是很重要的属性。如果你还想用304，那么就不要删除它们(删除其中一个会不会有影响个人还未验证)。</p>
+<h3 id="新鲜度校验的补充"><a href="#新鲜度校验的补充" class="headerlink" title="新鲜度校验的补充"></a>新鲜度校验的补充</h3><p><strong>试探性过期</strong>(本章摘自HTTP权威指南Page193)<br>如果响应中没有 Cache-Control: max-age 首部,也没有 Expires 首部,缓存可 以 <strong>计算出一个试探性最大使用期</strong>。可以使用任意算法,但如果得到的最大使用期大于24小时,就应该向响应首部添加一个 Heuristic Expiration Warning首部。据我们所知,很少有浏览器会为用户提供这种警告信息。<br>LM-Factor 算法是一种很常用的试探性过期算法,<strong>如果文档中包含了最后修改日期, 就可以使用这种算法</strong>。LM-Factor算法 <strong>将最后修改日期作为依据</strong>,来估计文档有多么易变。算法的逻辑如下所示。<br>• 如果已缓存文档最后一次修改发生在很久以前,它可能会是一份稳定的文档,不太会突然发生变化,因此将其继续保存在缓存中会比较安全。<br>• 如果已缓存文挡最近被修改过,就说明它很可能会频繁地发生变化,因此在与服 务器进行再验证之前,只应该将其缓存很短一段时间。</p>
+<p>这段描述已经解决了个人的疑惑了,<strong>简单说算法猜你近期没有改的不会突然改了,反之认为你会突然改</strong>。在《HTTP权威指南》内有简单的公式和图例，有兴趣的可以自行前往翻阅。</p>
+<p><b style="color:red">个人注:</b>《HTTP权威指南》有这样一段话：</p>
+<blockquote>
+<p>HTTP 有一组非常复杂的新鲜度检测规则,缓存产品支持的大量配置选项,以及与 非 HTTP 新鲜度标准进行互通的需要则使问题变得更加严重了。本章其余的大部分 篇幅都用于解释新鲜度的计算问题。</p>
+</blockquote>
+<p>所以，这个新鲜度校验是非常复杂的，远不是网上大多数文章提到的那么简略，如果以后在新鲜度校验这里出现疑问，不妨翻一翻。</p>
+<h1 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h1><p>问题到这里算是解决了，解决方案很简单，加上了Cache-Control和Expires。但是这次的服务器错配的导致的问题的探索，着实是很大程度上提高了个人对HTTP缓存的理解。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a target="_blank" rel="noopener" href="http://www.zhangxinxu.com/wordpress/2013/05/caching-tutorial-for-web-authors-and-webmasters/">《翻译：web制作、开发人员需知的Web缓存知识》</a><br><a target="_blank" rel="noopener" href="http://www.alloyteam.com/2012/03/web-cache-2-browser-cache/">【Web缓存机制系列】2 – Web浏览器的缓存机制 </a><br><a target="_blank" rel="noopener" href="https://book.douban.com/subject/10746113/">《HTTP权威指南》</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/http-cache/" rel="tag"># http-cache</a>
+              <a href="/tags/%E7%BC%93%E5%AD%98/" rel="tag"># 缓存</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/13/dockerfile/" rel="prev" title="dockerfile构建前端vim环境">
+      <i class="fa fa-chevron-left"></i> dockerfile构建前端vim环境
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/07/17/web-performance/" rel="next" title="web性能优化">
+      web性能优化 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%B1%E6%9D%A5"><span class="nav-number">2.</span> <span class="nav-text">由来</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E6%8A%9B%E5%87%BA"><span class="nav-number">3.</span> <span class="nav-text">问题的抛出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP%E7%BC%93%E5%AD%98"><span class="nav-number">4.</span> <span class="nav-text">HTTP缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%93%8D%E4%BD%9C%E5%AF%B9%E7%BC%93%E5%AD%98%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">4.1.</span> <span class="nav-text">用户操作对缓存的影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6"><span class="nav-number">4.2.</span> <span class="nav-text">缓存机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E9%B2%9C%E5%BA%A6%E6%A3%80%E6%B5%8B"><span class="nav-number">4.2.1.</span> <span class="nav-text">新鲜度检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B5%84%E6%BA%90%E4%BA%8C%E6%AC%A1%E6%A0%A1%E9%AA%8C"><span class="nav-number">4.2.2.</span> <span class="nav-text">资源二次校验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E9%B2%9C%E5%BA%A6%E6%A0%A1%E9%AA%8C%E7%9A%84%E8%A1%A5%E5%85%85"><span class="nav-number">4.2.3.</span> <span class="nav-text">新鲜度校验的补充</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E5%B0%BE"><span class="nav-number">5.</span> <span class="nav-text">结尾</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">6.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

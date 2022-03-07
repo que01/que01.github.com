@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这里是react笔记之instantiateReactComponent分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-instantiateReactComponent">
+<meta property="og:url" content="http://www.que01.top/2019/06/15/react-instantiateReactComponent/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这里是react笔记之instantiateReactComponent分析">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/image-20190617090423902.png">
+<meta property="article:published_time" content="2019-06-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.657Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/image-20190617090423902.png">
+
+<link rel="canonical" href="http://www.que01.top/2019/06/15/react-instantiateReactComponent/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-instantiateReactComponent | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/06/15/react-instantiateReactComponent/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-instantiateReactComponent
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-15T00:00:00+08:00">2019-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/06/15/react-instantiateReactComponent/" class="post-meta-item leancloud_visitors" data-flag-title="react-instantiateReactComponent" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这里是react笔记之instantiateReactComponent分析</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="简况"><a href="#简况" class="headerlink" title="简况"></a>简况</h2><p>instantiateReactComponent是在ReactReconciler中被经常引用的一个函数，用于调度并返回组件实例。</p>
+<p>目标路径:<code>src/renderers/shared/stack/reconciler/instantiateReactComponent.js </code></p>
+<p>关于这个函数有使用注释，移除DEV和一些警告抛错类函数调用，它大致是这样的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">- Given a ReactNode, create an instance that will actually be mounted.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">- <span class="doctag">@param <span class="type">&#123;ReactNode&#125;</span> <span class="variable">node</span></span></span></span><br><span class="line"><span class="comment">- <span class="doctag">@param <span class="type">&#123;boolean&#125;</span> <span class="variable">shouldHaveDebugID</span></span></span></span><br><span class="line"><span class="comment">- <span class="doctag">@return <span class="type">&#123;object&#125;</span> </span>A new instance of the element&#x27;s constructor.</span></span><br><span class="line"><span class="comment">- <span class="doctag">@protected</span></span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">instantiateReactComponent</span>(<span class="params">node, shouldHaveDebugID</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> instance;</span><br><span class="line">  <span class="keyword">if</span> (node === <span class="literal">null</span> || node === <span class="literal">false</span>) &#123;</span><br><span class="line">    instance = ReactEmptyComponent.create(instantiateReactComponent);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> node === <span class="string">&#x27;object&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> element = node;</span><br><span class="line">    <span class="keyword">var</span> type = element.type;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> type !== <span class="string">&#x27;function&#x27;</span> &amp;&amp; <span class="keyword">typeof</span> type !== <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> info = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">      info += getDeclarationErrorAddendum(element._owner);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> element.type === <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">      instance = ReactHostComponent.createInternalComponent(element);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isInternalComponentType(element.type)) &#123;</span><br><span class="line">      instance = <span class="keyword">new</span> element.type(element);</span><br><span class="line">      <span class="keyword">if</span> (!instance.getHostNode) &#123;</span><br><span class="line">        instance.getHostNode = instance.getNativeNode;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      instance = <span class="keyword">new</span> ReactCompositeComponentWrapper(element);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> node === <span class="string">&#x27;string&#x27;</span> || <span class="keyword">typeof</span> node === <span class="string">&#x27;number&#x27;</span>) &#123;</span><br><span class="line">    instance = ReactHostComponent.createInstanceForText(node);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">  &#125;</span><br><span class="line">  instance._mountIndex = <span class="number">0</span>;</span><br><span class="line">  instance._mountImage = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它返回的实例有以下几种:</p>
+<ul>
+<li>ReactEmptyComponent.create -&gt; ReactDOMEmptyComponent实例</li>
+<li>ReactHostComponent.createInternalComponent -&gt; ReactDOMComponent实例</li>
+<li>new element.type(element) </li>
+<li>new ReactCompositeComponentWrapper(element) -&gt; ReactCompositeComponentWrapper实例</li>
+</ul>
+<p>这几个实例都有一个共性。那就是他们全<strong>都在原型上定义了mountComponent、receiveComponent、getHostNode、unmountComponent四个方法</strong>。这也是ReactReconciler模块的规划需要。</p>
+<p>这里有个补充，后来我在&lt;&lt;深入react技术栈&gt;&gt;看到一个小结，说是高屋建瓴也没错，这里可以作为补充:</p>
+<p><img src="/images/image-20190617090423902.png" alt="image-20190617090423902"></p>
+<h2 id="参数和返回"><a href="#参数和返回" class="headerlink" title="参数和返回"></a>参数和返回</h2><p>前面提到的实例类型的返回取决于它的参数，这里一共有四种情况。</p>
+<table>
+<thead>
+<tr>
+<th>type</th>
+<th>末节点调用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>null 或 false</td>
+<td>ReactEmptyComponent.create</td>
+</tr>
+<tr>
+<td>string</td>
+<td>ReactDOMComponent</td>
+</tr>
+<tr>
+<td>function &amp;&amp; element.type原生组件</td>
+<td>element.type(element)</td>
+</tr>
+<tr>
+<td>function &amp;&amp; element.type自定义组件</td>
+<td>new ReactCompositeComponentWrapper(element)</td>
+</tr>
+</tbody></table>
+<h3 id="ReactEmptyComponent"><a href="#ReactEmptyComponent" class="headerlink" title="ReactEmptyComponent"></a>ReactEmptyComponent</h3><p>当node传入值为null 或者 false时候回返回它。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactDOMEmptyComponent = <span class="function"><span class="keyword">function</span>(<span class="params">instantiate</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ReactCompositeComponent uses this:</span></span><br><span class="line">  <span class="built_in">this</span>._currentElement = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// ReactDOMComponentTree uses these:</span></span><br><span class="line">  <span class="built_in">this</span>._hostNode = <span class="literal">null</span>;</span><br><span class="line">  <span class="built_in">this</span>._hostParent = <span class="literal">null</span>;</span><br><span class="line">  <span class="built_in">this</span>._hostContainerInfo = <span class="literal">null</span>;</span><br><span class="line">  <span class="built_in">this</span>._domID = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>那么可以设想一下？<strong>什么情况下，node值会是null 或者 false</strong>?</p>
+<p>回顾一下之前提到的jsx到js的转换,我们都jsx在转换后，children会依次按层级放在其父元素的type属性上。那么可想而知我们最终节点是没有children的，此时node值可能会是null 或者 false。</p>
+<p><strong>但是，虽然上文的推论很浅显直观，但是它是有漏洞的</strong>。不仅仅是自定义组件内部会含有html标记，而且一般来说末节点才有可能是null或者false,但是一般来说它都是string,也就是说末节点一般是常规的html标记。</p>
+<p> 准确的来讲,以下情况才是会发生返回这种children的场景:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    	<span class="comment">// return</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">ReactDom.render(<span class="xml"><span class="tag">&lt;<span class="name">Foo</span> /&gt;</span></span>, container)</span><br></pre></td></tr></table></figure>
+
+<p>ReactCompositeComponent line511-514，对child的取值。当达到末节点，此时type为null。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> child = <span class="built_in">this</span>._instantiateReactComponent(</span><br><span class="line">  renderedElement,</span><br><span class="line">  nodeType !== ReactNodeTypes.EMPTY <span class="comment">/* shouldHaveDebugID */</span>,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>而且这个实例中有一个属性 <code>this._currentElement = null</code>会被其用到。</p>
+<h3 id="ReactDOMComponent"><a href="#ReactDOMComponent" class="headerlink" title="ReactDOMComponent"></a>ReactDOMComponent</h3><p>ReactDOMComponent的情况可能是最容易理解的，当渲染的元素是HTML标准的<code>div</code>、<code>span</code>标记这类, 此时type类型就是string。</p>
+<p>这种情况情况常常发生在末节点，和自定义组件里面的children里。</p>
+<h3 id="element-type-element"><a href="#element-type-element" class="headerlink" title="element.type(element)"></a>element.type(element)</h3><p>暂时可用于一些非字符串标识的自定义组件,不过目前来说这是一个当前版本的妥协(临时措施), 未来版本会将其作为字符串标识,完成之后这个分支会被删除。</p>
+<h3 id="ReactCompositeComponentWrapper"><a href="#ReactCompositeComponentWrapper" class="headerlink" title="ReactCompositeComponentWrapper"></a>ReactCompositeComponentWrapper</h3><p>ReactCompositeComponentWrapper比较常规。它用来处理自定义组件，比如之前提到的<code>Foo</code>组件就需要用它来处理一遍。</p>
+<p>这个函数的作用呢就是对自定义组件做一些处理，比如我们的生命周期函数，事件绑定等一般都是在这里，当组件挂载、更新、卸载也都需要一个比较专门的逻辑来处理。不过虽然如此，但是这个函数其实也是相对抽象的，因为一旦到了type为string时候它会将事情转交给ReactDOMComponent模块。</p>
+<p>它本身更多的是对自定义组件的生命周期调用、事务处理、状态更新进行了抽象。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/04/03/react-VirtualDom/" rel="prev" title="React虚拟DOM">
+      <i class="fa fa-chevron-left"></i> React虚拟DOM
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/15/react-ReactCompositeComponent/" rel="next" title="ReactCompositeComponent">
+      ReactCompositeComponent <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">简况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E5%92%8C%E8%BF%94%E5%9B%9E"><span class="nav-number">2.</span> <span class="nav-text">参数和返回</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactEmptyComponent"><span class="nav-number">2.1.</span> <span class="nav-text">ReactEmptyComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactDOMComponent"><span class="nav-number">2.2.</span> <span class="nav-text">ReactDOMComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#element-type-element"><span class="nav-number">2.3.</span> <span class="nav-text">element.type(element)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactCompositeComponentWrapper"><span class="nav-number">2.4.</span> <span class="nav-text">ReactCompositeComponentWrapper</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

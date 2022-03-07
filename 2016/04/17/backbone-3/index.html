@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这篇文章我打算整理下整体的架构，在第一篇里面整理api时候其实有过猜测的，这里再带着疑问来看看事实是怎样的。还是那句话，确认宏观以后再回过来看微观。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="backbone初探(三)-整体结构">
+<meta property="og:url" content="http://www.que01.top/2016/04/17/backbone-3/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这篇文章我打算整理下整体的架构，在第一篇里面整理api时候其实有过猜测的，这里再带着疑问来看看事实是怎样的。还是那句话，确认宏观以后再回过来看微观。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/backbone-all.png">
+<meta property="og:image" content="http://www.que01.top/images/Backbone-Event.png">
+<meta property="og:image" content="http://www.que01.top/images/Backbone-Model.png">
+<meta property="og:image" content="http://www.que01.top/images/console1.png">
+<meta property="og:image" content="http://www.que01.top/images/Backbone-Collection.png">
+<meta property="article:published_time" content="2016-04-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.581Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/backbone-all.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/04/17/backbone-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>backbone初探(三)-整体结构 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/04/17/backbone-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          backbone初探(三)-整体结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-17 00:00:00" itemprop="dateCreated datePublished" datetime="2016-04-17T00:00:00+08:00">2016-04-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/04/17/backbone-3/" class="post-meta-item leancloud_visitors" data-flag-title="backbone初探(三)-整体结构" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这篇文章我打算整理下整体的架构，在第一篇里面整理api时候其实有过猜测的，这里再带着疑问来看看事实是怎样的。还是那句话，确认宏观以后再回过来看微观。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Structure"><a href="#Structure" class="headerlink" title="Structure"></a>Structure</h1><h2 id="Backbone的整体Structure"><a href="#Backbone的整体Structure" class="headerlink" title="Backbone的整体Structure"></a>Backbone的整体Structure</h2><p>webStorm的Structure是个很不错的功能。只是很多源码确实不是仅仅看这个就可以有相对清晰的脉络。但是这里似乎并不包括Backbone。<br><img style="width:40%" src="/images/backbone-all.png" alt=""><br>很清晰的结构，而且最重要的几个工具函数在上一篇已经有了相对深入的解读。<br>所以接下来我们对Backbone的若干个构造器来个相对粗略的了解。</p>
+<h2 id="Event结构"><a href="#Event结构" class="headerlink" title="Event结构"></a>Event结构</h2><p><img src="/images/Backbone-Event.png"></p>
+<p>Event是个很重要的部分,不管是Model，Collection还是View，均在原型上继承了它的各种方法。<br>但是Event如果不论细节，它的实现原理还是非常简单的。<br>如果上图所示，Event有两个基础方法：evnetApi和trigerApi，其中eventApi在AOP编程思想基础上，构建了4个方法，internalOn,onApi,offApi和onceApi，这里internalOn是队opApi的进一步封装用于设置_listeners和_event以便进行跟踪,本篇主要侧重于结构分析，细节将下一篇开始分解。然后在看trigerApi，在它基础上还有一个triggerEvents。</p>
+<p>在这两个基础方法基础上，Event封装如果暴露出来的方法。<br>eventApi:</p>
+<ul>
+<li>on</li>
+<li>off</li>
+<li>once</li>
+<li>listenToOnce</li>
+<li>stopListening</li>
+<li>ListenTo</li>
+</ul>
+<p>onceApi</p>
+<ul>
+<li>trigger</li>
+</ul>
+<h2 id="Model结构"><a href="#Model结构" class="headerlink" title="Model结构"></a>Model结构</h2><p><img src="/images/Backbone-Model.png"></p>
+<p>首先要声明一点，Backbone.Model.extend()返回的是一个构造器。extend整个细节在上一篇已经深入讲过了。child.prototype.constructor被更改返回child以后，整个新的构造器已经被切断了和Backbone.Model的关联。Backbone.Model其实已经可以视为一个生产构造器工厂。</p>
+<p>不独是Model，其他的View、Collection其实也是一样。extend使用了闭包将内部变量返回，当Backbone.Model.extend()执行完毕之后，返回值其实同Backbone.Model没有任何关联(除了特别设置的_<em>super_</em>)</p>
+<p>这里看看Model生成新的构造器时候干了什么</p>
+<p>回顾extend一段代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">child = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> parent.apply(<span class="built_in">this</span>, <span class="built_in">arguments</span>); &#125;;</span><br></pre></td></tr></table></figure>
+<p>这里this指向的是Model，Collection和View之类，以Model为例，它实质上将构造函数copy一个赋值给child了而已。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">var Todo &#x3D; Backbone.Model.extend(&#123;</span><br><span class="line">  &#x2F;&#x2F; Default attributes for the todo item.</span><br><span class="line">  defaults: function() &#123;</span><br><span class="line">    return &#123;</span><br><span class="line">      title: &quot;empty todo...&quot;,</span><br><span class="line">      done: false</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  &#x2F;&#x2F; Toggle the &#96;done&#96; state of this todo item.</span><br><span class="line">  toggle: function() &#123;</span><br><span class="line">    this.save(&#123;done: !this.get(&quot;done&quot;)&#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;);</span><br><span class="line">var test &#x3D; new Todo();</span><br></pre></td></tr></table></figure>
+<p>console.log(test)的结果是：<br><img src="/images/console1.png"><br>这里attributes是存放数据的对象，代表的是，一个实例的数据。但是，toggle在原型上了，似乎忽略了一些细节。<br>回看extend代码，是这里运行导致的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">child.prototype = _.create(parent.prototype, protoProps);</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="Collection结构"><a href="#Collection结构" class="headerlink" title="Collection结构"></a>Collection结构</h2><p><img src="/images/Backbone-Collection.png"><br>实际上Collection同Model的构造环节几乎一模一样，只是构造函数有所不同。<br>看看构造函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">var</span> Collection = Backbone.Collection = <span class="function"><span class="keyword">function</span>(<span class="params">models, options</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//options如果没有传入将初始化为一个空对象</span></span><br><span class="line">    options || (options = &#123;&#125;);</span><br><span class="line">    <span class="comment">//options.model若指定则设置实例的model属性为该值</span></span><br><span class="line">    <span class="keyword">if</span> (options.model) <span class="built_in">this</span>.model = options.model;</span><br><span class="line">    <span class="comment">//options.comparator若指定则设置实例的comparator属性为该值</span></span><br><span class="line">    <span class="keyword">if</span> (options.comparator !== <span class="keyword">void</span> <span class="number">0</span>) <span class="built_in">this</span>.comparator = options.comparator;</span><br><span class="line">    <span class="comment">//初始化实例的length，models和_byId属性</span></span><br><span class="line">    <span class="built_in">this</span>._reset();</span><br><span class="line">    <span class="comment">//this.initialize(arguments) 使用initialize来初始化实例</span></span><br><span class="line">    <span class="built_in">this</span>.initialize.apply(<span class="built_in">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">    <span class="comment">// 如果models存在</span></span><br><span class="line">    <span class="keyword">if</span> (models) <span class="built_in">this</span>.reset(models, _.extend(&#123;<span class="attr">silent</span>: <span class="literal">true</span>&#125;, options));</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>很明晰的构造函数，大致是分成三步</p>
+<ol>
+<li>如果options传入且存在model或者comparator，那么将他们挂到实例属性上，否则设置为空对象。</li>
+<li>然后使用先后使用_reset()和initialize来初始化实例属性。</li>
+<li>最后一步，如果models传入了，那么调用reset来将models加入到实例的内部数据属性上。</li>
+</ol>
+<p>这里稍微有点问题的是第二步和第三步：</p>
+<h3 id="reset"><a href="#reset" class="headerlink" title="_reset()"></a>_reset()</h3><p>_reset是原型上自带的一个初始化函数，而initialize默认是空函数，但是可以通过extend中以下代码来设置一个，也就是说是可以配置的。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">child.prototype = _.create(parent.prototype, protoProps);</span><br></pre></td></tr></table></figure>
+
+<h3 id="reset-1"><a href="#reset-1" class="headerlink" title="reset"></a>reset</h3><p>reset是另外一个初始化函数，这里贴一下细节：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// When you have more items than you want to add or remove individually,</span></span><br><span class="line"><span class="comment">// 当你有更多数据要逐个添加或者删除</span></span><br><span class="line"><span class="comment">// you can reset the entire set with a new list of models, without firing</span></span><br><span class="line"><span class="comment">// 你可以重置这个实例设置一个新的models列表，不用触发任何add和remove的事件</span></span><br><span class="line"><span class="comment">// any granular `add` or `remove` events. Fires `reset` when finished.</span></span><br><span class="line"><span class="comment">// 添加删除完毕后触发reset事件</span></span><br><span class="line"><span class="comment">// Useful for bulk operations and optimizations.</span></span><br><span class="line"><span class="comment">// 对批量操作和优化来说非常有用</span></span><br><span class="line">reset: <span class="function"><span class="keyword">function</span>(<span class="params">models, options</span>) </span>&#123;</span><br><span class="line">  <span class="comment">//options存在则深拷贝一份，或设置为&#123;&#125;</span></span><br><span class="line">  options = options ? _.clone(options) : &#123;&#125;;</span><br><span class="line">  <span class="comment">//遍历models，切断模型和某个集合的关系。</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="built_in">this</span>.models.length; i++) &#123;</span><br><span class="line">    <span class="built_in">this</span>._removeReference(<span class="built_in">this</span>.models[i], options);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//将options的previousModels指向这个models</span></span><br><span class="line">  options.previousModels = <span class="built_in">this</span>.models;</span><br><span class="line">  <span class="comment">//初始化实例的length，models和_byId属性 -&gt;此时this.models=[];</span></span><br><span class="line">  <span class="built_in">this</span>._reset();</span><br><span class="line">  <span class="comment">//调用add方法添加models到Collection</span></span><br><span class="line">  models = <span class="built_in">this</span>.add(models, _.extend(&#123;<span class="attr">silent</span>: <span class="literal">true</span>&#125;, options));</span><br><span class="line">  <span class="comment">//如果options设置了silent=false,手动触发reset事件进行重置</span></span><br><span class="line">  <span class="keyword">if</span> (!options.silent) <span class="built_in">this</span>.trigger(<span class="string">&#x27;reset&#x27;</span>, <span class="built_in">this</span>, options);</span><br><span class="line">  <span class="keyword">return</span> models;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>代码已经注释了每一步的逻辑，这里有个需要说的是reset方法本身并不处理数据的增删，而是依赖add方法，add又依赖set方法，基本上set方法可以说是Collection最基础的方法之一了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br></pre></td><td class="code"><pre><span class="line">add: function(models, options) &#123;</span><br><span class="line">  return this.set(models, _.extend(&#123;merge: false&#125;, options, addOptions));</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">&#x2F;&#x2F; Update a collection by &#96;set&#96;-ing a new list of models, adding new ones,</span><br><span class="line">&#x2F;&#x2F; removing models that are no longer present, and merging models that</span><br><span class="line">&#x2F;&#x2F; already exist in the collection, as necessary. Similar to **Model#set**,</span><br><span class="line">&#x2F;&#x2F; the core operation for updating the data contained by the collection.</span><br><span class="line">set: function(models, options) &#123;</span><br><span class="line">      &#x2F;&#x2F;models为空直接返回false跳出函数</span><br><span class="line">      if (models &#x3D;&#x3D; null) return;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 合并setOptions和options赋值给options</span><br><span class="line">      options &#x3D; _.extend(&#123;&#125;, setOptions, options);</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 分支1：如果options设置了parse且models不是一个Model实例，那么使用parse方法来解析一下models</span><br><span class="line">      if (options.parse &amp;&amp; !this._isModel(models)) &#123;</span><br><span class="line">        models &#x3D; this.parse(models, options) || [];</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 分支2：判断一下models是否是数组,如果是数组，返回一个副本，</span><br><span class="line">      &#x2F;&#x2F; 否则放到一个空素组作为元素并返回数组-&gt;统一转换成数组处理</span><br><span class="line">      var singular &#x3D; !_.isArray(models);</span><br><span class="line">      models &#x3D; singular ? [models] : models.slice();</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 设置at 如果指定了at，那么排序就无意义</span><br><span class="line">      &#x2F;&#x2F; 如果at不为空强制转为数字(正常范围内)</span><br><span class="line">      &#x2F;&#x2F; 如果at大于数组长度: 设为数组长度</span><br><span class="line">      &#x2F;&#x2F; 如果at小余0：反向设置索引</span><br><span class="line">      var at &#x3D; options.at;</span><br><span class="line">      if (at !&#x3D; null) at &#x3D; +at;</span><br><span class="line">      if (at &gt; this.length) at &#x3D; this.length;</span><br><span class="line">      if (at &lt; 0) at +&#x3D; this.length + 1;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 准备要放数据的设置，添加，合并，移除和modelMap的空数组</span><br><span class="line">      var set &#x3D; [];</span><br><span class="line">      var toAdd &#x3D; [];</span><br><span class="line">      var toMerge &#x3D; [];</span><br><span class="line">      var toRemove &#x3D; [];</span><br><span class="line">      var modelMap &#x3D; &#123;&#125;;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 为各个数据设置引用</span><br><span class="line">      var add &#x3D; options.add;</span><br><span class="line">      var merge &#x3D; options.merge;</span><br><span class="line">      var remove &#x3D; options.remove;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; 设置排序状态，是否可以排序和排序属性</span><br><span class="line">      var sort &#x3D; false;</span><br><span class="line">      var sortable &#x3D; this.comparator &amp;&amp; at &#x3D;&#x3D; null &amp;&amp; options.sort !&#x3D;&#x3D; false;</span><br><span class="line">      var sortAttr &#x3D; _.isString(this.comparator) ? this.comparator : null;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; Turn bare objects into model references, and prevent invalid models</span><br><span class="line">      &#x2F;&#x2F; from being added.</span><br><span class="line">      &#x2F;&#x2F; 将纯对象变成model引用，防止无效的models被加进来。</span><br><span class="line">      var model, i;</span><br><span class="line">      for (i &#x3D; 0; i &lt; models.length; i++) &#123;</span><br><span class="line">        model &#x3D; models[i];</span><br><span class="line"></span><br><span class="line">        &#x2F;&#x2F; If a duplicate is found, prevent it from being added and</span><br><span class="line">        &#x2F;&#x2F; optionally merge it into the existing model.</span><br><span class="line">        &#x2F;&#x2F; 如果一个副本已存在，防止被加进来，可选是否合并它到已存在的model</span><br><span class="line">        var existing &#x3D; this.get(model); &#x2F;&#x2F;获取已经存在的model数组</span><br><span class="line">        if (existing) &#123;</span><br><span class="line">          &#x2F;&#x2F; 如果存在，判断options.merge是否存在&amp;&amp;option的merge是否没有加入过</span><br><span class="line">            &#x2F;&#x2F; 如果是 处理数据压入到toMerge</span><br><span class="line">          if (merge &amp;&amp; model !&#x3D;&#x3D; existing) &#123;</span><br><span class="line">            var attrs &#x3D; this._isModel(model) ? model.attributes : model;</span><br><span class="line">            if (options.parse) attrs &#x3D; existing.parse(attrs, options);</span><br><span class="line">            existing.set(attrs, options);</span><br><span class="line">            toMerge.push(existing);</span><br><span class="line">            if (sortable &amp;&amp; !sort) sort &#x3D; existing.hasChanged(sortAttr);</span><br><span class="line">          &#125;</span><br><span class="line">          &#x2F;&#x2F; 如果存在且modelMap中没有这个cid</span><br><span class="line">            &#x2F;&#x2F; 那么设置modelMap对应的cid属性值为true，压入existing到set数组</span><br><span class="line">          if (!modelMap[existing.cid]) &#123;</span><br><span class="line">            modelMap[existing.cid] &#x3D; true;</span><br><span class="line">            set.push(existing);</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          &#x2F;&#x2F; models[i]设为处理后的existing</span><br><span class="line">          models[i] &#x3D; existing;</span><br><span class="line"></span><br><span class="line">        &#x2F;&#x2F; If this is a new, valid model, push it to the &#96;toAdd&#96; list.</span><br><span class="line">        &#x2F;&#x2F; 如果是一个新的有效的model，将它压入到toAdd数组</span><br><span class="line">        &#125; else if (add) &#123;</span><br><span class="line">          model &#x3D; models[i] &#x3D; this._prepareModel(model, options);</span><br><span class="line">          if (model) &#123;</span><br><span class="line">            toAdd.push(model);</span><br><span class="line">            this._addReference(model, options);</span><br><span class="line">            modelMap[model.cid] &#x3D; true;</span><br><span class="line">            set.push(model);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; Remove stale models.</span><br><span class="line">      &#x2F;&#x2F; 移除过期的models</span><br><span class="line">      if (remove) &#123;</span><br><span class="line">        for (i &#x3D; 0; i &lt; this.length; i++) &#123;</span><br><span class="line">          model &#x3D; this.models[i];</span><br><span class="line">          if (!modelMap[model.cid]) toRemove.push(model);</span><br><span class="line">        &#125;</span><br><span class="line">        if (toRemove.length) this._removeModels(toRemove, options);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; See if sorting is needed, update &#96;length&#96; and splice in new models.</span><br><span class="line">      &#x2F;&#x2F; 判断是否需要排序，更新length并切片到新的models列表</span><br><span class="line">      var orderChanged &#x3D; false;</span><br><span class="line">      var replace &#x3D; !sortable &amp;&amp; add &amp;&amp; remove;</span><br><span class="line">      if (set.length &amp;&amp; replace) &#123;</span><br><span class="line">        orderChanged &#x3D; this.length !&#x3D;&#x3D; set.length || _.some(this.models, function(m, index) &#123;</span><br><span class="line">          return m !&#x3D;&#x3D; set[index];</span><br><span class="line">        &#125;);</span><br><span class="line">        this.models.length &#x3D; 0;</span><br><span class="line">        splice(this.models, set, 0);</span><br><span class="line">        this.length &#x3D; this.models.length;</span><br><span class="line">      &#125; else if (toAdd.length) &#123;</span><br><span class="line">        if (sortable) sort &#x3D; true;</span><br><span class="line">        &#x2F;&#x2F;如果at存在插入到at后面 不然插入到最后</span><br><span class="line">        splice(this.models, toAdd, at &#x3D;&#x3D; null ? this.length : at);</span><br><span class="line">        this.length &#x3D; this.models.length;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; Silently sort the collection if appropriate.</span><br><span class="line">      &#x2F;&#x2F; 静默排序</span><br><span class="line">      if (sort) this.sort(&#123;silent: true&#125;);</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; Unless silenced, it&#39;s time to fire all appropriate add&#x2F;sort&#x2F;update events.</span><br><span class="line">      &#x2F;&#x2F; 除非设置了sliencd,是时候去触发所有的添加删除排序更新操作</span><br><span class="line">      if (!options.silent) &#123;</span><br><span class="line">        for (i &#x3D; 0; i &lt; toAdd.length; i++) &#123;</span><br><span class="line">          if (at !&#x3D; null) options.index &#x3D; at + i;</span><br><span class="line">          model &#x3D; toAdd[i];</span><br><span class="line">          model.trigger(&#39;add&#39;, model, this, options);</span><br><span class="line">        &#125;</span><br><span class="line">        if (sort || orderChanged) this.trigger(&#39;sort&#39;, this, options);</span><br><span class="line">        if (toAdd.length || toRemove.length || toMerge.length) &#123;</span><br><span class="line">          options.changes &#x3D; &#123;</span><br><span class="line">            added: toAdd,</span><br><span class="line">            removed: toRemove,</span><br><span class="line">            merged: toMerge</span><br><span class="line">          &#125;;</span><br><span class="line">          this.trigger(&#39;update&#39;, this, options);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      &#x2F;&#x2F; Return the added (or merged) model (or models).</span><br><span class="line">      return singular ? models[0] : models;</span><br><span class="line">    &#125;,</span><br></pre></td></tr></table></figure>
+<p>set方法实在是个很重量级的方法了，逻辑很长，考虑到的东西非常多。<br>我们重点说说这个set方法，他的用途是什么呢？我们先翻译一遍这个注释</p>
+<blockquote>
+<p>更新一个集合，通过set一个新的集合列表。添加一个新集合，或者删除不再存在的集合，<br>同时，合并已经存在的集合——如果需要的话。类似Model的set方法，是collection更新数据的<br>核心方法。</p>
+</blockquote>
+<p>set方法如果全部记住的话实在太复杂了，一个函数长度达到一百行实际项目中也见到的不多。还是那句，先宏观到微观，步步为营深入它。</p>
+<ol>
+<li>准备后面函数需要用到的数据:</li>
+</ol>
+<ul>
+<li>line11-23:设置options，然后设置model：</li>
+</ul>
+<p>  – parse存在且不为模型时,用parse处理model；<br>  – 判断是否是数组,如果是数组返回副本，否则放到一个空素组作为元素并返回数组</p>
+<ul>
+<li>line26-50:设置at索引,临时容器数组，和排序属性(状态,能力,属性)</li>
+</ul>
+<ol start="2">
+<li>数据操作流程：</li>
+</ol>
+<ul>
+<li>将纯对象变成model引用，方式是遍历数组，取出每个属性到以下流程</li>
+</ul>
+<p>  – 判断是否已有这个数据<br>  — 是-&gt;如果设置了合并相关选项，那么进行相关事宜<br>  — 否-&gt;进入添加流程</p>
+<ul>
+<li>移除过期的models</li>
+<li>更新lenght&amp;排序</li>
+<li>触发绑定的事件</li>
+</ul>
+<p>这样就够了。里面更多细节我认为已经不需要去深究了。阅读代码更多是在读架构。这里如果没有以后发现有补充必要，暂时先跳过了。实际上注释已经加的不少了。</p>
+<h2 id="View"><a href="#View" class="headerlink" title="View"></a>View</h2><p>view的结构和上面都一样，但是相比上列，它的构造函数实在简洁的不行。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> View = Backbone.View = <span class="function"><span class="keyword">function</span>(<span class="params">options</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.cid = _.uniqueId(<span class="string">&#x27;view&#x27;</span>);</span><br><span class="line">  _.extend(<span class="built_in">this</span>, _.pick(options, viewOptions));</span><br><span class="line">  <span class="built_in">this</span>._ensureElement();</span><br><span class="line">  <span class="built_in">this</span>.initialize.apply(<span class="built_in">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>加起来一共也就4行,第一行设置cid；第二行从options中过滤出[‘model’, ‘collectgition’, ‘el’, ‘id’, ‘attributes’, ‘className’, ‘tagName’, ‘events’]数组中的属性；第三行用到了_ensureElement方法，用来确保获取dom(class,id或者选择器字符串),同时这个函数里面还对事件进行了绑定；第四行用来初始化，默认是个空函数，可以自定义。</p>
+<p>除此以外View几乎没有其他的API被暴露出来。View的主要的API只有渲染、绑定事件和移除3种。但是简单不代表View不重要，后面文章再深入尝试使用。</p>
+<h2 id="History-amp-amp-Route"><a href="#History-amp-amp-Route" class="headerlink" title="History&amp;&amp;Route"></a>History&amp;&amp;Route</h2><p>说实话History这个模块确实没有想到，可能是因为过去项目尚没有这方面的苛刻要求。<br>至于在html5的pushState和hashchange事件的基础上进行简单前进后退的实践却确实有不少，但是Histroy这个环节里面的处理方式确实让我始料未及。</p>
+<p>这里随便列举一下里面包含的没有想过的：</p>
+<ul>
+<li>getSearch:在更多时候个人往往使用location.query来获取这个，但是没想过ie6会存在bug，这里使用正则获取</li>
+<li>getHash:个人用的location.hash来获取，没遇到过firefox这个bug过</li>
+<li>decodeFragment解码location.pathname这个<code>%25</code>的例外也不知道</li>
+</ul>
+<p>至于细节暂时搁置一下。毕竟Backbone我更想看看MVC三个模块之间的数据是怎样的。收拾一下，准备开始实例看数据。</p>
+<p>就这样吧。此篇暂结。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/04/16/backbone-2/" rel="prev" title="backbone初探(二)-辅助函数">
+      <i class="fa fa-chevron-left"></i> backbone初探(二)-辅助函数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/04/17/backbone-4/" rel="next" title="backbone初探(四)-数据流">
+      backbone初探(四)-数据流 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Structure"><span class="nav-number">1.</span> <span class="nav-text">Structure</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Backbone%E7%9A%84%E6%95%B4%E4%BD%93Structure"><span class="nav-number">1.1.</span> <span class="nav-text">Backbone的整体Structure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Event%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">Event结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Model%E7%BB%93%E6%9E%84"><span class="nav-number">1.3.</span> <span class="nav-text">Model结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Collection%E7%BB%93%E6%9E%84"><span class="nav-number">1.4.</span> <span class="nav-text">Collection结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#reset"><span class="nav-number">1.4.1.</span> <span class="nav-text">_reset()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reset-1"><span class="nav-number">1.4.2.</span> <span class="nav-text">reset</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View"><span class="nav-number">1.5.</span> <span class="nav-text">View</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#History-amp-amp-Route"><span class="nav-number">1.6.</span> <span class="nav-text">History&amp;&amp;Route</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

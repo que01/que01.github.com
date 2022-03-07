@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这里是react笔记之Transaction分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React Transaction">
+<meta property="og:url" content="http://www.que01.top/2019/06/15/react-Transaction/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这里是react笔记之Transaction分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-06-15T03:03:30.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.655Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/06/15/react-Transaction/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React Transaction | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/06/15/react-Transaction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React Transaction
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-15 11:03:30" itemprop="dateCreated datePublished" datetime="2019-06-15T11:03:30+08:00">2019-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/06/15/react-Transaction/" class="post-meta-item leancloud_visitors" data-flag-title="React Transaction" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这里是react笔记之Transaction分析。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>事务机制在react中是一个非常重要的概念，它可以将诸多方法调用包裹起来集中执行。事务这个概念在数据库操作过程中非常常见，事务具有原子性这个特性，简单说，一个事务中若干任务是作为一个整体执行，要么全部执行成功，要么其中一个失败导致全部失败然后撤回修改。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * `Transaction` creates a black box that is able to wrap any method such that</span></span><br><span class="line"><span class="comment"> * certain invariants are maintained before and after the method is invoked</span></span><br><span class="line"><span class="comment"> * (Even if an exception is thrown while invoking the wrapped method). Whoever</span></span><br><span class="line"><span class="comment"> * instantiates a transaction can provide enforcers of the invariants at</span></span><br><span class="line"><span class="comment"> * creation time. The `Transaction` class itself will supply one additional</span></span><br><span class="line"><span class="comment"> * automatic invariant for you - the invariant that any transaction instance</span></span><br><span class="line"><span class="comment"> * should not be run while it is already being run. You would typically create a</span></span><br><span class="line"><span class="comment"> * single instance of a `Transaction` for reuse multiple times, that potentially</span></span><br><span class="line"><span class="comment"> * is used to wrap several different methods. Wrappers are extremely simple -</span></span><br><span class="line"><span class="comment"> * they only require implementing two methods.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * invariant词汇的理解释义参考: http://wulfric.me/2017/11/what-is-invariant/</span></span><br><span class="line"><span class="comment"> * `Transaction`创建一个黑盒，这样他可以包裹任何方法，以达到在执行这个方法前后维护某些确定的约束(</span></span><br><span class="line"><span class="comment"> * 即使这个方法抛出了错误)的目标。无论如何，实例化一个事务可以在在创建时提供约束的实施方(需求方)。</span></span><br><span class="line"><span class="comment"> * Transaction Class本身提供额外的绝对约束条件给你-任何事务实例的不变量不应该在它已经运行时运行。</span></span><br><span class="line"><span class="comment"> * 你一般会创建一个Transaction单例来重用多次，它可能被用来包装不同的方法。Wrappers是非常简单的,</span></span><br><span class="line"><span class="comment"> * 它仅仅要求继承initialize&amp;&amp;close这两个方法。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"> * Use cases:</span></span><br><span class="line"><span class="comment"> * - Preserving the input selection ranges before/after reconciliation.</span></span><br><span class="line"><span class="comment"> *   Restoring selection even in the event of an unexpected error.</span></span><br><span class="line"><span class="comment"> * - Deactivating events while rearranging the DOM, preventing blurs/focuses,</span></span><br><span class="line"><span class="comment"> *   while guaranteeing that afterwards, the event system is reactivated.</span></span><br><span class="line"><span class="comment"> * - Flushing a queue of collected DOM mutations to the main UI thread after a</span></span><br><span class="line"><span class="comment"> *   reconciliation takes place in a worker thread.</span></span><br><span class="line"><span class="comment"> * - Invoking any collected `componentDidUpdate` callbacks after rendering new</span></span><br><span class="line"><span class="comment"> *   content.</span></span><br><span class="line"><span class="comment"> * - (Future use case): Wrapping particular flushes of the `ReactWorker` queue</span></span><br><span class="line"><span class="comment"> *   to preserve the `scrollTop` (an automatic scroll aware DOM).</span></span><br><span class="line"><span class="comment"> * - (Future use case): Layout calculations before and after DOM updates.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 用例:</span></span><br><span class="line"><span class="comment"> * - 在执行前后保存输入框选择范围(即鼠标选中一个文字高亮区块)，即使过程中出错也可以返回这个选择范围</span></span><br><span class="line"><span class="comment"> * - 页面重绘前解除事件绑定,防止鼠标焦点进出，当完成了页面重绘恢复事件绑定</span></span><br><span class="line"><span class="comment"> * - 在工作线程中进行协调后，将收集的DOM突变队列刷新到主UI线程(批量更新)。</span></span><br><span class="line"><span class="comment"> * - render新的内容后 批量执行componentDidUpdate中收集到的回调</span></span><br><span class="line"><span class="comment"> * - (未来用例) 保留scrollTop</span></span><br><span class="line"><span class="comment"> * - (未来用例) 布局计算</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<p>在React事务这里的注释里面对使用场景已经有相对详细的描述了。所以后面主要是看看事务的实例和使用。</p>
+<h1 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h1><p>这里暂时跳过服务端和ReactNative端的调用。主要的使用在以下三个文件中。</p>
+<h2 id="ReactReconcileTransaction-js"><a href="#ReactReconcileTransaction-js" class="headerlink" title="ReactReconcileTransaction.js"></a>ReactReconcileTransaction.js</h2><p>调度模块这里使用到了事务，注册了三个事务。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> SELECTION_RESTORATION = &#123;</span><br><span class="line">  initialize: ReactInputSelection.getSelectionInformation,</span><br><span class="line">  close: ReactInputSelection.restoreSelection,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> EVENT_SUPPRESSION = &#123;</span><br><span class="line">  initialize: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> currentlyEnabled = ReactBrowserEventEmitter.isEnabled();</span><br><span class="line">    ReactBrowserEventEmitter.setEnabled(<span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">return</span> currentlyEnabled;</span><br><span class="line">  &#125;,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params">previouslyEnabled</span>) </span>&#123;</span><br><span class="line">    ReactBrowserEventEmitter.setEnabled(previouslyEnabled);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> ON_DOM_READY_QUEUEING = &#123;</span><br><span class="line">  initialize: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.reactMountReady.reset();</span><br><span class="line">  &#125;,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.reactMountReady.notifyAll();</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>SELECTION_RESTORATION这个事务还是比较好理解，用来保存input的选择范围&amp;刷新后重新选中这个返回。</p>
+<p>这里不妨通过这个来看看这个过程中事务的数据流是如何运行的，尤其是,这个数据保存在哪儿，又如何恢复的。</p>
+<p>这里需要对事务逻辑中等初始化和结束事务逻辑进行分析。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">initializeAll: <span class="function"><span class="keyword">function</span> (<span class="params">startIndex</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> transactionWrappers = <span class="built_in">this</span>.transactionWrappers;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = startIndex; i &lt; transactionWrappers.length; i++) &#123;</span><br><span class="line">    <span class="keyword">var</span> wrapper = transactionWrappers[i];</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="built_in">this</span>.wrapperInitData[i] = OBSERVED_ERROR;</span><br><span class="line">      <span class="built_in">this</span>.wrapperInitData[i] = wrapper.initialize ? wrapper.initialize.call(<span class="built_in">this</span>) : <span class="literal">null</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">this</span>.wrapperInitData[i] === OBSERVED_ERROR) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="built_in">this</span>.initializeAll(i + <span class="number">1</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (err) &#123;&#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br><span class="line">closeAll: <span class="function"><span class="keyword">function</span> (<span class="params">startIndex</span>) </span>&#123;</span><br><span class="line">    !<span class="built_in">this</span>.isInTransaction() ? <span class="string">&quot;development&quot;</span> !== <span class="string">&#x27;production&#x27;</span> ? invariant(<span class="literal">false</span>, <span class="string">&#x27;Transaction.closeAll(): Cannot close transaction when none are open.&#x27;</span>) : _prodInvariant(<span class="string">&#x27;28&#x27;</span>) : <span class="keyword">void</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">var</span> transactionWrappers = <span class="built_in">this</span>.transactionWrappers;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = startIndex; i &lt; transactionWrappers.length; i++) &#123;</span><br><span class="line">      <span class="keyword">var</span> wrapper = transactionWrappers[i];</span><br><span class="line">      <span class="keyword">var</span> initData = <span class="built_in">this</span>.wrapperInitData[i];</span><br><span class="line">      <span class="keyword">var</span> errorThrown;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        errorThrown = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (initData !== OBSERVED_ERROR &amp;&amp; wrapper.close) &#123;</span><br><span class="line">          wrapper.close.call(<span class="built_in">this</span>, initData);</span><br><span class="line">        &#125;</span><br><span class="line">        errorThrown = <span class="literal">false</span>;</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (errorThrown) &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.closeAll(i + <span class="number">1</span>);</span><br><span class="line">          &#125; <span class="keyword">catch</span> (e) &#123;&#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">this</span>.wrapperInitData.length = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，当事务开始初始化时候会将数据保存在this.wrapperInitData中，这是一个数组，数据的索引对应着事务索引，当事务结束时候将数据从this.wrapperInitData拿到并还原，一切完毕之后执行<code>this.wrapperInitData.length = 0</code>将其数据清空。</p>
+<p>事务简况:</p>
+<table>
+<thead>
+<tr>
+<th>事务名称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SELECTION_RESTORATION</td>
+<td>input textarea选择状态保存和恢复</td>
+</tr>
+<tr>
+<td>EVENT_SUPPRESSION</td>
+<td>DOM上事件的卸载和重新激活</td>
+</tr>
+<tr>
+<td>ON_DOM_READY_QUEUEING</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="ReactDefaultBatchingStrategy-js"><a href="#ReactDefaultBatchingStrategy-js" class="headerlink" title="ReactDefaultBatchingStrategy.js"></a>ReactDefaultBatchingStrategy.js</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> RESET_BATCHED_UPDATES = &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    ReactDefaultBatchingStrategy.isBatchingUpdates = <span class="literal">false</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> FLUSH_BATCHED_UPDATES = &#123;</span><br><span class="line">  initialize: emptyFunction,</span><br><span class="line">  close: ReactUpdates.flushBatchedUpdates.bind(ReactUpdates),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>事务名称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RESET_BATCHED_UPDATES</td>
+<td>仅在事务结束后将isBatchingUpdates重置为false</td>
+</tr>
+<tr>
+<td>FLUSH_BATCHED_UPDATES</td>
+<td>批量更新标记的dirtyComponents数组</td>
+</tr>
+</tbody></table>
+<h2 id="ReactUpdates-js"><a href="#ReactUpdates-js" class="headerlink" title="ReactUpdates.js"></a>ReactUpdates.js</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> NESTED_UPDATES = &#123;</span><br><span class="line">  initialize: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.dirtyComponentsLength = dirtyComponents.length;</span><br><span class="line">  &#125;,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">this</span>.dirtyComponentsLength !== dirtyComponents.length) &#123;</span><br><span class="line">      dirtyComponents.splice(<span class="number">0</span>, <span class="built_in">this</span>.dirtyComponentsLength);</span><br><span class="line">      flushBatchedUpdates();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      dirtyComponents.length = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> UPDATE_QUEUEING = &#123;</span><br><span class="line">  initialize: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.callbackQueue.reset();</span><br><span class="line">  &#125;,</span><br><span class="line">  close: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">this</span>.callbackQueue.notifyAll();</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>事务名称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NESTED_UPDATES</td>
+<td>标记事务开始时候的dirtyComponents并在结束时候对其进行更新，并从中删除更新的dirtyComponents元素</td>
+</tr>
+<tr>
+<td>UPDATE_QUEUEING</td>
+<td></td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/15/react-ReactCompositeComponent/" rel="prev" title="ReactCompositeComponent">
+      <i class="fa fa-chevron-left"></i> ReactCompositeComponent
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/15/react-redux-saga/" rel="next" title="react-redux-saga">
+      react-redux-saga <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.</span> <span class="nav-text">使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactReconcileTransaction-js"><span class="nav-number">2.1.</span> <span class="nav-text">ReactReconcileTransaction.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactDefaultBatchingStrategy-js"><span class="nav-number">2.2.</span> <span class="nav-text">ReactDefaultBatchingStrategy.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReactUpdates-js"><span class="nav-number">2.3.</span> <span class="nav-text">ReactUpdates.js</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

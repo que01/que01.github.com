@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这里是Update篇的commit phase环节的分析。我们之前对renderPhase有分析，主要分析了setState和简单useStateHook情况下的renderPhase。这里我们继续看看commitPhase下的流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-v16-Update-commitPhase">
+<meta property="og:url" content="http://www.que01.top/2019/08/07/react-v16-Update-commitPhase/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这里是Update篇的commit phase环节的分析。我们之前对renderPhase有分析，主要分析了setState和简单useStateHook情况下的renderPhase。这里我们继续看看commitPhase下的流程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-07T09:23:35.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.679Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="React">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/08/07/react-v16-Update-commitPhase/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-v16-Update-commitPhase | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/08/07/react-v16-Update-commitPhase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-v16-Update-commitPhase
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-07 17:23:35" itemprop="dateCreated datePublished" datetime="2019-08-07T17:23:35+08:00">2019-08-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/08/07/react-v16-Update-commitPhase/" class="post-meta-item leancloud_visitors" data-flag-title="react-v16-Update-commitPhase" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这里是Update篇的commit phase环节的分析。我们之前对renderPhase有分析，主要分析了setState和简单useStateHook情况下的renderPhase。这里我们继续看看commitPhase下的流程。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>我们之前render篇，我们有比较简略的对commitPhase环节进行分析。这里在它的基础上对Update的commitPhase进行分析。它们实际上是同一个环节。</p>
+<p>但是这里随着对Update环节的认知深入，所以这里commit环节也可以进一步深入了解。</p>
+<p>总之，这里是承了之前的render篇上一篇update篇来对commit进行深入的分析。他不仅仅像是标题提到的Update环节下的commit，实质上也是render环节下的commit。</p>
+<p>这里会牵扯到Diff算法。我们也一并看看，不再像前面那边简单略过。</p>
+<h1 id="调用栈确认"><a href="#调用栈确认" class="headerlink" title="调用栈确认"></a>调用栈确认</h1><p>之前提到update和render里面的commit环节是同一个。但是这里依然要做一个确认。</p>
+<ul>
+<li><p>这里首先当然是Render环节下的调用栈。<br>回顾一下render篇，performWorkOnRoot函数里面renderRoot执行之后会执行completeRoot。这里调用栈就是之前提到的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">completeRoot</span><br><span class="line">-&gt; commitRoot () &#123;</span><br><span class="line">    commitBeforeMutationLifecycles()</span><br><span class="line">    commitAllHostEffects();</span><br><span class="line">    root.current = finishedWork;</span><br><span class="line">    commitAllLifeCycles();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Update之setState部分</p>
+<p>这里在之前「略过的Event」小结里面提到了<code>performWorkOnRoot -&gt; renderRoot &amp; completeRoot</code>。所以整体和前面一致</p>
+</li>
+<li><p>Update之useState部分</p>
+<p>这里在文章最尾部的「commit」小结里面有明显分析。最终也是completeRoot函数。</p>
+</li>
+</ul>
+<p>所以这里可以明确一下，它们都commitPhase都是走的completeRoot。</p>
+<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><p>实际上，必须提前说一下，completeRoot和renderRoot在workLoop过程中，往往是二选一的调用。如果root.finishedWork为空执行renderRoot，否则执行completeRoot。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">completeRoot</span><br><span class="line">-&gt; commitRoot () &#123;</span><br><span class="line">    commitBeforeMutationLifecycles()</span><br><span class="line">    commitAllHostEffects();</span><br><span class="line">    root.current = finishedWork;</span><br><span class="line">    commitAllLifeCycles();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="completeRoot"><a href="#completeRoot" class="headerlink" title="completeRoot"></a>completeRoot</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">completeRoot</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  root: FiberRoot,</span></span></span><br><span class="line"><span class="function"><span class="params">  finishedWork: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  expirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 检查是否存在与此到期时间匹配的批次。</span></span><br><span class="line">  <span class="keyword">const</span> firstBatch = root.firstBatch;</span><br><span class="line">  <span class="keyword">if</span> (firstBatch !== <span class="literal">null</span> &amp;&amp; firstBatch._expirationTime &gt;= expirationTime) &#123;</span><br><span class="line">    <span class="keyword">if</span> (completedBatches === <span class="literal">null</span>) &#123;</span><br><span class="line">      completedBatches = [firstBatch];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      completedBatches.push(firstBatch);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (firstBatch._defer) &#123;</span><br><span class="line">      <span class="comment">// 这个root节点被阻止进入commitPhase. 取消它的调度直到收到其他更新。</span></span><br><span class="line">      root.finishedWork = finishedWork;</span><br><span class="line">      root.expirationTime = NoWork;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Commit the root.</span></span><br><span class="line">  <span class="comment">// 清空finishedWork 只有finishedWork!==null才会执行进这个函数</span></span><br><span class="line">  <span class="comment">// 当然 这里finishedWork作为参数传进来了 清不清空都不影响我们调用</span></span><br><span class="line">  root.finishedWork = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查这是否是一个嵌套的更新(有一个同步的更新在commit阶段被纳入更新计划)</span></span><br><span class="line">  <span class="keyword">if</span> (root === lastCommittedRootDuringThisBatch) &#123;</span><br><span class="line">    <span class="comment">// 如果新的root和旧的root相同。这事一个嵌套更新。为了防止陷入死循环。</span></span><br><span class="line">    <span class="comment">// 对nestedUpdateCount变量进行累加</span></span><br><span class="line">    nestedUpdateCount++;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 切换root时候 对nestedUpdateCount变量清零</span></span><br><span class="line">    lastCommittedRootDuringThisBatch = root;</span><br><span class="line">    nestedUpdateCount = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  runWithPriority(ImmediatePriority, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    commitRoot(root, finishedWork);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里细节不算多。</p>
+<p>completedBatches作为<code>Array&lt;Batch&gt;</code>数组。它主要是保存<code>root.firstBatch</code>，如果batch有阻止，这个保存也依然会进入数组保存起来。当render完毕，finishRendering函数后面会清空它的同时，遍历Batch上的_onComplete函数并执行。</p>
+<p>lastCommittedRootDuringThisBatch变量用来缓存每次执行completeRoot传入的root。以便后面的scheduleWork出错捕获。</p>
+<blockquote>
+<p>Tips: </p>
+<ul>
+<li><p>lastCommittedRootDuringThisBatch会被finishRendering函数清空为null。</p>
+</li>
+<li><p>另外scheduleWork这里说到捕获，是因为在ReactNative中可能存在多个fiberRoot，而ReactDom中只有一个。</p>
+</li>
+</ul>
+</blockquote>
+<p>nestedUpdateCount变量用来标记相同root更新次数，如果超出50次，那么很有可能就是出现了代码错误，导致组件无限更新了——这个在scheduleWork函数中，当然，只是警告，同时它还是会将其清空为0。</p>
+<p>接下来是<code>runWithPriority</code>函数这块，这块是其核心中的核心。看看源代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unstable_runWithPriority</span>(<span class="params">priorityLevel, eventHandler</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (priorityLevel) &#123;</span><br><span class="line">    <span class="keyword">case</span> ImmediatePriority:</span><br><span class="line">    <span class="keyword">case</span> UserBlockingPriority:</span><br><span class="line">    <span class="keyword">case</span> NormalPriority:</span><br><span class="line">    <span class="keyword">case</span> LowPriority:</span><br><span class="line">    <span class="keyword">case</span> IdlePriority:</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      priorityLevel = NormalPriority;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> previousPriorityLevel = currentPriorityLevel;</span><br><span class="line">  <span class="keyword">var</span> previousEventStartTime = currentEventStartTime;</span><br><span class="line">  currentPriorityLevel = priorityLevel;</span><br><span class="line">  currentEventStartTime = getCurrentTime();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> eventHandler();</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    currentPriorityLevel = previousPriorityLevel;</span><br><span class="line">    currentEventStartTime = previousEventStartTime;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Before exiting, flush all the immediate work that was scheduled.</span></span><br><span class="line">    <span class="comment">// 退出之前，将所有规划好的立即执行任务执行完毕。</span></span><br><span class="line">    flushImmediateWork();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数主要是设定currentPriorityLevel &amp;&amp; currentEventStartTime，然后执行eventHandler()，完毕之后将这两个值还原。并执行<code>flushImmediateWork()</code>。</p>
+<p>在这里<code>eventHandler === () =&gt; (commitRoot(root, finishedWork))</code>。我们先继续这个路线。</p>
+<h2 id="commitRoot"><a href="#commitRoot" class="headerlink" title="commitRoot"></a>commitRoot</h2><p>这里代码有点长，做一些精简。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitRoot</span>(<span class="params">root: FiberRoot, finishedWork: Fiber</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  isWorking = <span class="literal">true</span>;</span><br><span class="line">  isCommitting = <span class="literal">true</span>;</span><br><span class="line">  startCommitTimer();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 缓存并清空root.pendingCommitExpirationTime属性</span></span><br><span class="line">  <span class="keyword">const</span> committedExpirationTime = root.pendingCommitExpirationTime;</span><br><span class="line">  root.pendingCommitExpirationTime = NoWork;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 更新优先级</span></span><br><span class="line">  <span class="comment">// 更新待处理pending优先级以考虑我们即将提交的工作。 </span></span><br><span class="line">  <span class="comment">// 这需要在调用生命周期之前进行，因为他们可能会安排其他更新。</span></span><br><span class="line">  <span class="keyword">const</span> updateExpirationTimeBeforeCommit = finishedWork.expirationTime;</span><br><span class="line">  <span class="keyword">const</span> childExpirationTimeBeforeCommit = finishedWork.childExpirationTime;</span><br><span class="line">  <span class="comment">// childExpirationTime 和 expirationTime对比</span></span><br><span class="line">  <span class="keyword">const</span> earliestRemainingTimeBeforeCommit =</span><br><span class="line">    childExpirationTimeBeforeCommit &gt; updateExpirationTimeBeforeCommit</span><br><span class="line">      ? childExpirationTimeBeforeCommit</span><br><span class="line">      : updateExpirationTimeBeforeCommit;</span><br><span class="line">  markCommittedPriorityLevels(root, earliestRemainingTimeBeforeCommit);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> prevInteractions: <span class="built_in">Set</span>&lt;Interaction&gt; = (<span class="literal">null</span>: any);</span><br><span class="line">  <span class="keyword">if</span> (enableSchedulerTracing) &#123;<span class="comment">// 略 &#125;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Reset this to null before calling lifecycles</span></span><br><span class="line">  <span class="comment">// 重置ReactCurrentOwner.current防止生命周期函数被影响</span></span><br><span class="line">  ReactCurrentOwner.current = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 根据effectTag 处理Effect List链表</span></span><br><span class="line">  <span class="keyword">let</span> firstEffect;</span><br><span class="line">  <span class="keyword">if</span> (finishedWork.effectTag &gt; PerformedWork) &#123;</span><br><span class="line">    <span class="keyword">if</span> (finishedWork.lastEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">      finishedWork.lastEffect.nextEffect = finishedWork;</span><br><span class="line">      firstEffect = finishedWork.firstEffect;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      firstEffect = finishedWork;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// There is no effect on the root.</span></span><br><span class="line">    firstEffect = finishedWork.firstEffect;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 预备渲染新的节点。此时禁止事件的触发，统计后面需要autofocus的节点</span></span><br><span class="line">  prepareForCommit(root.containerInfo);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Invoke instances of getSnapshotBeforeUpdate before mutation.</span></span><br><span class="line">  <span class="comment">// 遍历执行实例中的getSnapshotBeforeUpdate</span></span><br><span class="line">  nextEffect = firstEffect;</span><br><span class="line">  startCommitSnapshotEffectsTimer();</span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> didError = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> error;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123;&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        commitBeforeMutationLifecycles();</span><br><span class="line">      &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        didError = <span class="literal">true</span>;</span><br><span class="line">        error = e;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (didError) &#123; <span class="comment">/* 错误捕获并将指针移动到下一个Effect */</span> &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  stopCommitSnapshotEffectsTimer();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (enableProfilerTimer) &#123;<span class="comment">// 略&#125;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// commit tree中所有的side-effects。这里分两个步骤</span></span><br><span class="line">  <span class="comment">// 这里是第一个步骤:执行所有host的插入、更新、删除和ref卸载(注意后面第二个步骤)</span></span><br><span class="line">  nextEffect = firstEffect;</span><br><span class="line">  startCommitHostEffectsTimer();</span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> didError = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> error;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123; &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        commitAllHostEffects();</span><br><span class="line">      &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        didError = <span class="literal">true</span>;</span><br><span class="line">        error = e;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (didError) &#123; <span class="comment">/* 错误捕获并将指针移动到下一个Effect */</span> &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  stopCommitHostEffectsTimer();</span><br><span class="line">  <span class="comment">// 在已经将真实的节点挂载后触发</span></span><br><span class="line">  resetAfterCommit(root.containerInfo);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 此时work-in-progress tree 就是 current tree。</span></span><br><span class="line">  <span class="comment">// 这必须发生在遍历执行side-effects第一个步骤之后，这样current树仍然是the previous tree</span></span><br><span class="line">  <span class="comment">// componentWillUnmount(resetAfterCommit)此时执行</span></span><br><span class="line">  <span class="comment">// 但是又必须发生在遍历执行side-effects第二个步骤之前，这样finishedWork树是current树 </span></span><br><span class="line">  <span class="comment">// 方便执行componentDidMount/Update(commitAllLifeCycles)</span></span><br><span class="line">  root.current = finishedWork;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 在commit side-effects第二步骤，我们执行所有声明周期函数和ref回调</span></span><br><span class="line">  <span class="comment">// 生命周期作为单独的阶段触发，如此整个tree上所有的替换、更新、删除都将被调用</span></span><br><span class="line">  <span class="comment">// 在这个阶段，所有的renderer-specific initial effects也会被触发</span></span><br><span class="line">  nextEffect = firstEffect;</span><br><span class="line">  startCommitLifeCyclesTimer();</span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> didError = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> error;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123; &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        commitAllLifeCycles(root, committedExpirationTime);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        didError = <span class="literal">true</span>;</span><br><span class="line">        error = e;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (didError) &#123; <span class="comment">/* 错误捕获并将指针移动到下一个Effect */</span> &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (firstEffect !== <span class="literal">null</span> &amp;&amp; rootWithPendingPassiveEffects !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// This commit included a passive effect. These do not need to fire until</span></span><br><span class="line">    <span class="comment">// after the next paint. Schedule an callback to fire them in an async</span></span><br><span class="line">    <span class="comment">// event. To ensure serial execution, the callback will be flushed early if</span></span><br><span class="line">    <span class="comment">// we enter rootWithPendingPassiveEffects commit phase before then.</span></span><br><span class="line">    <span class="keyword">let</span> callback = commitPassiveEffects.bind(<span class="literal">null</span>, root, firstEffect);</span><br><span class="line">    <span class="keyword">if</span> (enableSchedulerTracing) &#123;</span><br><span class="line">      <span class="comment">// <span class="doctag">TODO:</span> Avoid this extra callback by mutating the tracing ref directly,</span></span><br><span class="line">      <span class="comment">// like we do at the beginning of commitRoot. I&#x27;ve opted not to do that</span></span><br><span class="line">      <span class="comment">// here because that code is still in flux.</span></span><br><span class="line">      callback = Scheduler_tracing_wrap(callback);</span><br><span class="line">    &#125;</span><br><span class="line">    passiveEffectCallbackHandle = runWithPriority(NormalPriority, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> schedulePassiveEffects(callback);</span><br><span class="line">    &#125;);</span><br><span class="line">    passiveEffectCallback = callback;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  isCommitting = <span class="literal">false</span>;</span><br><span class="line">  isWorking = <span class="literal">false</span>;</span><br><span class="line">  stopCommitLifeCyclesTimer();</span><br><span class="line">  stopCommitTimer();</span><br><span class="line">  onCommitRoot(finishedWork.stateNode);</span><br><span class="line">  <span class="keyword">if</span> (__DEV__ &amp;&amp; ReactFiberInstrumentation.debugTool) &#123; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> updateExpirationTimeAfterCommit = finishedWork.expirationTime;</span><br><span class="line">  <span class="keyword">const</span> childExpirationTimeAfterCommit = finishedWork.childExpirationTime;</span><br><span class="line">  <span class="keyword">const</span> earliestRemainingTimeAfterCommit =</span><br><span class="line">    childExpirationTimeAfterCommit &gt; updateExpirationTimeAfterCommit</span><br><span class="line">      ? childExpirationTimeAfterCommit</span><br><span class="line">      : updateExpirationTimeAfterCommit;</span><br><span class="line">  <span class="keyword">if</span> (earliestRemainingTimeAfterCommit === NoWork) &#123;</span><br><span class="line">    <span class="comment">// If there&#x27;s no remaining work, we can clear the set of already failed</span></span><br><span class="line">    <span class="comment">// error boundaries.</span></span><br><span class="line">    legacyErrorBoundariesThatAlreadyFailed = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  onCommit(root, earliestRemainingTimeAfterCommit);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (enableSchedulerTracing) &#123;</span><br><span class="line">    <span class="comment">// 开发工具追踪代码 这里可以不管</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里对宏观结构做一些总结, 细节一些的地方可以参见注释，为了方便理解根据自己理解给翻译为中文了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitRoot</span>(<span class="params">root: FiberRoot, finishedWork: Fiber</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1.  更新优先级 markCommittedPriorityLevels()</span></span><br><span class="line">    <span class="comment">// 2.  根据effectTag 处理Effect List链表</span></span><br><span class="line">	<span class="comment">// 3.  突变之前操作: commitBeforeMutationLifecycles-&gt;getSnapshotBeforeUpdate</span></span><br><span class="line">    <span class="comment">// 4.  执行side-effects 这里分两个步骤</span></span><br><span class="line">    <span class="comment">// 4.1 执行所有host的插入、更新、删除和ref卸载 commitAllHostEffects</span></span><br><span class="line">    <span class="comment">// 4.2 执行其他所有sideEffect commitAllLifeCycles</span></span><br><span class="line">    <span class="comment">// 5.  onCommitRoot() &amp; onCommit()</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="getSnapshotBeforeUpdate"><a href="#getSnapshotBeforeUpdate" class="headerlink" title="getSnapshotBeforeUpdate"></a>getSnapshotBeforeUpdate</h2><p>getSnapshotBeforeUpdate是新增的生命周期函数。它发生在componentWillUpdate、componentDidUpdate之前，它的触发时机是 React 进行修改前（通常是更新 DOM）的“瞬间”，它的返回值会作为第三个参数传入 <code>componentDidUpdate</code> 。这个值会被挂在<code>instance.__reactInternalSnapshotBeforeUpdate</code>上，当实例注销时候也会注销。</p>
+<p>它由commitBeforeMutationLifecycles函数引用。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitBeforeMutationLifecycles</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> effectTag = nextEffect.effectTag;</span><br><span class="line">    <span class="keyword">if</span> (effectTag &amp; Snapshot) &#123;</span><br><span class="line">      recordEffect();</span><br><span class="line">      <span class="keyword">const</span> current = nextEffect.alternate;</span><br><span class="line">      commitBeforeMutationLifeCycles(current, nextEffect);</span><br><span class="line">    &#125;</span><br><span class="line">    nextEffect = nextEffect.nextEffect;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitBeforeMutationLifeCycles</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  current: Fiber | <span class="literal">null</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  finishedWork: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (finishedWork.tag) &#123;</span><br><span class="line">    <span class="keyword">case</span> FunctionComponent:</span><br><span class="line">    <span class="keyword">case</span> ForwardRef:</span><br><span class="line">    <span class="keyword">case</span> SimpleMemoComponent: &#123;</span><br><span class="line">      commitHookEffectList(UnmountSnapshot, NoHookEffect, finishedWork);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> ClassComponent: &#123;</span><br><span class="line">      <span class="keyword">if</span> (finishedWork.effectTag &amp; Snapshot) &#123;</span><br><span class="line">        <span class="keyword">if</span> (current !== <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">const</span> prevProps = current.memoizedProps;</span><br><span class="line">          <span class="keyword">const</span> prevState = current.memoizedState;</span><br><span class="line">          startPhaseTimer(finishedWork, <span class="string">&#x27;getSnapshotBeforeUpdate&#x27;</span>);</span><br><span class="line">          <span class="keyword">const</span> instance = finishedWork.stateNode;</span><br><span class="line"></span><br><span class="line">          <span class="keyword">const</span> snapshot = instance.getSnapshotBeforeUpdate(</span><br><span class="line">            finishedWork.elementType === finishedWork.type</span><br><span class="line">              ? prevProps</span><br><span class="line">              : resolveDefaultProps(finishedWork.type, prevProps),</span><br><span class="line">            prevState,</span><br><span class="line">          );</span><br><span class="line">          instance.__reactInternalSnapshotBeforeUpdate = snapshot;</span><br><span class="line">          stopPhaseTimer();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">// 略</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里针对FunctionComponent有个单独的分支。主要操作是执行effect.create() || effect.destroy();代码这里逻辑是进行destroy()。更全面点讲，这里遍历finishedWork.updateQueue链表，执行了上面的每个effect.destroy()。</p>
+</blockquote>
+<h2 id="commitAllHostEffects"><a href="#commitAllHostEffects" class="headerlink" title="commitAllHostEffects"></a>commitAllHostEffects</h2><p>这个函数名称真的足够简练，没有一个字是多余的。。。</p>
+<p>All这里提现在对effect的遍历上，Host则提现在对HostComponent的处理上。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitAllHostEffects</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    recordEffect();</span><br><span class="line">    <span class="keyword">const</span> effectTag = nextEffect.effectTag;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (effectTag &amp; ContentReset) &#123;</span><br><span class="line">      commitResetTextContent(nextEffect); <span class="comment">// 把节点的文字内容设为空字符串</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (effectTag &amp; Ref) &#123;</span><br><span class="line">      <span class="keyword">const</span> current = nextEffect.alternate;</span><br><span class="line">      <span class="keyword">if</span> (current !== <span class="literal">null</span>) &#123;</span><br><span class="line">        commitDetachRef(current); <span class="comment">// 清空ref属性 后面要重新设置</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里swtich/case逻辑只关心替换、更新、删除逻辑。为了避免其他可能值，这里就没有写次要effect值</span></span><br><span class="line">    <span class="keyword">let</span> primaryEffectTag = effectTag &amp; (Placement | Update | Deletion);</span><br><span class="line">    <span class="keyword">switch</span> (primaryEffectTag) &#123;</span><br><span class="line">      <span class="keyword">case</span> Placement: &#123;</span><br><span class="line">        commitPlacement(nextEffect);</span><br><span class="line">        <span class="comment">// 清除效果标记中的“placement”，以便在调用componentDidMount之类的生命周期之前</span></span><br><span class="line">        <span class="comment">// 我们知道这是插入的</span></span><br><span class="line">        nextEffect.effectTag &amp;= ~Placement;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">case</span> PlacementAndUpdate: &#123;</span><br><span class="line">        commitPlacement(nextEffect);</span><br><span class="line">        nextEffect.effectTag &amp;= ~Placement;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Update</span></span><br><span class="line">        <span class="keyword">const</span> current = nextEffect.alternate;</span><br><span class="line">        commitWork(current, nextEffect);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">case</span> Update: &#123;</span><br><span class="line">        <span class="keyword">const</span> current = nextEffect.alternate;</span><br><span class="line">        commitWork(current, nextEffect);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">case</span> Deletion: &#123;</span><br><span class="line">        commitDeletion(nextEffect);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    nextEffect = nextEffect.nextEffect;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里有4个case，但是实质上只有3种操作，这三种操作分别是替换、更新、删除。多出来的PlacementAndUpdate实质上是替换+更新的组合。</p>
+<p>另外，注意这里的遍历，它遍历了所有的nextEffect。</p>
+<p>再次，nextEffect这个链表的构建，在completeUnitOfWork函数里面。</p>
+<h3 id="commitPlacement-替换"><a href="#commitPlacement-替换" class="headerlink" title="commitPlacement - 替换"></a>commitPlacement - 替换</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitPlacement</span>(<span class="params">finishedWork: Fiber</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!supportsMutation) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 根据fiber.return向上爬，直到找到一个HostComponent|HostRoot|HostPortal返回</span></span><br><span class="line">  <span class="keyword">const</span> parentFiber = getHostParentFiber(finishedWork);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Note: 必须同时被更新</span></span><br><span class="line">  <span class="keyword">let</span> parent;</span><br><span class="line">  <span class="keyword">let</span> isContainer;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (parentFiber.tag) &#123;</span><br><span class="line">    <span class="keyword">case</span> HostComponent: <span class="comment">// 对应v15 ReactDomComponent</span></span><br><span class="line">      parent = parentFiber.stateNode;</span><br><span class="line">      isContainer = <span class="literal">false</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> HostRoot:		<span class="comment">// fiberRoot fiber链表第一个元素</span></span><br><span class="line">      parent = parentFiber.stateNode.containerInfo;</span><br><span class="line">      isContainer = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> HostPortal: 	<span class="comment">// Portal</span></span><br><span class="line">      parent = parentFiber.stateNode.containerInfo;</span><br><span class="line">      isContainer = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (parentFiber.effectTag &amp; ContentReset) &#123;</span><br><span class="line">     <span class="comment">// 在做插入操作前 清空parnet里面text文本</span></span><br><span class="line">    resetTextContent(parent);</span><br><span class="line">    <span class="comment">// Clear ContentReset from the effect tag</span></span><br><span class="line">    parentFiber.effectTag &amp;= ~ContentReset;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> before = getHostSibling(finishedWork);</span><br><span class="line">  <span class="comment">// 我们只有顶部的fiber被插入了。我们需要递归下级节点以找到终端节点</span></span><br><span class="line">  <span class="keyword">let</span> node: Fiber = finishedWork;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (node.tag === HostComponent || node.tag === HostText) &#123;</span><br><span class="line">      <span class="comment">// 如果它有nextSibling 那么底层使用insertBefore插入节点</span></span><br><span class="line">      <span class="keyword">if</span> (before) &#123;</span><br><span class="line">        <span class="keyword">if</span> (isContainer) &#123;</span><br><span class="line">          insertInContainerBefore(parent, node.stateNode, before);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          insertBefore(parent, node.stateNode, before);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">// 否则底层使用appendChild追加到尾部</span></span><br><span class="line">        <span class="keyword">if</span> (isContainer) &#123;</span><br><span class="line">          appendChildToContainer(parent, node.stateNode);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          appendChild(parent, node.stateNode);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node.tag === HostPortal) &#123;</span><br><span class="line">      <span class="comment">// 如果操作的是一个Portal组件 我们就不遍历它的子节点 直接对其本身进行插入操作</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node.child !== <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// 如果child节点不为空 那么将firstChild设为node重新遍历</span></span><br><span class="line">      node.child.return = node;</span><br><span class="line">      node = node.child;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (node === finishedWork) &#123; <span class="comment">// 此时没有变化 不做操作</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (node.sibling === <span class="literal">null</span>) &#123; <span class="comment">// 当前节点没有nextSibling了 返回上级节点</span></span><br><span class="line">      <span class="keyword">if</span> (node.return === <span class="literal">null</span> || node.return === finishedWork) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      node = node.return;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 开始遍历上级节点的sibing</span></span><br><span class="line">    node.sibling.return = node.return;</span><br><span class="line">    node = node.sibling;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>位与运算符前端不太好理解，不过这里也就懒得说里面的过程。<code>ContentReset = 0b000000010000 =16</code>。当运行<code>parentFiber.effectTag &amp; ContentReset</code>时候，明显可见的规律是，当effectTag除以ContentReset结果取整进行Math.floor操作，如果这个值是奇数，它的值是16，否则为0。</p>
+<p>而parentFiber.effectTag &amp;= <del>ContentReset在这里基本等同于<code>parentFiber.effectTag -= ContentReset</code>。不过它和减法还是有很大区别。它对0</del>15不会执行减法——但是0~15显然进不来这个分支。</p>
+<p>其他的不妨看看注释，这里主线是对finishWork:fiber进行遍历，核心操作是执行insertBefore或者appendChild操作。</p>
+<h3 id="commitWork-更新"><a href="#commitWork-更新" class="headerlink" title="commitWork - 更新"></a>commitWork - 更新</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitWork</span>(<span class="params">current: Fiber | <span class="literal">null</span>, finishedWork: Fiber</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!supportsMutation) &#123; <span class="comment">// 这里暂时不理解MemoComponent 略过它</span></span><br><span class="line">    <span class="keyword">switch</span> (finishedWork.tag) &#123;</span><br><span class="line">      <span class="keyword">case</span> FunctionComponent:</span><br><span class="line">      <span class="keyword">case</span> ForwardRef:</span><br><span class="line">      <span class="keyword">case</span> MemoComponent:</span><br><span class="line">      <span class="keyword">case</span> SimpleMemoComponent: &#123;</span><br><span class="line">        commitHookEffectList(UnmountMutation, MountMutation, finishedWork);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    commitContainer(finishedWork);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (finishedWork.tag) &#123;</span><br><span class="line">    <span class="keyword">case</span> FunctionComponent:</span><br><span class="line">    <span class="keyword">case</span> ForwardRef:</span><br><span class="line">    <span class="keyword">case</span> MemoComponent:</span><br><span class="line">    <span class="keyword">case</span> SimpleMemoComponent: &#123; <span class="comment">// 这里暂时不理解MemoComponent 略过它</span></span><br><span class="line">      commitHookEffectList(UnmountMutation, MountMutation, finishedWork);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> ClassComponent: &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostComponent: &#123;</span><br><span class="line">      <span class="keyword">const</span> instance: Instance = finishedWork.stateNode;</span><br><span class="line">      <span class="keyword">if</span> (instance != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// Commit the work prepared earlier.</span></span><br><span class="line">        <span class="keyword">const</span> newProps = finishedWork.memoizedProps;</span><br><span class="line">        <span class="comment">// For hydration we reuse the update path but we treat the oldProps</span></span><br><span class="line">        <span class="comment">// as the newProps. The updatePayload will contain the real change in</span></span><br><span class="line">        <span class="comment">// this case.</span></span><br><span class="line">        <span class="keyword">const</span> oldProps = current !== <span class="literal">null</span> ? current.memoizedProps : newProps;</span><br><span class="line">        <span class="keyword">const</span> type = finishedWork.type;</span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> Type the updateQueue to be specific to host components.</span></span><br><span class="line">        <span class="keyword">const</span> updatePayload: <span class="literal">null</span> | UpdatePayload = (finishedWork.updateQueue: any);</span><br><span class="line">        finishedWork.updateQueue = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (updatePayload !== <span class="literal">null</span>) &#123;</span><br><span class="line">          commitUpdate(</span><br><span class="line">            instance,</span><br><span class="line">            updatePayload,</span><br><span class="line">            type,</span><br><span class="line">            oldProps,</span><br><span class="line">            newProps,</span><br><span class="line">            finishedWork,</span><br><span class="line">          );</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostText: &#123;</span><br><span class="line">	  <span class="comment">// 更新文本 这里暂时略过</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostRoot: &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> Profiler: &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> SuspenseComponent: &#123;</span><br><span class="line">      <span class="comment">// 错误捕获 这里略</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> IncompleteClassComponent: &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span>: &#123; &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里加了若干注释，并对干扰代码进行了删除。可以看到，这里核心的处理分支是HostComponent，这也比较符合之前的认知。这里猜测可以进行部分Diff对比了: 先对比instance，然后直接进行HostComponent替换(ComponentDiff)或者子节点的ElementDiff操作。核心是commitUpdate。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">commitUpdate</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  domElement: Instance,</span></span></span><br><span class="line"><span class="function"><span class="params">  updatePayload: <span class="built_in">Array</span>&lt;mixed&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  type: string,</span></span></span><br><span class="line"><span class="function"><span class="params">  oldProps: Props,</span></span></span><br><span class="line"><span class="function"><span class="params">  newProps: Props,</span></span></span><br><span class="line"><span class="function"><span class="params">  internalInstanceHandle: <span class="built_in">Object</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 将新的Props挂到domElement上(此时它还挂了一个FiberNode)</span></span><br><span class="line">  updateFiberProps(domElement, newProps);</span><br><span class="line">  <span class="comment">// 它主要还是调用updateDOMProperties</span></span><br><span class="line">  updateProperties(domElement, updatePayload, type, oldProps, newProps);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">updateFiberProps</span>(<span class="params">node, props</span>) </span>&#123;</span><br><span class="line">  node[internalEventHandlersKey] = props;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">updateProperties</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  domElement: Element,</span></span></span><br><span class="line"><span class="function"><span class="params">  updatePayload: <span class="built_in">Array</span>&lt;any&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  tag: string,</span></span></span><br><span class="line"><span class="function"><span class="params">  lastRawProps: <span class="built_in">Object</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  nextRawProps: <span class="built_in">Object</span>,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 略过兼容特例处理</span></span><br><span class="line">  <span class="keyword">const</span> wasCustomComponentTag = isCustomComponent(tag, lastRawProps);</span><br><span class="line">  <span class="keyword">const</span> isCustomComponentTag = isCustomComponent(tag, nextRawProps);</span><br><span class="line">  <span class="comment">// Apply the diff.</span></span><br><span class="line">  updateDOMProperties( <span class="comment">// 这个函数就很眼熟了 v15里面它也是非常重要的函数</span></span><br><span class="line">    domElement,</span><br><span class="line">    updatePayload,</span><br><span class="line">    wasCustomComponentTag,</span><br><span class="line">    isCustomComponentTag,</span><br><span class="line">  );</span><br><span class="line">  <span class="comment">// 略过兼容特例处理</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>主要的逻辑已经给出了。这里看看重点的updateDOMProperties函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateDOMProperties</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  domElement: Element,</span></span></span><br><span class="line"><span class="function"><span class="params">  updatePayload: <span class="built_in">Array</span>&lt;any&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  wasCustomComponentTag: boolean,</span></span></span><br><span class="line"><span class="function"><span class="params">  isCustomComponentTag: boolean,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Handle wasCustomComponentTag</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; updatePayload.length; i += <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> propKey = updatePayload[i];</span><br><span class="line">    <span class="keyword">const</span> propValue = updatePayload[i + <span class="number">1</span>];</span><br><span class="line">    <span class="keyword">if</span> (propKey === STYLE) &#123;</span><br><span class="line">      setValueForStyles(domElement, propValue);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (propKey === DANGEROUSLY_SET_INNER_HTML) &#123;</span><br><span class="line">      setInnerHTML(domElement, propValue); 	 <span class="comment">// 可以视为innerHTML</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (propKey === CHILDREN) &#123;</span><br><span class="line">      setTextContent(domElement, propValue); <span class="comment">// 赋值给textContent|nodeValue</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      setValueForProperty(domElement, propKey, propValue, isCustomComponentTag);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数对比v15.6版本又做了封装。但是不得不说清爽太多了。但是总体的逻辑倒也没什么变化。主要是区分了样式、Text、Property进行处理。另外就是特例API处理<code>dangerouslySetInnerHTML</code>。</p>
+<p>这里最复杂的应该是setValueForProperty:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">setValueForProperty</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  node: Element,</span></span></span><br><span class="line"><span class="function"><span class="params">  name: string,</span></span></span><br><span class="line"><span class="function"><span class="params">  value: mixed,</span></span></span><br><span class="line"><span class="function"><span class="params">  isCustomComponentTag: boolean,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> propertyInfo = getPropertyInfo(name);</span><br><span class="line">  <span class="keyword">if</span> (shouldIgnoreAttribute(name, propertyInfo, isCustomComponentTag)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (shouldRemoveAttribute(name, value, propertyInfo, isCustomComponentTag)) &#123;</span><br><span class="line">    value = <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// If the prop isn&#x27;t in the special list, treat it as a simple attribute.</span></span><br><span class="line">  <span class="keyword">if</span> (isCustomComponentTag || propertyInfo === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isAttributeNameSafe(name)) &#123;</span><br><span class="line">      <span class="keyword">const</span> attributeName = name;</span><br><span class="line">      <span class="keyword">if</span> (value === <span class="literal">null</span>) &#123;</span><br><span class="line">        node.removeAttribute(attributeName);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        node.setAttribute(attributeName, <span class="string">&#x27;&#x27;</span> + (value: any));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> &#123;mustUseProperty&#125; = propertyInfo;</span><br><span class="line">  <span class="keyword">if</span> (mustUseProperty) &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;propertyName&#125; = propertyInfo;</span><br><span class="line">    <span class="keyword">if</span> (value === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> &#123;type&#125; = propertyInfo;</span><br><span class="line">      (node: any)[propertyName] = type === BOOLEAN ? <span class="literal">false</span> : <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// Contrary to `setAttribute`, object properties are properly</span></span><br><span class="line">      <span class="comment">// `toString`ed by IE8/9.</span></span><br><span class="line">      (node: any)[propertyName] = value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// The rest are treated as attributes with special cases.</span></span><br><span class="line">  <span class="keyword">const</span> &#123;attributeName, attributeNamespace&#125; = propertyInfo;</span><br><span class="line">  <span class="keyword">if</span> (value === <span class="literal">null</span>) &#123;</span><br><span class="line">    node.removeAttribute(attributeName);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123;type&#125; = propertyInfo;</span><br><span class="line">    <span class="keyword">let</span> attributeValue;</span><br><span class="line">    <span class="keyword">if</span> (type === BOOLEAN || (type === OVERLOADED_BOOLEAN &amp;&amp; value === <span class="literal">true</span>)) &#123;</span><br><span class="line">      attributeValue = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// `setAttribute` with objects becomes only `[object]` in IE8/9,</span></span><br><span class="line">      <span class="comment">// (&#x27;&#x27; + value) makes it output the correct toString()-value.</span></span><br><span class="line">      attributeValue = <span class="string">&#x27;&#x27;</span> + (value: any);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (attributeNamespace) &#123;</span><br><span class="line">      node.setAttributeNS(attributeNamespace, attributeName, attributeValue);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      node.setAttribute(attributeName, attributeValue);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里分支多。但是说白了，其实最后也就是<code>setAttribute &amp; removeAttribute</code>这套。</p>
+<p><strong>总结一下就是:</strong> 它真的只是apply the diff。而不包含Diff计算了。</p>
+<h3 id="commitDeletion-删除"><a href="#commitDeletion-删除" class="headerlink" title="commitDeletion-删除"></a>commitDeletion-删除</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitDeletion</span>(<span class="params">current: Fiber</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (supportsMutation) &#123;</span><br><span class="line">    <span class="comment">// 从current节点上递归删除所有host nodes</span></span><br><span class="line">    <span class="comment">// 移除ref，并调用所有的componentWillUnmount</span></span><br><span class="line">    unmountHostComponents(current);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 移除ref，并调用所有的componentWillUnmount</span></span><br><span class="line">    commitNestedUnmounts(current); <span class="comment">// 递归fiber子节点调用commitUnmount卸载</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 清空current节点和current.alternate节点(return child updateQueue memoizedState)</span></span><br><span class="line">  detachFiber(current);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里有个commitUnmount函数。得讲一讲。它是commitNestedUnmounts的核心，整个umount环节，在粒度上，它应该是最小的情况了。</p>
+<p>commitNestedUnmounts主要是对current节点进行下层级递归调用commitUnmount。</p>
+<p>而commitUnmount主要是对ref进行清除、递归调用componentWillUnmount、或者是useEffect的清除。特例情况是HostPortal则需要进步遍历下级节点然后递归调用自身。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitUnmount</span>(<span class="params">current: Fiber</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  onCommitUnmount(current);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (current.tag) &#123;</span><br><span class="line">    <span class="keyword">case</span> FunctionComponent:</span><br><span class="line">    <span class="keyword">case</span> ForwardRef:</span><br><span class="line">    <span class="keyword">case</span> MemoComponent:</span><br><span class="line">    <span class="keyword">case</span> SimpleMemoComponent: &#123; <span class="comment">// useEffect相关 hook注销。理解这里得先熟悉Hook使用</span></span><br><span class="line">      <span class="keyword">const</span> updateQueue: FunctionComponentUpdateQueue | <span class="literal">null</span> = (current.updateQueue: any);</span><br><span class="line">      <span class="keyword">if</span> (updateQueue !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> lastEffect = updateQueue.lastEffect;</span><br><span class="line">        <span class="keyword">if</span> (lastEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">const</span> firstEffect = lastEffect.next;</span><br><span class="line">          <span class="keyword">let</span> effect = firstEffect;</span><br><span class="line">          <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">const</span> destroy = effect.destroy;</span><br><span class="line">            <span class="keyword">if</span> (destroy !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">              safelyCallDestroy(current, destroy);</span><br><span class="line">            &#125;</span><br><span class="line">            effect = effect.next;</span><br><span class="line">          &#125; <span class="keyword">while</span> (effect !== firstEffect);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> ClassComponent: &#123;</span><br><span class="line">      safelyDetachRef(current); <span class="comment">// 清除ref。ref为函数则传入null执行清空</span></span><br><span class="line">      <span class="keyword">const</span> instance = current.stateNode;</span><br><span class="line">      <span class="comment">// 安全执行componentWillUnmount</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> instance.componentWillUnmount === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">        safelyCallComponentWillUnmount(current, instance);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostComponent: &#123;</span><br><span class="line">      safelyDetachRef(current); <span class="comment">// 清除ref。ref为函数则传入null执行清空</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> HostPortal: &#123;</span><br><span class="line">      <span class="keyword">if</span> (supportsMutation) &#123;</span><br><span class="line">        unmountHostComponents(current);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (supportsPersistence) &#123;</span><br><span class="line">        emptyPortalContainer(current);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后就是unmountHostComponents函数。其他函数都说了，这个最后还是得看看。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unmountHostComponents</span>(<span class="params">current</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// We only have the top Fiber that was deleted but we need to recurse down its</span></span><br><span class="line">  <span class="comment">// children to find all the terminal nodes.</span></span><br><span class="line">  <span class="keyword">let</span> node: Fiber = current;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Each iteration, currentParent is populated with node&#x27;s host parent if not</span></span><br><span class="line">  <span class="comment">// currentParentIsValid.</span></span><br><span class="line">  <span class="keyword">let</span> currentParentIsValid = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Note: these two variables *must* always be updated together.</span></span><br><span class="line">  <span class="keyword">let</span> currentParent;</span><br><span class="line">  <span class="keyword">let</span> currentParentIsContainer;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!currentParentIsValid) &#123;</span><br><span class="line">      <span class="keyword">let</span> parent = node.return;</span><br><span class="line">      <span class="comment">// 向上遍历node.return, 直到node.tag对应以下三种类型的组件为止 才继续往下走</span></span><br><span class="line">      <span class="comment">// 此时currentParentIsValid赋值为true 后面再进上一个while就不会进入此处</span></span><br><span class="line">      <span class="comment">// 或者说 不会更新currentParent &amp;&amp; currentParentIsContainer</span></span><br><span class="line">      findParent: <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">switch</span> (parent.tag) &#123;</span><br><span class="line">          <span class="keyword">case</span> HostComponent:</span><br><span class="line">            currentParent = parent.stateNode;</span><br><span class="line">            currentParentIsContainer = <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">break</span> findParent;</span><br><span class="line">          <span class="keyword">case</span> HostRoot:</span><br><span class="line">            currentParent = parent.stateNode.containerInfo;</span><br><span class="line">            currentParentIsContainer = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">break</span> findParent;</span><br><span class="line">          <span class="keyword">case</span> HostPortal:</span><br><span class="line">            currentParent = parent.stateNode.containerInfo;</span><br><span class="line">            currentParentIsContainer = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">break</span> findParent;</span><br><span class="line">        &#125;</span><br><span class="line">        parent = parent.return;</span><br><span class="line">      &#125;</span><br><span class="line">      currentParentIsValid = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (node.tag === HostComponent || node.tag === HostText) &#123; <span class="comment">// HostComponent&amp;Text直接设法移除</span></span><br><span class="line">      commitNestedUnmounts(node);</span><br><span class="line">      <span class="comment">// umount所有children之后，开始将node从tree中移除</span></span><br><span class="line">      <span class="keyword">if</span> (currentParentIsContainer) &#123; <span class="comment">// 如果当前parent是一个容器组件 比如HostRoot&amp;HostPortal</span></span><br><span class="line">        removeChildFromContainer( <span class="comment">// 这个函数几类于: currentParent.removeChild(node.stateNode) 但是多了个注释节点的处理</span></span><br><span class="line">          ((currentParent: any): Container),</span><br><span class="line">          (node.stateNode: Instance | TextInstance),</span><br><span class="line">        );</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">// 如果是另外一个HostComponent(原ReactDomComponent)</span></span><br><span class="line">        removeChild(              <span class="comment">// 等同:currentParent.removeChild(node.stateNode)</span></span><br><span class="line">          ((currentParent: any): Instance),</span><br><span class="line">          (node.stateNode: Instance | TextInstance),</span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Don&#x27;t visit children because we already visited them.</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (</span><br><span class="line">      enableSuspenseServerRenderer &amp;&amp;</span><br><span class="line">      node.tag === DehydratedSuspenseComponent</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="comment">// 服务端渲染 这里不管 略过</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node.tag === HostPortal) &#123; <span class="comment">// 递归HostPortal 对其脱壳处理 转换成普通组件处理</span></span><br><span class="line">      <span class="keyword">if</span> (node.child !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// When we go into a portal, it becomes the parent to remove from.</span></span><br><span class="line">        <span class="comment">// We will reassign it back when we pop the portal on the way up.</span></span><br><span class="line">        currentParent = node.stateNode.containerInfo;</span><br><span class="line">        currentParentIsContainer = <span class="literal">true</span>;</span><br><span class="line">        <span class="comment">// Visit children because portals might contain host components.</span></span><br><span class="line">        node.child.return = node;</span><br><span class="line">        node = node.child;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;  <span class="comment">// 遇到FunctionComponent|ClassComponent什么的直接卸载</span></span><br><span class="line">      commitUnmount(node);</span><br><span class="line">      <span class="comment">// 递归node.child</span></span><br><span class="line">      <span class="keyword">if</span> (node.child !== <span class="literal">null</span>) &#123;</span><br><span class="line">        node.child.return = node;</span><br><span class="line">        node = node.child;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 以下都是遍历Fiber树需要的代码</span></span><br><span class="line">    <span class="keyword">if</span> (node === current) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (node.sibling === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (node.return === <span class="literal">null</span> || node.return === current) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      node = node.return;</span><br><span class="line">      <span class="keyword">if</span> (node.tag === HostPortal) &#123;</span><br><span class="line">        <span class="comment">// When we go out of the portal, we need to restore the parent.</span></span><br><span class="line">        <span class="comment">// Since we don&#x27;t keep a stack of them, we will search for it.</span></span><br><span class="line">        currentParentIsValid = <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    node.sibling.return = node.return;</span><br><span class="line">    node = node.sibling;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="commitAllLifeCycles"><a href="#commitAllLifeCycles" class="headerlink" title="commitAllLifeCycles"></a>commitAllLifeCycles</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commitAllLifeCycles</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  finishedRoot: FiberRoot,</span></span></span><br><span class="line"><span class="function"><span class="params">  committedExpirationTime: ExpirationTime,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (nextEffect !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> effectTag = nextEffect.effectTag;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (effectTag &amp; (Update | Callback)) &#123;</span><br><span class="line">      recordEffect();</span><br><span class="line">      <span class="keyword">const</span> current = nextEffect.alternate;</span><br><span class="line">      commitLifeCycles(</span><br><span class="line">        finishedRoot,</span><br><span class="line">        current,</span><br><span class="line">        nextEffect,</span><br><span class="line">        committedExpirationTime,</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (effectTag &amp; Ref) &#123;</span><br><span class="line">      recordEffect();</span><br><span class="line">      commitAttachRef(nextEffect);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (effectTag &amp; Passive) &#123;</span><br><span class="line">      rootWithPendingPassiveEffects = finishedRoot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    nextEffect = nextEffect.nextEffect;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里commitLifeCycles函数内容比较多。但是核心的地方还是针对几个类型的组件进行分支操作</p>
+<ul>
+<li>正常的ClassComponent：执行componentDidMount &amp;&amp; componentDidUpdate声明周期勾子函数。调用commitUpdateQueue</li>
+<li>FunctionComponent：commitHookEffectList</li>
+<li>HostComponent：commitMount</li>
+<li>HostRoot：commitUpdateQueue</li>
+</ul>
+<p>这里commitUpdateQueue遍历UpdateQueue链表，执行每个sideEffect上的effect.callback.bind(instance)</p>
+<p>commitMount函数主要是处理焦点获取。没有什么其他操作</p>
+<p>commitHookEffectList之前遇到了很多，也提到过一点，这里小改一下: 主要操作是执行effect.create() || effect.destroy();代码根据参数来说这里逻辑晾着都有。更全面点讲，这里遍历finishedWork.updateQueue链表，执行了上面的每个effect.create() &amp; effect.destroy()。当然这里主要还是看effect.tag值来决定。关于这个计算暂时还没搞懂，后面再来补充。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/React/" rel="tag"># React</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/07/react-v16-render/" rel="prev" title="react-fiber-render">
+      <i class="fa fa-chevron-left"></i> react-fiber-render
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/07/react-v16-Update-renderPhase/" rel="next" title="react-v16-Update renderPhase篇">
+      react-v16-Update renderPhase篇 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%83%E7%94%A8%E6%A0%88%E7%A1%AE%E8%AE%A4"><span class="nav-number">2.</span> <span class="nav-text">调用栈确认</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%86%E8%8A%82"><span class="nav-number">3.</span> <span class="nav-text">细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#completeRoot"><span class="nav-number">3.1.</span> <span class="nav-text">completeRoot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#commitRoot"><span class="nav-number">3.2.</span> <span class="nav-text">commitRoot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#getSnapshotBeforeUpdate"><span class="nav-number">3.3.</span> <span class="nav-text">getSnapshotBeforeUpdate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#commitAllHostEffects"><span class="nav-number">3.4.</span> <span class="nav-text">commitAllHostEffects</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#commitPlacement-%E6%9B%BF%E6%8D%A2"><span class="nav-number">3.4.1.</span> <span class="nav-text">commitPlacement - 替换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#commitWork-%E6%9B%B4%E6%96%B0"><span class="nav-number">3.4.2.</span> <span class="nav-text">commitWork - 更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#commitDeletion-%E5%88%A0%E9%99%A4"><span class="nav-number">3.4.3.</span> <span class="nav-text">commitDeletion-删除</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#commitAllLifeCycles"><span class="nav-number">3.5.</span> <span class="nav-text">commitAllLifeCycles</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

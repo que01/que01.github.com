@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="很早之前看到有大佬在知乎吹ReactCurrentOwner在React是如何如何重要，后来我开始读React源码，但是没明白这句话意思，所以后来也特别针对这个变量好好读了一下。这里是读完得到的结果。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React ReactCurrentOwner">
+<meta property="og:url" content="http://www.que01.top/2019/06/28/react-ReactCurrentOwner/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="很早之前看到有大佬在知乎吹ReactCurrentOwner在React是如何如何重要，后来我开始读React源码，但是没明白这句话意思，所以后来也特别针对这个变量好好读了一下。这里是读完得到的结果。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-06-28T06:25:05.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.668Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="React">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/06/28/react-ReactCurrentOwner/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React ReactCurrentOwner | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/06/28/react-ReactCurrentOwner/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React ReactCurrentOwner
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-28 14:25:05" itemprop="dateCreated datePublished" datetime="2019-06-28T14:25:05+08:00">2019-06-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/06/28/react-ReactCurrentOwner/" class="post-meta-item leancloud_visitors" data-flag-title="React ReactCurrentOwner" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">很早之前看到有大佬在知乎吹ReactCurrentOwner在React是如何如何重要，后来我开始读React源码，但是没明白这句话意思，所以后来也特别针对这个变量好好读了一下。这里是读完得到的结果。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="最前面"><a href="#最前面" class="headerlink" title="最前面"></a>最前面</h1><p>这里先说明白，这个ReactCurrentOwner实际上是在虚拟DOM中识别自定义组件的关键。</p>
+<p>当我们执行了自定义组件的render，返回的虚拟DOM树里面的节点，不算文本节点、注释节点这类，它就是完全有ReactDomComponent节点组成的，这个ReactCurrentOwner.owner变量，保存了一个瞬时变量，用于存到自定义组件生成的ReactDomComponent节点的<code>_owner</code>变量上。</p>
+<h1 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h1><p>ReactCurrentOwner这个主要还是和自定义组件有关系。</p>
+<p>使用<code>grep -rn &#39;ReactCurrentOwner.current =&#39; ./src</code>全局查了以下。赋值操作主要是在</p>
+<p><code>ReactMultiChild.js</code>和<code>ReactCompositeComponent.js</code>文件中。</p>
+<p>它有三种赋值情景:</p>
+<ul>
+<li><code>ReactCurrentOwner.current = this._currentElement._owner</code></li>
+<li><code>ReactCurrentOwner.current = this</code></li>
+<li><code>ReactCurrentOwner.current = null</code></li>
+</ul>
+<h1 id="情景1"><a href="#情景1" class="headerlink" title="情景1"></a>情景1</h1><p>其中，情景一<code>this._currentElement._owner</code>仅在开发环节会执行</p>
+<h1 id="情景2"><a href="#情景2" class="headerlink" title="情景2"></a>情景2</h1><p>大部分情况下，一课虚拟DOM树大致由一个TopLevelWrapper组件作为根元素，然后子节点里面ReactCompositeComponent和ReactDomComponent互相交织嵌套，最后以ReactDomComponent为最末节点的结构组成的(这里假装不知道文本在React里面也算节点。。。)。</p>
+<p>我们写的业务代码、包含各种生命周期的组件，基本都是ReactCompositeComponent，</p>
+<p>ReactCurrentOwner.current也都是指向了这个类型的组件。</p>
+<p>在ReactCompositeComponent组件里面存在生命周期，state，props，context这些东西，也存在更新时候的Diff算法优化，如果一个ReactDomComponent组件确定要更新，这里是替换式无脑更新的，不存在Diff算法什么的。</p>
+<p>这种情况下，ReactCurrentOwner.current 是指当前正处于构建过程中的组件。</p>
+<p>这个变量实际上相当于是一个存在于React作用域全局的一个缓存变量。</p>
+<p>ReactCompositeComponent构建时候，ReactCompositeComponent.js里面有一段代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">_renderValidatedComponent: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> renderedElement;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__ || <span class="built_in">this</span>._compositeType !== CompositeTypes.StatelessFunctional) &#123;</span><br><span class="line">    ReactCurrentOwner.current = <span class="built_in">this</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      renderedElement = <span class="built_in">this</span>._renderValidatedComponentWithoutOwnerOrContext();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      ReactCurrentOwner.current = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    renderedElement = <span class="built_in">this</span>._renderValidatedComponentWithoutOwnerOrContext();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> renderedElement;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>他会在render&amp;&amp;update时候执行。</p>
+<p>然后就是如果从ReactCompositeComponent到ReactDomComponent这个过程中(实质上这两个类型的组件在虚拟DOM上也就是一个变量的区别)的时候，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ReactElement = <span class="function"><span class="keyword">function</span>(<span class="params">type, key, ref, self, source, owner, props</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> element = &#123;</span><br><span class="line">    $$typeof: REACT_ELEMENT_TYPE,</span><br><span class="line">    type: type,</span><br><span class="line">    key: key,</span><br><span class="line">    ref: ref,</span><br><span class="line">    props: props,</span><br><span class="line">    _owner: owner,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">    <span class="comment">// 略</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      element._store.validated = <span class="literal">false</span>;</span><br><span class="line">      element._self = self;</span><br><span class="line">      element._source = source;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">Object</span>.freeze) &#123;</span><br><span class="line">      <span class="built_in">Object</span>.freeze(element.props);</span><br><span class="line">      <span class="built_in">Object</span>.freeze(element);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> element;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这个current会被缓存到Element对象中。其他时候就是对这个current做null赋值处理了。</p>
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>接下来就可以思考一下它在React体系中的作用了。`</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">_renderValidatedComponent: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> renderedElement;</span><br><span class="line">  <span class="keyword">if</span> (__DEV__ || <span class="built_in">this</span>._compositeType !== CompositeTypes.StatelessFunctional) &#123;</span><br><span class="line">    ReactCurrentOwner.current = <span class="built_in">this</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      renderedElement = <span class="built_in">this</span>._renderValidatedComponentWithoutOwnerOrContext();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      ReactCurrentOwner.current = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    renderedElement = <span class="built_in">this</span>._renderValidatedComponentWithoutOwnerOrContext();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> renderedElement;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p><code>_renderValidatedComponent</code>是一个很重要的函数。但是他实质上却超级简单。。。。</p>
+<p>他就做了两件事：</p>
+<ul>
+<li>_renderValidatedComponentWithoutOwnerOrContext——说白了就是组件的render函数调用</li>
+<li>设置ReactCurrentOwner.current为当前这个组件实例</li>
+</ul>
+<p>另外，从ReactCompositeComponent到ReactDomComponent这个过程中的时候，参考一下ReactElement函数的定义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">var ReactElement &#x3D; function(type, key, ref, self, source, owner, props) &#123;</span><br><span class="line">  var element &#x3D; &#123;</span><br><span class="line">    $$typeof: REACT_ELEMENT_TYPE,</span><br><span class="line">    type: type,</span><br><span class="line">    key: key,</span><br><span class="line">    ref: ref,</span><br><span class="line">    props: props,</span><br><span class="line">    _owner: owner,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  if (__DEV__) &#123;</span><br><span class="line">    &#x2F;&#x2F; 略</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      element._store.validated &#x3D; false;</span><br><span class="line">      element._self &#x3D; self;</span><br><span class="line">      element._source &#x3D; source;</span><br><span class="line">    &#125;</span><br><span class="line">    if (Object.freeze) &#123;</span><br><span class="line">      Object.freeze(element.props);</span><br><span class="line">      Object.freeze(element);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  return element;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这个current会被缓存到Element对象中。其他时候就是对这个current做null赋值处理了。</p>
+<p>这里归总一下:</p>
+<h2 id="初始render"><a href="#初始render" class="headerlink" title="初始render"></a>初始render</h2><p>初始化render时候会执行batchedUpdates，里面下级调用包括<code>ReatReconciler.mountComponent</code>，这里看看ReactCompositeComponent.mountComponent的调用。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ReactCompositeComponent.mountComponent</span><br><span class="line">-&gt;ReactCompositeComponent.performInitialMount</span><br><span class="line">--&gt;ReactCompositeComponent._renderValidatedComponent</span><br></pre></td></tr></table></figure>
+
+<p>这里自定义组件render执行时候会不断触发其下级自定义组件的render，他们在结构上是嵌套的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Component.render(SubComponent1.render(SubComponent2.render()))</span><br></pre></td></tr></table></figure>
+
+<p>关于这个逻辑，可以参考<a href="/2018/04/26/react-lifecycle/#jsx%E5%88%B0js%E7%9A%84%E8%BD%AC%E6%8D%A2">react生命周期-jsx到js的转换</a>。</p>
+<p>他们的render是这样一个逻辑，我们想要执行Component.render实际上会先执行SubComponent1.render，进而要先执行SubComponent2.render。</p>
+<p>通过这样的调用，我们最先执行的SubComponent2.render会先将SubComponent2赋值到ReactCurrentOwner.current，然后挂载到其下一级(孙节点和以下都不加)ReactDomComponent实例上。</p>
+<p>以上逻辑到了SubComponent1和Component都同样进行类推。这样，所有自定义组件render完毕之后，就是一个干净的(就是一个owner变量的区别)由ReactDomComponent组成的虚拟DOM树(文本节点、注释节点等先忽视)。</p>
+<p>而由自定义节点直接生成的ReactDomComponent节点，会有一个非null的<code>_owner</code>属性，指向自定义组件实例。</p>
+<h2 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h2><p>看更新还是很有必要看看<a href="/2019/06/25/react-diff/">React Diff算法</a>。</p>
+<p>看到Component Diff这一节，就基本上可以大致有数了。这里<code>_updateRenderedComponent</code>函数会组件更新时候必然会调用到<code>ReactCompositeComponent._renderValidatedComponent</code>。</p>
+<p>其他逻辑可以完全参考初始render。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p><code>ReactCurrentOwner.current</code>为什么重要?</p>
+<p>以为它是自定义节点的指针。所有的ReactCompositeComponent最终render之后都变成了干干净净的ReactDomComponent节点组成的DOM树，但是如何分辨哪些是ReactCompositeComponent生成的呢？</p>
+<p>这就依赖这些ReactDomComponent节点上的<code>owner</code>变量。</p>
+<p>而<code>ReactCurrentOwner.current</code>正是维护这个在构建虚拟DOM过程中，随时会变动的变量的临时保存位置所在。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/React/" rel="tag"># React</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/25/react-diff/" rel="prev" title="React Diff算法">
+      <i class="fa fa-chevron-left"></i> React Diff算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/04/react-Reconciler/" rel="next" title="React核心:Reconciler调度模块">
+      React核心:Reconciler调度模块 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%80%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">最前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%83%85%E6%99%AF1"><span class="nav-number">3.</span> <span class="nav-text">情景1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%83%85%E6%99%AF2"><span class="nav-number">4.</span> <span class="nav-text">情景2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">5.</span> <span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8Brender"><span class="nav-number">5.1.</span> <span class="nav-text">初始render</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0"><span class="nav-number">5.2.</span> <span class="nav-text">更新</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

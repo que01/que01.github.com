@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="早之前在使用Git也做过一些浅浅的笔记，但是随着后来对层次和节奏的更高追求，也对Git工作流有了更高的要求。只是简单的add和commit很难满足这项要求，实质上，缺乏了对分支功能的深入挖掘，Git其实和svn相比优势也不大，毕竟如果只是比较速度，svn在局域网下速度并不慢。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git笔记-续">
+<meta property="og:url" content="http://www.que01.top/2016/03/27/git-plus/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="早之前在使用Git也做过一些浅浅的笔记，但是随着后来对层次和节奏的更高追求，也对Git工作流有了更高的要求。只是简单的add和commit很难满足这项要求，实质上，缺乏了对分支功能的深入挖掘，Git其实和svn相比优势也不大，毕竟如果只是比较速度，svn在局域网下速度并不慢。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-03-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.570Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/03/27/git-plus/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Git笔记-续 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/03/27/git-plus/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Git笔记-续
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-27 00:00:00" itemprop="dateCreated datePublished" datetime="2016-03-27T00:00:00+08:00">2016-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/03/27/git-plus/" class="post-meta-item leancloud_visitors" data-flag-title="Git笔记-续" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">早之前在使用Git也做过一些浅浅的笔记，但是随着后来对层次和节奏的更高追求，也对Git工作流有了更高的要求。只是简单的add和commit很难满足这项要求，实质上，缺乏了对分支功能的深入挖掘，Git其实和svn相比优势也不大，毕竟如果只是比较速度，svn在局域网下速度并不慢。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>早之前在使用Git也做过一些浅浅的笔记，但是随着后来对层次和节奏的更高追求，也对Git工作流有了更高的要求。只是简单的add和commit很难满足这项要求，实质上，缺乏了对分支功能的深入挖掘，Git其实和svn相比优势也不大，毕竟如果只是比较速度，svn在局域网下速度并不慢。</p>
+<h1 id="Git简单操作-amp-简单流程"><a href="#Git简单操作-amp-简单流程" class="headerlink" title="Git简单操作&amp;简单流程"></a>Git简单操作&amp;简单流程</h1><h2 id="初始化和添加远程仓库"><a href="#初始化和添加远程仓库" class="headerlink" title="初始化和添加远程仓库"></a>初始化和添加远程仓库</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">初始化</span></span><br><span class="line">git init</span><br><span class="line"><span class="meta">#</span><span class="bash">添加远程仓库</span></span><br><span class="line">git remote add origin &lt;url&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="常用的git操作"><a href="#常用的git操作" class="headerlink" title="常用的git操作"></a>常用的git操作</h2><h3 id="添加数据到暂存区"><a href="#添加数据到暂存区" class="headerlink" title="添加数据到暂存区"></a>添加数据到暂存区</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git add &lt;fileName&gt; //指定文件添加</span><br><span class="line">git add . //添加所有修改文件到暂存区</span><br></pre></td></tr></table></figure>
+
+<h3 id="从暂存区撤回"><a href="#从暂存区撤回" class="headerlink" title="从暂存区撤回"></a>从暂存区撤回</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout &lt;fileName&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="提交文件"><a href="#提交文件" class="headerlink" title="提交文件"></a>提交文件</h3><p>提交文件分为两种</p>
+<ul>
+<li>提交到本地版本库<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &quot;提交说明&quot;</span><br></pre></td></tr></table></figure></li>
+<li>提交到中央仓库<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">提交本地master分支到远程仓库origin</span></span><br><span class="line">git push origin master</span><br><span class="line"><span class="meta">#</span><span class="bash">提交本地master分支到远程仓库t</span></span><br><span class="line">git push test master</span><br></pre></td></tr></table></figure>
+所以提交到远程仓库的语法是： git push &lt;远程仓库&gt; &lt;本地仓库&gt;</li>
+</ul>
+<h3 id="比较文件"><a href="#比较文件" class="headerlink" title="比较文件"></a>比较文件</h3><p>所有操作中我觉得最重要的是比较操作了，这是一个，非常常用且非常重要的操作。<br>对比操作根据对比对象的不同，分为以下几种：</p>
+<ol>
+<li>工作目录同暂存区对比</li>
+<li>工作目录同版本库对比</li>
+<li>暂存区同版本库对比</li>
+<li>同分支不同提交之间对比</li>
+<li>不同分支之间文件对比</li>
+</ol>
+<ul>
+<li><p>工作目录同暂存区对比</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">指定对比文件</span></span><br><span class="line">git diff &lt;fileName&gt;	</span><br><span class="line"><span class="meta">#</span><span class="bash">对比全部</span></span><br><span class="line">git diff	</span><br></pre></td></tr></table></figure></li>
+<li><p>工作目录同版本库对比</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">对比工作区和最近提交版本库1.txt文件变化</span></span><br><span class="line">git diff HEAD -- 1.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">对比工作区和最近提交版本库a文件夹变化</span></span><br><span class="line">git diff HEAD -- ./a</span><br><span class="line"><span class="meta">#</span><span class="bash">对比全部变化</span></span><br><span class="line">git diff HEAD </span><br></pre></td></tr></table></figure></li>
+<li><p>暂存区同版本库对比</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">对比暂存区和最近提交版本库1.txt文件变化</span></span><br><span class="line">git diff --cache HEAD -- 1.txt</span><br><span class="line"><span class="meta">#</span><span class="bash">对比暂存区和最近提交版本库a文件夹变化</span></span><br><span class="line">git diff --cache HEAD -- ./a</span><br><span class="line"><span class="meta">#</span><span class="bash">对比全部变化</span></span><br><span class="line">git diff --cache HEAD </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>同分支不同提交之间对比</p>
+</li>
+<li><p>不同分支之间文件对比</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">比较master分支和foo分支文件差异</span></span><br><span class="line">git diff master..test</span><br><span class="line"><span class="meta">#</span><span class="bash">比较master分支和<span class="built_in">test</span>分支上1.txt不同</span></span><br><span class="line">git diff master test 1.txt</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="分支操作"><a href="#分支操作" class="headerlink" title="分支操作"></a>分支操作</h3><p>语法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#39;git branch&#39; [--color[&#x3D;&lt;when&gt;] | --no-color] [-r | -a]</span><br><span class="line">	[--list] [-v [--abbrev&#x3D;&lt;length&gt; | --no-abbrev]]</span><br><span class="line">	[--column[&#x3D;&lt;options&gt;] | --no-column]</span><br><span class="line">	[(--merged | --no-merged | --contains) [&lt;commit&gt;]] [&lt;pattern&gt;...]</span><br><span class="line">&#39;git branch&#39; [--set-upstream | --track | --no-track] [-l] [-f] &lt;branchname&gt; [&lt;start-point&gt;]</span><br><span class="line">&#39;git branch&#39; (--set-upstream-to&#x3D;&lt;upstream&gt; | -u &lt;upstream&gt;) [&lt;branchname&gt;]</span><br><span class="line">&#39;git branch&#39; --unset-upstream [&lt;branchname&gt;]</span><br><span class="line">&#39;git branch&#39; (-m | -M) [&lt;oldbranch&gt;] &lt;newbranch&gt;</span><br><span class="line">&#39;git branch&#39; (-d | -D) [-r] &lt;branchname&gt;...</span><br><span class="line">&#39;git branch&#39; --edit-description [&lt;branchname&gt;]</span><br></pre></td></tr></table></figure>
+
+<p>查看分支，查看分支有几种方式：</p>
+<ul>
+<li>只看本地 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure></li>
+<li>只看远程 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -r</span><br></pre></td></tr></table></figure></li>
+<li>查看全部<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -a</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>其他常见的的分支操作：</p>
+<ul>
+<li><p>添加新分支</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#创建test分支</span><br><span class="line">git branch test</span><br></pre></td></tr></table></figure></li>
+<li><p>切换分支</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#切换到test分支</span><br><span class="line">git checkout test</span><br></pre></td></tr></table></figure></li>
+<li><p>删除分支</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#删除test分支</span><br><span class="line">git checkout -d test</span><br></pre></td></tr></table></figure></li>
+<li><p>复合操作：新建并切换过去</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b foo</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>分支映射</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#设置abc分支提交到远程test分支</span><br><span class="line">git branch --set-upstream abc origin&#x2F;test</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="改变历史"><a href="#改变历史" class="headerlink" title="改变历史"></a>改变历史</h3><p>最常见的改变历史情况是：当提交完一个修改之后让同事更新去看结果，然后瞬间发现有个文件没有提交<br>这种修改相对简单，使用 <code>--amend</code>命令即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &quot;这是一个有遗漏的提交&quot;</span><br><span class="line">git add -u</span><br><span class="line">git commit --amend -m &quot;修正刚才的错误&quot;</span><br></pre></td></tr></table></figure>
+
+<p>除了这种最常见的，还有两种非常常用的改变历史：</p>
+<ol>
+<li>删除提交历史中的某次提交记录</li>
+<li>融合过去若干次提交的变为一个</li>
+</ol>
+<h4 id="删除体检提交历史中的某次提交记录"><a href="#删除体检提交历史中的某次提交记录" class="headerlink" title="删除体检提交历史中的某次提交记录"></a>删除体检提交历史中的某次提交记录</h4><h5 id="第一种方式-拣选-："><a href="#第一种方式-拣选-：" class="headerlink" title="第一种方式(拣选)："></a>第一种方式(拣选)：</h5><p>做个简单例子，假如有一下提交记录：A-B-C-D,其中，A,B,C,D都指代对应提交的tag，假设我们需要改变历史，使其变成A-B-D,也就是从提交历史中删除C：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#首先，跑到B位置去,使用checkout</span><br><span class="line">git checkout B</span><br><span class="line">#使用git cherry-pick命令，这个是干嘛用的呢：help有写:</span><br><span class="line">#Apply the changes introduced by some existing commits 应用改变到已存在提交</span><br><span class="line">#此时：D为master，C为master^,B为mster^^,我们执行一次git cherry-pick即可：</span><br><span class="line">git cherry-pick master</span><br><span class="line">#这里再假设要删除B，这样操作：</span><br><span class="line">git checkout A</span><br><span class="line">git cherry-pick master^</span><br><span class="line">git chery-pick master</span><br></pre></td></tr></table></figure>
+<h5 id="第二种方式-变基"><a href="#第二种方式-变基" class="headerlink" title="第二种方式(变基)"></a>第二种方式(变基)</h5><p>变基(rebase)是个相对高级的命令，执行之前需要知道发生了什么：<br>语法： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset --onto &lt;newbase&gt; &lt;since&gt; &lt;till&gt;</span><br></pre></td></tr></table></figure>
+<p>这里声明一下 since不含since，而till包含till(这个不说了，懂的自然会懂…)</p>
+<p>执行细节：</p>
+<ol>
+<li>执行git checkout <till></li>
+<li>产生临时文件，存放版本范围</li>
+<li>git reset –hard <newbase></li>
+<li>根据临时文件中版本范围，逐一提交到<newbase></li>
+<li>1 如果该提交已经包含，跳过</li>
+<li>2 如果文件冲突，变基暂停</li>
+<li>3 冲突解决后执行git rebase –continue继续或者git rebase –skip跳过此提交</li>
+<li>3 执行git rebase –abort可以终止变基并返回变基前位置</li>
+</ol>
+<p>因此，第二种方法更快：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git rebase --onto B C D</span><br><span class="line">#开始重置master指向 这是一个很常用的操作，需要记下来</span><br><span class="line">git checkout master</span><br><span class="line">git reset --hard master@&#123;1&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h4 id="融合过去若干次提交的变为一个"><a href="#融合过去若干次提交的变为一个" class="headerlink" title="融合过去若干次提交的变为一个"></a>融合过去若干次提交的变为一个</h4><p>融合也可以使用git cherry-pick,不同的是不用checkout,而使用reset来操作，reset和checkout不同的地方在于它会更改HEAD指向<br>例子：假如有一下提交记录：A-B-C-D,其中，A,B,C,D都指代对应提交的tag，我们要将BC两个融合到一起</p>
+<h5 id="第一种方式-拣选-：-1"><a href="#第一种方式-拣选-：-1" class="headerlink" title="第一种方式(拣选)："></a>第一种方式(拣选)：</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">git reset --soft C&#x2F;&#x2F;不对暂存和工作区做操作，仅变更HEAD，为C</span><br><span class="line"># 此时A为HEAD，而D为HEAD@&#123;1&#125;</span><br><span class="line"># 然后使用git commit -C ,这个是什么呢，看help：Take an existing commit object, and reuse the log </span><br><span class="line"># message and the authorship information (including the timestamp) when creating the commit.</span><br><span class="line"># 这里使用这个-C来使用B的提交对象，提交到C上</span><br><span class="line">git commmit -C B</span><br><span class="line"># 拣选D的变化</span><br><span class="line">git cherry-pick D</span><br><span class="line">#开始重置master指向 这是一个很常用的操作，需要记下来</span><br><span class="line">git checkout master</span><br><span class="line">git reset --hard master@&#123;1&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="第二种方式-变基-："><a href="#第二种方式-变基-：" class="headerlink" title="第二种方式(变基)："></a>第二种方式(变基)：</h5><p>第二种方式实际上仅仅是省略了可能的若干git cherry-pick，实际上步骤依然是三步走：</p>
+<ol>
+<li>git commit -C</li>
+<li>git rebase</li>
+<li>重置master</li>
+</ol>
+<p>具体步骤不再重复了。</p>
+<h1 id="git工作流-amp-git-flow"><a href="#git工作流-amp-git-flow" class="headerlink" title="git工作流&amp;git-flow"></a>git工作流&amp;git-flow</h1><p>更加详细的git-flow我就不献丑了，这里是中文翻译地址：<a target="_blank" rel="noopener" href="http://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html">传送门</a><br>这里仅仅介绍一下工作流程：</p>
+<ol>
+<li>develop作为常用分支，所有开发流程都在develop上进行操作</li>
+<li><code>git flow feature start MYFEATURE</code>开始一项功能开发，<code>git flow feature finish MYFEATURE</code>结束一项功能开发</li>
+<li><code>git flow release start MYFEATURE</code>创建一个发型版本，finish用法同2结束版本</li>
+<li><code>git flow hotfix start VERSION [BASENAME]</code>紧急修复，跳过release</li>
+</ol>
+<p>这个过程中的分支变化：</p>
+<ul>
+<li>git flow feature start MYFEATURE</li>
+</ul>
+<p> –新建分支develop/MYFEATURE</p>
+<ul>
+<li>git flow feature finish MYFEATURE</li>
+</ul>
+<p> –mergedevelop/MYFEATURE到develop分支</p>
+<ul>
+<li>git flow release start MYFEATURE</li>
+</ul>
+<p> – 创建release/MYFEATURE分支<br> – 从develop当前位置记录发型版本起点</p>
+<ul>
+<li>git flow release finish MYFEATURE</li>
+</ul>
+<p> –从develop当前位置记录发型版本结尾<br> –归并到develop&amp;master分支<br> –删除release/MYFEATURE分支</p>
+<ul>
+<li>git flow hotfix start VERSION</li>
+</ul>
+<p> –创建hotfix/VERSION分支</p>
+<ul>
+<li>git flow hotfix finish VERSION</li>
+</ul>
+<p> –merge hotfix/VERSION分支到master和develop<br> –删除hotfix/VERSION</p>
+<h1 id="git和svn的合奏"><a href="#git和svn的合奏" class="headerlink" title="git和svn的合奏"></a>git和svn的合奏</h1><p>不管怎么说，svn还是在更多的企业环境发挥着重要的作用，这种状况作为打工仔其实也无力去改变它。<br>但是这并不意味这不能拥抱git的魅力，因为，我们还有一个工具叫做git-svn</p>
+<h2 id="安装碎碎念"><a href="#安装碎碎念" class="headerlink" title="安装碎碎念"></a>安装碎碎念</h2><p>window平台安装时候要安装两个软件，一个是git，另一个往往就是乌龟svn了,这里安装乌龟svn时候要自定义一下安装选项，将command line选起来<br>mac平台的话， <code>brew install git svn</code>搞定一切<br>ubuntu平台的话， <code>sudo apt-get install git git-svn subversion</code></p>
+<h2 id="git和svn的合并使用："><a href="#git和svn的合并使用：" class="headerlink" title="git和svn的合并使用："></a>git和svn的合并使用：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#先检出svn库</span><br><span class="line">git svn clone &lt;svn-url&gt; --username&#x3D;&lt;youname&gt;</span><br><span class="line">cd repoDir</span><br><span class="line">#git-flow 初始化，一路enter</span><br><span class="line">git flow init</span><br><span class="line">#更新数据(仅仅到git-svn分支)</span><br><span class="line">git svn fetch</span><br><span class="line">#提交数据(从master)</span><br><span class="line">git svn dcommit</span><br><span class="line">#svn数据更新到master</span><br><span class="line">git svn fetch</span><br><span class="line">git checktout master</span><br><span class="line">git svn rebase</span><br></pre></td></tr></table></figure>
+
+<p>恩，这就是这段时间用到的全部了，收尾！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/24/mongodb3/" rel="prev" title="mongoDB笔记(三)">
+      <i class="fa fa-chevron-left"></i> mongoDB笔记(三)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/03/31/systemJS/" rel="next" title="SystemJS Multi-Page多页面实践&总结">
+      SystemJS Multi-Page多页面实践&总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Git%E7%AE%80%E5%8D%95%E6%93%8D%E4%BD%9C-amp-%E7%AE%80%E5%8D%95%E6%B5%81%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">Git简单操作&amp;简单流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%92%8C%E6%B7%BB%E5%8A%A0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="nav-number">2.1.</span> <span class="nav-text">初始化和添加远程仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84git%E6%93%8D%E4%BD%9C"><span class="nav-number">2.2.</span> <span class="nav-text">常用的git操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%95%B0%E6%8D%AE%E5%88%B0%E6%9A%82%E5%AD%98%E5%8C%BA"><span class="nav-number">2.2.1.</span> <span class="nav-text">添加数据到暂存区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E6%9A%82%E5%AD%98%E5%8C%BA%E6%92%A4%E5%9B%9E"><span class="nav-number">2.2.2.</span> <span class="nav-text">从暂存区撤回</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E6%96%87%E4%BB%B6"><span class="nav-number">2.2.3.</span> <span class="nav-text">提交文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AF%94%E8%BE%83%E6%96%87%E4%BB%B6"><span class="nav-number">2.2.4.</span> <span class="nav-text">比较文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%94%AF%E6%93%8D%E4%BD%9C"><span class="nav-number">2.2.5.</span> <span class="nav-text">分支操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B9%E5%8F%98%E5%8E%86%E5%8F%B2"><span class="nav-number">2.2.6.</span> <span class="nav-text">改变历史</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E4%BD%93%E6%A3%80%E6%8F%90%E4%BA%A4%E5%8E%86%E5%8F%B2%E4%B8%AD%E7%9A%84%E6%9F%90%E6%AC%A1%E6%8F%90%E4%BA%A4%E8%AE%B0%E5%BD%95"><span class="nav-number">2.2.6.1.</span> <span class="nav-text">删除体检提交历史中的某次提交记录</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%E6%96%B9%E5%BC%8F-%E6%8B%A3%E9%80%89-%EF%BC%9A"><span class="nav-number">2.2.6.1.1.</span> <span class="nav-text">第一种方式(拣选)：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%E6%96%B9%E5%BC%8F-%E5%8F%98%E5%9F%BA"><span class="nav-number">2.2.6.1.2.</span> <span class="nav-text">第二种方式(变基)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%9E%8D%E5%90%88%E8%BF%87%E5%8E%BB%E8%8B%A5%E5%B9%B2%E6%AC%A1%E6%8F%90%E4%BA%A4%E7%9A%84%E5%8F%98%E4%B8%BA%E4%B8%80%E4%B8%AA"><span class="nav-number">2.2.6.2.</span> <span class="nav-text">融合过去若干次提交的变为一个</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%E6%96%B9%E5%BC%8F-%E6%8B%A3%E9%80%89-%EF%BC%9A-1"><span class="nav-number">2.2.6.2.1.</span> <span class="nav-text">第一种方式(拣选)：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%E6%96%B9%E5%BC%8F-%E5%8F%98%E5%9F%BA-%EF%BC%9A"><span class="nav-number">2.2.6.2.2.</span> <span class="nav-text">第二种方式(变基)：</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git%E5%B7%A5%E4%BD%9C%E6%B5%81-amp-git-flow"><span class="nav-number">3.</span> <span class="nav-text">git工作流&amp;git-flow</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#git%E5%92%8Csvn%E7%9A%84%E5%90%88%E5%A5%8F"><span class="nav-number">4.</span> <span class="nav-text">git和svn的合奏</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E7%A2%8E%E7%A2%8E%E5%BF%B5"><span class="nav-number">4.1.</span> <span class="nav-text">安装碎碎念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git%E5%92%8Csvn%E7%9A%84%E5%90%88%E5%B9%B6%E4%BD%BF%E7%94%A8%EF%BC%9A"><span class="nav-number">4.2.</span> <span class="nav-text">git和svn的合并使用：</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="移动端开发历程最早从去年6月的一个微信项目开始，期间经历了一个APP内嵌红包页面的多次迭代的折腾，再加上其他一些参考，所以有了这篇总结。在那个时候，微信开发者工具尚未出现，Vue似乎也尚未出现组件化概念的情况很多东西都要依托自己来处理，因此趟了不少坑。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="移动端开发整理">
+<meta property="og:url" content="http://www.que01.top/2016/07/22/mobile-develop/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="移动端开发历程最早从去年6月的一个微信项目开始，期间经历了一个APP内嵌红包页面的多次迭代的折腾，再加上其他一些参考，所以有了这篇总结。在那个时候，微信开发者工具尚未出现，Vue似乎也尚未出现组件化概念的情况很多东西都要依托自己来处理，因此趟了不少坑。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-07-22T01:25:55.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.609Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="移动端">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/07/22/mobile-develop/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>移动端开发整理 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/07/22/mobile-develop/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          移动端开发整理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-22 09:25:55" itemprop="dateCreated datePublished" datetime="2016-07-22T09:25:55+08:00">2016-07-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/07/22/mobile-develop/" class="post-meta-item leancloud_visitors" data-flag-title="移动端开发整理" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">移动端开发历程最早从去年6月的一个微信项目开始，期间经历了一个APP内嵌红包页面的多次迭代的折腾，再加上其他一些参考，所以有了这篇总结。在那个时候，微信开发者工具尚未出现，Vue似乎也尚未出现组件化概念的情况很多东西都要依托自己来处理，因此趟了不少坑。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><p>基本概念有几个</p>
+<ul>
+<li>物理像素(physical pixel)</li>
+<li>CSS像素</li>
+<li>屏幕密度</li>
+<li>设备像素比(device pixel ratio)</li>
+</ul>
+<h2 id="物理像素"><a href="#物理像素" class="headerlink" title="物理像素"></a>物理像素</h2><p>物理像素应该是到过最多的东西。这归功于厂商宣传的好：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">480P:480*320</span><br><span class="line">720P:1028*720</span><br><span class="line">1080P:1920*1080</span><br><span class="line">2K屏:2560*1440</span><br><span class="line"><span class="comment">#IOS</span></span><br><span class="line">4 4s:960*640</span><br><span class="line">5 5c 5s se:1136*640</span><br><span class="line">6 6s:1334*750</span><br><span class="line">6+ 6s+:1920*1080(1080P)</span><br></pre></td></tr></table></figure>
+
+<h2 id="CSS像素"><a href="#CSS像素" class="headerlink" title="CSS像素"></a>CSS像素</h2><p>CSS像素是一个抽像的单位，主要使用在浏览器上，用来精确度量Web页面上的内容。写过CSS的都会知道，这个就是px。</p>
+<h2 id="屏幕密度"><a href="#屏幕密度" class="headerlink" title="屏幕密度"></a>屏幕密度</h2><p>屏幕密度是指一个设备表面上存在的像素数量，它通常以每英寸有多少像素来计算(PPI)。</p>
+<h2 id="设备像素比"><a href="#设备像素比" class="headerlink" title="设备像素比"></a>设备像素比</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">设备像素比 ＝ 物理像素 &#x2F; 设备独立像素</span><br></pre></td></tr></table></figure>
+<p>在javascript中，可以通过 <code>window.devicePixelRatio</code> 获取到当前设备的dpr。</p>
+<p>在css中，可以通过<code>-webkit-device-pixel-ratio，-webkit-min-device-pixel-ratio和 -webkit-max-device-pixel-ratio</code>进行媒体查询，对不同dpr的设备，做一些样式适配(这里只针对webkit内核的浏览器和webview)。</p>
+<h1 id="移动设备调试"><a href="#移动设备调试" class="headerlink" title="移动设备调试"></a>移动设备调试</h1><p>移动端设备的调试一直是个比较困扰人的问题。不过好在已经有人对移动端的调试做了总结。具体可以参考这个GithubReop:<a target="_blank" rel="noopener" href="https://github.com/jieyou/remote_inspect_web_on_real_device">jieyou/remote_inspect_web_on_real_device</a></p>
+<p>文中提到的内容有以下内容(内容来自上诉repo),基本已经涵盖了各种环境下的调试，包括浏览器，微信，webView——可见作者确实非常有经验:</p>
+<table>
+<thead>
+<tr>
+<th align="left">方法</th>
+<th align="left">关键点</th>
+<th align="left">实现难度<em>小</em> 为佳）</th>
+<th align="left">调试效果<em>大</em> 为佳）</th>
+<th align="left">可用的桌面设备</th>
+<th align="left">可用的移动设备及可调试的浏览器</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">spy-debugger (简化weinre配置，支持https)</td>
+<td align="left">需要桌面设备和移动设备同一网段</td>
+<td align="left">2</td>
+<td align="left">2</td>
+<td align="left">PC、MAC</td>
+<td align="left">全部</td>
+</tr>
+<tr>
+<td align="left">调试Android上的Chrome</td>
+<td align="left">需要翻墙</td>
+<td align="left">2</td>
+<td align="left">4</td>
+<td align="left">PC、MAC</td>
+<td align="left">Android上的Chrome</td>
+</tr>
+<tr>
+<td align="left">调试Android APP里的webview</td>
+<td align="left">需要翻墙</td>
+<td align="left">3</td>
+<td align="left">4</td>
+<td align="left">PC、MAC</td>
+<td align="left">Android APP里的webview</td>
+</tr>
+<tr>
+<td align="left">调试Android上的x5内核（微信等）</td>
+<td align="left">安装较为繁琐</td>
+<td align="left">3</td>
+<td align="left">5</td>
+<td align="left">PC、MAC</td>
+<td align="left">Android上的应用了x5内核的app，如微信、手Q、QQ浏览器等</td>
+</tr>
+<tr>
+<td align="left">调试Android上的UC</td>
+<td align="left">需要桌面设备和移动设备同一网段</td>
+<td align="left">1</td>
+<td align="left">3</td>
+<td align="left">PC、MAC</td>
+<td align="left">Android上的UC</td>
+</tr>
+<tr>
+<td align="left">调试iOS上的Safari</td>
+<td align="left">需要MAC（甚至可以无需iOS设备）</td>
+<td align="left">2</td>
+<td align="left">4</td>
+<td align="left">MAC</td>
+<td align="left">iOS上的Safari</td>
+</tr>
+</tbody></table>
+<h1 id="移动端适配方案"><a href="#移动端适配方案" class="headerlink" title="移动端适配方案"></a>移动端适配方案</h1><p>写之前寻找了下有没有更具体系统的资料，毕竟如果有更系统的资料可以起到很好的借鉴作用。最后发现还是这篇比较系统:<a target="_blank" rel="noopener" href="http://html-js.com/article/MobileWeb">MobileWeb</a></p>
+<p>综合来说，是这几种可行方案。</p>
+<ul>
+<li>固定高度，宽度自适应</li>
+<li>固定宽度，viewport缩放</li>
+<li>rem做宽度，viewport缩放</li>
+</ul>
+<p>具体的细节这里就不具体写了，可以去爬文查看。这里仅仅对实现的原理进行部分总结。有了这个原理就可以做到心中有谱，知道每种方案是怎么回事。</p>
+<h2 id="固定高度，宽度自适应"><a href="#固定高度，宽度自适应" class="headerlink" title="固定高度，宽度自适应"></a>固定高度，宽度自适应</h2><p>固定高度几乎是从PC端转移动端切图时候瞬间就会想到的方案：</p>
+<ol>
+<li>PC端早有百分比布局的实践</li>
+<li>高度可以写死来避免高度不能使用百分比的问题</li>
+</ol>
+<h2 id="固定宽度，viewport缩放"><a href="#固定宽度，viewport缩放" class="headerlink" title="固定宽度，viewport缩放"></a>固定宽度，viewport缩放</h2><p>固定宽度这个是将viewport的width写死来实现的。设计图、页面宽度、viewport width使用一个宽度，浏览器帮我们完成缩放。单位使用px即可。<br>这个方案的优点嘛，设好了这块以后，可以完全按照PC端切图的经验来，单位完全可以使用px。<br>不过不足之处上，原文可能没有指出:在这种方案下做的页面可以相对省事的适配好各种屏幕，但是除了生硬的缩放外和由此来的模糊外，还有一个缺陷是无法做响应式，因为PC端并不认viewport.</p>
+<h2 id="rem做宽度，viewport缩放"><a href="#rem做宽度，viewport缩放" class="headerlink" title="rem做宽度，viewport缩放"></a>rem做宽度，viewport缩放</h2><p>这个方案是个人最看好的方案。或者是因为对rem充满好感的缘故。<br>下面是引用的秒速</p>
+<blockquote>
+<p>依照某特定宽度设定 rem 值（即 html 的 font-size），页面任何需要弹性适配的元素，尺寸均换算为 rem 进行布局；当页面渲染时，根据页面有效宽度进行计算，调整 rem 的大小，动态缩放以达到适配的效果。利用该方案，还可以根据 devicePixelRatio 设定 initial-scale 来放大 viewport，使页面按照物理像素渲染，提升清晰度。</p>
+</blockquote>
+<p>个人最喜欢的还是 <strong>rem做宽度，viewport缩放</strong> 。适配这个东西，算是移动端入门第一步，有了理论打基础整个开发才可能达到得心应手的程度。</p>
+<h1 id="REM技术实现方案"><a href="#REM技术实现方案" class="headerlink" title="REM技术实现方案"></a>REM技术实现方案</h1><p>目前来说rem方案里面淘宝的<a target="_blank" rel="noopener" href="https://github.com/amfe/lib-flexible">amfe/lib-flexible</a>比较出名，而且是实践总结，所以坑相对也会平坦一些。</p>
+<p>不过如果不用淘宝的方案，其实自己也可以写js替代它，这是目前个人用过的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">  (<span class="function"><span class="keyword">function</span> (<span class="params">doc, win</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> docEl = doc.documentElement</span><br><span class="line">    <span class="keyword">var</span> designWidth = <span class="number">750</span>   <span class="comment">// 设计稿宽度</span></span><br><span class="line">    <span class="keyword">var</span> baseWidth = <span class="number">320</span>     <span class="comment">// 如果 clientWidth 取不到值，给个最小宽度值</span></span><br><span class="line">    <span class="keyword">var</span> baseFontSize = <span class="number">100</span>  <span class="comment">// Rem 计算基础值，我这里给 100</span></span><br><span class="line">    <span class="keyword">var</span> giveBaseWidth = <span class="number">480</span></span><br><span class="line">    <span class="keyword">var</span> giveBaseFontSize = (giveBaseWidth/designWidth)*baseFontSize</span><br><span class="line">    <span class="keyword">var</span> resizeEvt = <span class="string">&#x27;orientationchange&#x27;</span> <span class="keyword">in</span> win ? <span class="string">&#x27;orientationchange&#x27;</span> : <span class="string">&#x27;resize&#x27;</span></span><br><span class="line">    recalc = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> clientWidth = docEl.clientWidth || baseWidth</span><br><span class="line">        <span class="keyword">if</span> (clientWidth &gt; designWidth) clientWidth = designWidth</span><br><span class="line">        <span class="keyword">var</span> fontSize = (baseFontSize*clientWidth/designWidth)</span><br><span class="line">        fontSize = fontSize &gt;= giveBaseFontSize ? giveBaseFontSize : fontSize</span><br><span class="line">        docEl.style.fontSize = fontSize + <span class="string">&#x27;px&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">    doc.addEventListener</span><br><span class="line">      &amp;&amp;</span><br><span class="line">    (</span><br><span class="line">      win.addEventListener(resizeEvt, recalc, <span class="literal">false</span>),</span><br><span class="line">      doc.addEventListener(<span class="string">&#x27;DOMContentLoaded&#x27;</span>, recalc, <span class="literal">false</span>)</span><br><span class="line">    )</span><br><span class="line">  &#125;)(<span class="built_in">document</span>, <span class="built_in">window</span>)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>把它加入到head头部就好。然后编辑器设置base值，将px统一手动转换成rem也好，使用编辑器插件也好，总之转换过来就ok了。<br>不过说实话，每次加这个&amp;&amp;转换也是比较烦的事情，所以如果使用的webpack方案，可以使用 <strong>px2rem-webpack-plugin</strong> 补丁，这个补丁依赖了html-webpack-plugin，所以如果用了它可以不用自己在安装一次了。</p>
+<p>这里简单copy一下文档，归结一下使用方法,具体使用姿势：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">var HtmlWebpackPlugin &#x3D; require(&#39;html-webpack-plugin&#39;);</span><br><span class="line">var Px2remWebpackPlugin &#x3D; require(&#39;px2rem-webpack-plugin&#39;);</span><br><span class="line"></span><br><span class="line">var webpackConfig &#x3D; &#123;</span><br><span class="line">  entry: &#39;app.js&#39;,</span><br><span class="line">  output: &#123;</span><br><span class="line">    path: &#39;dist&#39;,</span><br><span class="line">    filename: &#39;[hash].app.js&#39;</span><br><span class="line">  &#125;,</span><br><span class="line">  plugins: [</span><br><span class="line">    new HtmlWebpackPlugin(),</span><br><span class="line">    new Px2remWebpackPlugin(&#123;originScreenWidth: 750&#125;),</span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>最后生成的html里面是类似这样的:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>Webpack App<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">  <span class="built_in">document</span>.documentElement.style.fontSize = <span class="number">100</span> * innerWidth / <span class="number">320</span> + <span class="string">&#x27;px&#x27;</span></span></span><br><span class="line"><span class="javascript">  addEventListener(<span class="string">&#x27;load&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">       <span class="built_in">document</span>.documentElement.style.fontSize = <span class="number">100</span> * innerWidth / <span class="number">320</span> + <span class="string">&#x27;px&#x27;</span></span></span><br><span class="line"><span class="javascript">       <span class="built_in">window</span>.unit = <span class="number">100</span> * innerWidth / <span class="number">320</span>;</span></span><br><span class="line"><span class="javascript">       <span class="keyword">var</span> e = <span class="built_in">document</span>.createEvent(<span class="string">&#x27;Event&#x27;</span>);</span></span><br><span class="line"><span class="javascript">       e.initEvent(<span class="string">&#x27;adjustReady&#x27;</span>, <span class="literal">true</span>, <span class="literal">true</span>);</span></span><br><span class="line"><span class="javascript">       <span class="built_in">window</span>.dispatchEvent(e);</span></span><br><span class="line">    &#125;, 480);</span><br><span class="line">  &#125;)</span><br><span class="line"><span class="javascript">  addEventListener(<span class="string">&#x27;orientationchange&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">      <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">document</span>.documentElement.style.fontSize = <span class="number">100</span> * innerWidth / <span class="number">320</span> + <span class="string">&#x27;px&#x27;</span></span></span><br><span class="line">      &#125;, 480)</span><br><span class="line"></span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;6062412d2f3140cc3dd0.app.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>原理和上面差不多,只不过是自动帮你插入代码到了html里面。originScreenWidth: 750这个是设置设计图的宽度。<br>这个插件怎么说呢，初看，单页的话似乎用途也不太大。但是，它最大的用途其实是将css里面的px转换成rem，这样就不需要依赖编辑器的转换了。</p>
+<h1 id="关于HOTCSS"><a href="#关于HOTCSS" class="headerlink" title="关于HOTCSS"></a>关于HOTCSS</h1><p>实际上hotcss这小节应该列入rem技术方案那儿的。不过想了想还是把它挪出来单独写了。github地址：<a target="_blank" rel="noopener" href="https://github.com/imochen/hotcss">hotcss</a>。</p>
+<p>主要优势：</p>
+<ul>
+<li>保证不同设备下的统一视觉体验。</li>
+<li>不需要你再手动设置viewport，根据当前环境计算出最适合的viewport。</li>
+<li>支持任意尺寸的设计图，不局限于特定尺寸的设计图。</li>
+<li>支持单一项目，多种设计图尺寸，专为解决大型，长周期项目。</li>
+<li>提供px2rem转换方法，CSS布局，零成本转换，原始值不丢失。</li>
+<li>有效解决移动端真实1像素问题。</li>
+</ul>
+<p>恩，谈这个之前，还是得感叹一下，前端发展的实在太快了。当我还在使用px2rem很快乐的时候，更先进的东西就不期而至了。<br>hotcss的readme写了以上的优势，但是并没有说，是针对 <strong>谁</strong> 的优势，但是想想，实际上它针对的，就是上面写到的rem方案。hotcss是上面rem方案的加强版，官方说是 <strong>移动端布局终极解决方案</strong>，其实也没什么错，就目前来说，这已经最先进的rem方案。</p>
+<p>具体的使用使用方法，由于是国内的开源项目，是中文文档，就不再复制了。</p>
+<h1 id="组件化开发"><a href="#组件化开发" class="headerlink" title="组件化开发"></a>组件化开发</h1><p>本来到了上章就讲完了。奈何，前端发展太快，我们又有了新的选择。<br>那就是组件化开发。这个讲起来就相对复杂一些。主要的技术栈是两个:<strong>Vue + webpack + vue-router</strong> &amp;&amp; <strong>React+webpack+react-router</strong>。简单说，是Vue体系和React体系。</p>
+<p>Vue体系下我认为最好的组件库是<a target="_blank" rel="noopener" href="https://github.com/airyland/vux">Vux</a>,因为它足够全面，基本上能想到的组件，难以实现的组件的，它都做好了。怎么说这个全呢？有一次我做一个类似淘宝的快递进度条这个，去看vux的组件库，它都做好了。我认为它是最强的移动端组件库了。这是<a target="_blank" rel="noopener" href="https://vuxjs.gitbooks.io/vux/content/">文档地址</a></p>
+<p>React体系下的移动端UI库，国内我认为最好的应该是<a target="_blank" rel="noopener" href="https://mobile.ant.design/docs/react/introduce">Antd Mobile</a>了,延续了ant的文档风格，常见的组件基本都有了,不过相比vux,它的组件丰富程度确实只能算是一般。</p>
+<p>就Vue体系来讲,使用<a target="_blank" rel="noopener" href="https://github.com/vuejs/vue-cli">vue-cli</a>是一个非常棒的选择，如果是React,阿里加的<a target="_blank" rel="noopener" href="https://github.com/dvajs/dva-cli">dva-cli</a>认真讲其实非常不错。不过，就我个人看法来说vue-cli就是比较国际范儿，功能全面支持多种手脚架；相对来说dva-cli就要差一些，不过他对React的redux逻辑封装的非常好，最新的版本都可以生成model了。</p>
+<p>不过，如果使用vue-cli也好，dva-cli也好，他们本身都是不带router的，所以，你需要自己去集成它。router+webpack，是按需加载的必要项目，如果你用它们做移动端项目，项目稍大一点，这就是必选项。</p>
+<div style="text-align:center;">--------------------- THE END ---------------------</div>
+
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a target="_blank" rel="noopener" href="https://github.com/riskers/blog/issues/18">移动端适配方案(下) </a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%A7%BB%E5%8A%A8%E7%AB%AF/" rel="tag"># 移动端</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/17/web-performance/" rel="prev" title="web性能优化">
+      <i class="fa fa-chevron-left"></i> web性能优化
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/07/24/Promise/" rel="next" title="Promise">
+      Promise <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%A9%E7%90%86%E5%83%8F%E7%B4%A0"><span class="nav-number">1.1.</span> <span class="nav-text">物理像素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSS%E5%83%8F%E7%B4%A0"><span class="nav-number">1.2.</span> <span class="nav-text">CSS像素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%8F%E5%B9%95%E5%AF%86%E5%BA%A6"><span class="nav-number">1.3.</span> <span class="nav-text">屏幕密度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E5%83%8F%E7%B4%A0%E6%AF%94"><span class="nav-number">1.4.</span> <span class="nav-text">设备像素比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%AE%BE%E5%A4%87%E8%B0%83%E8%AF%95"><span class="nav-number">2.</span> <span class="nav-text">移动设备调试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E7%AB%AF%E9%80%82%E9%85%8D%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">移动端适配方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BA%E5%AE%9A%E9%AB%98%E5%BA%A6%EF%BC%8C%E5%AE%BD%E5%BA%A6%E8%87%AA%E9%80%82%E5%BA%94"><span class="nav-number">3.1.</span> <span class="nav-text">固定高度，宽度自适应</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BA%E5%AE%9A%E5%AE%BD%E5%BA%A6%EF%BC%8Cviewport%E7%BC%A9%E6%94%BE"><span class="nav-number">3.2.</span> <span class="nav-text">固定宽度，viewport缩放</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rem%E5%81%9A%E5%AE%BD%E5%BA%A6%EF%BC%8Cviewport%E7%BC%A9%E6%94%BE"><span class="nav-number">3.3.</span> <span class="nav-text">rem做宽度，viewport缩放</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#REM%E6%8A%80%E6%9C%AF%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88"><span class="nav-number">4.</span> <span class="nav-text">REM技术实现方案</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EHOTCSS"><span class="nav-number">5.</span> <span class="nav-text">关于HOTCSS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%84%E4%BB%B6%E5%8C%96%E5%BC%80%E5%8F%91"><span class="nav-number">6.</span> <span class="nav-text">组件化开发</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">7.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="自从webpack三番五次因为工具链太重在公司内部推不起来也看不到推起来的希望以后，从此绝了在项目中使用webpack的念头，唯一使用了webpack的项目仅剩微信端的一个单人独奏项目。然后开始寻找webpack的替代品。目标是支持UMD规范，有合用的打包的工具，并且不需要工具链就可以运行起来，然后，我找到了SystemJS这个新玩具。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SystemJS Multi-Page多页面实践&amp;总结">
+<meta property="og:url" content="http://www.que01.top/2016/03/31/systemJS/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="自从webpack三番五次因为工具链太重在公司内部推不起来也看不到推起来的希望以后，从此绝了在项目中使用webpack的念头，唯一使用了webpack的项目仅剩微信端的一个单人独奏项目。然后开始寻找webpack的替代品。目标是支持UMD规范，有合用的打包的工具，并且不需要工具链就可以运行起来，然后，我找到了SystemJS这个新玩具。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-03-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.572Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/03/31/systemJS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SystemJS Multi-Page多页面实践&总结 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/03/31/systemJS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SystemJS Multi-Page多页面实践&总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-31 00:00:00" itemprop="dateCreated datePublished" datetime="2016-03-31T00:00:00+08:00">2016-03-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/03/31/systemJS/" class="post-meta-item leancloud_visitors" data-flag-title="SystemJS Multi-Page多页面实践&总结" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">自从webpack三番五次因为工具链太重在公司内部推不起来也看不到推起来的希望以后，从此绝了在项目中使用webpack的念头，唯一使用了webpack的项目仅剩微信端的一个单人独奏项目。然后开始寻找webpack的替代品。目标是支持UMD规范，有合用的打包的工具，并且不需要工具链就可以运行起来，然后，我找到了SystemJS这个新玩具。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>自从webpack三番五次因为工具链太重在公司内部推不起来也看不到推起来的希望以后，从此绝了在项目中使用webpack的念头，唯一使用了webpack的项目仅剩微信端的一个单人独奏项目。</p>
+<p>然后开始寻找webpack的替代品。目标是：</p>
+<ul>
+<li>支持UMD规范</li>
+<li>有合用的打包的工具并且可以整合gulp</li>
+<li>不需要工具链就可以运行起来</li>
+</ul>
+<p>然后，我找到了SystemJS这个新玩具，记得当时看到5K+的star，感觉好激动，写本文时候我又去看了下，5355，然后又看到自己居然没有star一下，遂star之，恩，现在是5356。</p>
+<p>本文是一个记录，记录自己在项目实践中的诸多总结，总体项目背景如下：<code>传统的多页面应用，不需要兼容旧浏览器，总体页面逻辑是顶部和右侧菜单不变，点击栏目链接不刷新更新中间区域，具体的业务逻辑这里不提，不是重点</code>。</p>
+<h1 id="SystemJS介绍"><a href="#SystemJS介绍" class="headerlink" title="SystemJS介绍"></a>SystemJS介绍</h1><p>写之前简单介绍下SystemJs是什么。<br>Github上的介绍是：</p>
+<blockquote>
+<p><em>Universal dynamic module loader</em><br>Universal dynamic module loader - loads ES6 modules, AMD, CommonJS and global scripts in the browser and NodeJS. Works with both Traceur and Babel.</p>
+</blockquote>
+<blockquote>
+<ul>
+<li>Loads any module format with exact circular reference and binding support.</li>
+<li>Loads ES6 modules compiled into the System.register bundle format for production, maintaining circular references support.</li>
+<li>Supports RequireJS-style map, paths, bundles and global shims.</li>
+<li>Loader plugins allow loading assets through the module naming system such as CSS, JSON or images.</li>
+</ul>
+</blockquote>
+<p>翻译一下：</p>
+<blockquote>
+<p><em><a target="_blank" rel="noopener" href="https://github.com/umdjs/umd">UMD</a>规范加载器</em><br><em><a target="_blank" rel="noopener" href="https://github.com/umdjs/umd">UMD</a>规范加载器</em> - 加载ES6、AMD、CommonJS模块和全局脚本,可以运行在浏览器和NodeJS环境，可以与Traceur和Babel一起协作。</p>
+</blockquote>
+<blockquote>
+<ul>
+<li>各种规范的模块之间的循环引用功能和绑定支持</li>
+<li>ES6模块在实际生产环境编译为System.register的bundle格式，维持循环引用</li>
+<li>支持RequireJS式map, paths, bundles和全局垫片技术(global shims).</li>
+<li>支持通过各种模块加载CSS, JSON or images等资源</li>
+</ul>
+</blockquote>
+<p>貌似功能都写的很具体了，但是好像不需要这么多的列表，这里简单说下自己认为的重点，那就是：</p>
+<blockquote>
+<p><em>各种规范的模块之间的循环引用功能</em></p>
+</blockquote>
+<p>是的，就一个就足够说服我自己用起来了，尤其是，它不需要工具链支持就可以运行起来！当然，到了产品发布阶段，还是需要打包才能达到性能优化目标。</p>
+<h1 id="SystemJS专属包管理工具"><a href="#SystemJS专属包管理工具" class="headerlink" title="SystemJS专属包管理工具"></a>SystemJS专属包管理工具</h1><p><a target="_blank" rel="noopener" href="http://jspm.io/">jspm</a>官网的介绍感觉有些抓不住重点。</p>
+<p>我这里就自己实践，简单说下jspm的功能</p>
+<ul>
+<li>初始化SystemJS项目，下载system依赖，生成config.js等配置文件</li>
+<li>安装各种npm和github上的包和组件，并自动化配置config.js的map映射，并可以设置自己的类似npm这样的源</li>
+<li>打包模块</li>
+</ul>
+<p>这里简单说下jspm日常使用：</p>
+<h2 id="安装jspm"><a href="#安装jspm" class="headerlink" title="安装jspm"></a>安装jspm</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i -g jspm</span><br></pre></td></tr></table></figure>
+
+<h2 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jspm init</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Package.json file does not exist, create it? [yes]: </span><br><span class="line">Would you like jspm to prefix the jspm package.json properties under jspm? [yes]: </span><br><span class="line">Enter server baseURL (public folder path) [.]: </span><br><span class="line">Enter jspm packages folder [.&#x2F;jspm_packages]: </span><br><span class="line">Enter config file path [.&#x2F;config.js]: </span><br><span class="line">Configuration file config.js doesn&#39;t exist, create it? [yes]:</span><br><span class="line">Enter client baseURL (public folder URL) [&#x2F;]: </span><br><span class="line">Which ES6 transpiler would you like to use, Traceur or Babel? [babel]:</span><br></pre></td></tr></table></figure>
+
+<h2 id="下载安装包"><a href="#下载安装包" class="headerlink" title="下载安装包"></a>下载安装包</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">从npm</span></span><br><span class="line">jspm install npm:jquery</span><br><span class="line"><span class="meta">#</span><span class="bash">从github</span></span><br><span class="line">jsom install github:lodash/lodash</span><br><span class="line"><span class="meta">#</span><span class="bash">设置map,这样可以直接require(<span class="string">&#x27;jq&#x27;</span>)</span></span><br><span class="line">jspm install jq=npm:jquery</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建自己的git源"><a href="#构建自己的git源" class="headerlink" title="构建自己的git源"></a>构建自己的git源</h2><p>构建自己的git源可以用来处理维护问题，新项目git clone以后直接jspm install一遍就可以直接运行。<br>这里使用<a target="_blank" rel="noopener" href="https://github.com/Orbs/jspm-git">jspm-git</a>来做自己的私有registries。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">安装</span></span><br><span class="line">npm install --save-dev jspm-git</span><br><span class="line"><span class="meta">#</span><span class="bash">创建</span></span><br><span class="line">jspm registry create &lt;registryName&gt; jspm-git</span><br><span class="line">jspm registry config &lt;registryName&gt;</span><br></pre></td></tr></table></figure>
+<p>这样处理之后，就要输入git的位置了，建议企业项目要用自己的私有git，不要使用公有仓库<br>处理完毕以后，配置文件位置在 <code>~/.jspm/config</code>，以后可以按需更改，需要注意的重点是：</p>
+<ul>
+<li>私有仓库需要添加ssh key，不然包的这个安装过程是很折腾人的，具体如何添加ssh key，不在本文范围内。</li>
+<li>可以设置内网的Git公开库，这样可以在安全和便捷上达到平衡。</li>
+</ul>
+<h1 id="SystemJS基本用法"><a href="#SystemJS基本用法" class="headerlink" title="SystemJS基本用法"></a>SystemJS基本用法</h1><h2 id="jQuery插件使用："><a href="#jQuery插件使用：" class="headerlink" title="jQuery插件使用："></a>jQuery插件使用：</h2><p>jQuery插件需要先加载jQuery,然后加载插件,如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">System.import(<span class="string">&#x27;jquery&#x27;</span>)</span><br><span class="line">        .then(<span class="function"><span class="keyword">function</span> (<span class="params">jQuery</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">window</span>.jQuery = <span class="built_in">window</span>.$ = jQuery;</span><br><span class="line">            <span class="keyword">return</span> System.import(<span class="string">&quot;xdan/datetimepicker&quot;</span>)</span><br><span class="line">        &#125;)</span><br><span class="line">        .then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">            $(<span class="string">&#x27;#datetimepicker&#x27;</span>).datetimepicker(&#123;</span><br><span class="line">                lang:<span class="string">&#x27;zh&#x27;</span></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="多依赖处理："><a href="#多依赖处理：" class="headerlink" title="多依赖处理："></a>多依赖处理：</h2><p>假设a.js依赖b.js和c.js,只有两个加载完成后a.js才能正常运行:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all([<span class="string">&quot;b.js&quot;</span>,<span class="string">&quot;c.js&quot;</span>].map(<span class="function"><span class="keyword">function</span>(<span class="params">x</span>)</span>&#123;        <span class="comment">//先加载b.js和c.js</span></span><br><span class="line">    <span class="keyword">return</span> System.import(x)</span><br><span class="line">&#125;)).then(<span class="function"><span class="keyword">function</span>(<span class="params">m</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> b = m[<span class="number">0</span>],c = m[<span class="number">1</span>];                          <span class="comment">//为b和c设置别名以便调用</span></span><br><span class="line">    <span class="keyword">return</span> System.import(<span class="string">&#x27;a.js&#x27;</span>)                    <span class="comment">//加载a.js</span></span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">a</span>)</span>&#123;</span><br><span class="line">    a();</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="如何编写业务代码"><a href="#如何编写业务代码" class="headerlink" title="如何编写业务代码:"></a>如何编写业务代码:</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//引入jQuery</span></span><br><span class="line">   System.import(<span class="string">&#x27;jquery&#x27;</span>)                             </span><br><span class="line">           .then(<span class="function"><span class="keyword">function</span>(<span class="params">$</span>)</span>&#123;</span><br><span class="line">               <span class="built_in">window</span>.jQuery = <span class="built_in">window</span>.$ = $;</span><br><span class="line">               <span class="comment">//这是业务代码</span></span><br><span class="line">               <span class="keyword">return</span> System.import(<span class="string">&quot;modules/custom/test.js&quot;</span>); </span><br><span class="line">           &#125;)</span><br><span class="line">           <span class="comment">//app是业务代码的别名</span></span><br><span class="line">           .then(<span class="function"><span class="keyword">function</span>(<span class="params">app</span>)</span>&#123;</span><br><span class="line">               app();                                          </span><br><span class="line">           &#125;)</span><br></pre></td></tr></table></figure>
+<p>test.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//module.exports是暴露出来的对接口</span></span><br><span class="line">   <span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;                                </span><br><span class="line">       $(<span class="string">&quot;body&quot;</span>).append(<span class="string">&quot;just a test&quot;</span>);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>PS：如果你并不想每次都执行一次app(),也不想使用函数式编程,那么test.js是这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = (<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        $(<span class="string">&quot;body&quot;</span>).append(<span class="string">&quot;just a test&quot;</span>);</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+
+<p>但是这里有个地方需要注意，这样的代码仅仅在js加载时候有效果，当js使用缓存时候，js将不被再次执行。<br>引用时候这样就可以了：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//引入jQuery</span></span><br><span class="line">      System.import(<span class="string">&#x27;jquery&#x27;</span>)                             </span><br><span class="line">              .then(<span class="function"><span class="keyword">function</span>(<span class="params">$</span>)</span>&#123;</span><br><span class="line">                  <span class="built_in">window</span>.jQuery = <span class="built_in">window</span>.$ = $;</span><br><span class="line">                  <span class="comment">//这是业务代码</span></span><br><span class="line">                  <span class="keyword">return</span> System.import(<span class="string">&quot;modules/custom/test.js&quot;</span>); </span><br><span class="line">              &#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="不改代码，全局暴露"><a href="#不改代码，全局暴露" class="headerlink" title="不改代码，全局暴露"></a>不改代码，全局暴露</h2><p>类似这样的一段代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">test.js</span><br><span class="line">    $(<span class="string">&quot;body&quot;</span>).append(<span class="string">&quot;just a test&quot;</span>);</span><br><span class="line">    alert(<span class="string">&quot;test1234&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>可以这样引用:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//引入jQuery</span></span><br><span class="line">System.import(<span class="string">&#x27;jquery&#x27;</span>)                             </span><br><span class="line">    .then(<span class="function"><span class="keyword">function</span>(<span class="params">$</span>)</span>&#123;</span><br><span class="line">        <span class="built_in">window</span>.jQuery = <span class="built_in">window</span>.$ = $;</span><br><span class="line">        <span class="comment">//这是业务代码</span></span><br><span class="line">        <span class="keyword">return</span> System.import(<span class="string">&quot;modules/custom/test.js&quot;</span>); </span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="在JS中引用模块"><a href="#在JS中引用模块" class="headerlink" title="在JS中引用模块"></a>在JS中引用模块</h2><p>最简引用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.import(<span class="string">&quot;modules/custom/test.js&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>这就够了，但是如果你在JS中用到了jQuey,test.js还是要处理一下：</p>
+<p>test.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//引入jQuery</span></span><br><span class="line">      <span class="keyword">var</span> $ = <span class="built_in">require</span>(<span class="string">&quot;jquery&quot;</span>);                     </span><br><span class="line">      $(<span class="string">&quot;body&quot;</span>).append(<span class="string">&quot;just a test&quot;</span>);</span><br><span class="line">      alert(<span class="string">&quot;test1234&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="AMD和CMD的循环引用"><a href="#AMD和CMD的循环引用" class="headerlink" title="AMD和CMD的循环引用"></a>AMD和CMD的循环引用</h2><p>上面提到的import实际上用到的CMD规范，遇到只支持AMD,并且依赖异常复杂库(如echarts)的如何处理？<br>SystemJS可以支持AMD和CMD规范,<br>如果使用CMD规范的模块,需要使用Promise来确保引入顺序,<br>如果使用AMD规范的话,声明：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>=System.amdRequire;</span><br></pre></td></tr></table></figure>
+
+<p>然后JS中这样处理：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>(</span><br><span class="line">    [</span><br><span class="line">        <span class="string">&#x27;jquery&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;echarts&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;echarts/src/config&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;echarts/src/chart/line&#x27;</span>, <span class="comment">// 使用柱状图就加载bar模块，按需加载</span></span><br><span class="line">        <span class="string">&#x27;echarts/src/chart/bar&#x27;</span>,</span><br><span class="line">        <span class="comment">//&#x27;echarts/src/chart/pie&#x27;</span></span><br><span class="line">    ],</span><br><span class="line"><span class="function"><span class="keyword">function</span> (<span class="params">$,ec,ecConfig</span>) </span>&#123;&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>但是这样会导致无法使用cmd模块，无法使用多类型模块循环引用。所以有需求时候使用System.amdRequire来音容AMD是最完美的，require用来加载CMD好了。</p>
+<h1 id="项目基本和手脚架设计"><a href="#项目基本和手脚架设计" class="headerlink" title="项目基本和手脚架设计"></a>项目基本和手脚架设计</h1><p>基本的情况文首说过一次，这里重复一下：<br><code>传统的多页面应用，不需要兼容旧浏览器，总体页面逻辑是顶部和右侧菜单不变，点击栏目链接不刷新更新中间区域，具体的业务逻辑这里不提，不是重点</code>。</p>
+<p>这里提取和补充一下要点：</p>
+<ul>
+<li>左侧菜单和顶部菜单做成模块公用(不使用gulp来inject是因为涉及帐号权限问题)，点击这菜单这两块不刷新</li>
+<li>中间区域通过jQuery的load使用ajax来载入进去，插入到内容区域，尽量减少全刷新。</li>
+<li>CSS和JS在线和开发阶段使用不同版本，开发阶段方便调试不压缩合并，在线版本需要满足以下：<ul>
+<li>压缩</li>
+<li>合并</li>
+<li>强缓存(即为资源添加版本号或者hash值，我个人喜欢hash)</li>
+</ul>
+</li>
+</ul>
+<h2 id="文件目录基础设计"><a href="#文件目录基础设计" class="headerlink" title="文件目录基础设计"></a>文件目录基础设计</h2><p>这里简单说下文件目录基础设计：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">├── asset</span><br><span class="line">│   ├── css</span><br><span class="line">│   ├── fonts</span><br><span class="line">│   ├── images</span><br><span class="line">│   └── js</span><br><span class="line">├── config.js</span><br><span class="line">├── html</span><br><span class="line">│   ├── dist</span><br><span class="line">│   │   └── login</span><br><span class="line">│   │       ├── login.html</span><br><span class="line">│   │       ├── logout.html</span><br><span class="line">│   │       └── resetPwd.html</span><br><span class="line">│   └── src</span><br><span class="line">│       └── login</span><br><span class="line">│           ├── login.html</span><br><span class="line">│           ├── logout.html</span><br><span class="line">│           └── resetPwd.html</span><br><span class="line">└── modules</span><br><span class="line">    ├── business</span><br><span class="line">    │   └── login</span><br><span class="line">    │       ├── login.js</span><br><span class="line">    │       ├── logout.js</span><br><span class="line">    │       └── resetPwd.js</span><br><span class="line">    ├── github</span><br><span class="line">    ├── npm</span><br><span class="line">    └── privateregistr</span><br></pre></td></tr></table></figure>
+<p>根据约定重于配置原则，这里说下设计和约定：</p>
+<ol>
+<li>开发阶段使用html下src目录放置html文件，modules下business放置业务js和css代码，privateregistr这个随意命名的，用来放置公用模块，使用submodule维护。</li>
+<li>发布阶段使用gulp对business下js和css进行打包，统一发布到asset/js和asset/css</li>
+<li>每个html/dist下的文件夹为一个大栏目，里面每个html对应一个业务页面，每个页面的js名称结构要同modules/business下结构对应，举例来说：<ul>
+<li>html/dist/login/login.html这个文件的对应的js是modules/business/login/login.js</li>
+<li>每个页面只接受一个js作为业务入口，意思是如果上文login.js分解为step1.js&amp;step2.js&amp;step3.js是可以的，但是最终将只引入login.js一个，其他将require方式引用进去，不提供单独的script标签给它们。</li>
+</ul>
+</li>
+<li>modules文件夹是jspm packages folder，里面的github和npm分别是github和npm下载的包，privateregistr则是使用jspm-git构建的私有包目标源。config.js是system.js的配置文件。</li>
+</ol>
+<h2 id="workflow"><a href="#workflow" class="headerlink" title="workflow"></a>workflow</h2><p>上面写了那么多，到底其实到底只是为了workflow服务。</p>
+<p>这里简单说下这个流程下开发过程的展开：</p>
+<h3 id="开发"><a href="#开发" class="headerlink" title="开发"></a>开发</h3><ol>
+<li>安装一个包<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 安装一个做好模块化处理的jqueyr版本</span><br><span class="line">jspm install jquery&#x3D;github:components&#x2F;jquery</span><br></pre></td></tr></table></figure></li>
+<li>进入开发环节，假设要做个搜索页面，放在search大类目录下：</li>
+</ol>
+<ul>
+<li>新建文件：html/dist/search/search.html</li>
+<li>新建文件：modules/business/search/search.js</li>
+<li>开始编码环节：</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">//js</span><br><span class="line">...</span><br><span class="line">module.exports = function()&#123;</span><br><span class="line">	var $ = require(&quot;jquery&quot;)</span><br><span class="line">	$.get(&quot;XXXXX&quot;,&#123;</span><br><span class="line">		query:&quot;XXXX&quot;</span><br><span class="line">	&#125;,function(data)&#123;</span><br><span class="line">		//coding here</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">//html</span><br><span class="line">...</span><br><span class="line"><span class="comment">&lt;!--build asset/css/search.css--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;style1.css&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;style2.css&quot;</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--build--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;system.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;config.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--inject:js--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--endinject--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">System.import(<span class="string">&quot;modules/business/search/search&quot;</span>,<span class="function"><span class="keyword">function</span>(<span class="params">app</span>)</span>&#123;</span></span><br><span class="line">	app();</span><br><span class="line">&#125;)</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">...</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="打包环节："><a href="#打包环节：" class="headerlink" title="打包环节："></a>打包环节：</h3><p>个人设计的打包环节主要是几个个主要部分组成：</p>
+<ol>
+<li>处理 <code>inject:js</code>这个注释标签的，这里插入打包&amp;压缩&amp;强缓存处理后的js</li>
+<li>处理 <code>build</code>这个注释标签，将内部css进行合并、压缩、强缓存的css并插入</li>
+<li>第3个是第1个任务的依赖，它生成配置文件，用来设置好inject这个任务哪个html需要插入哪个js(这就是为什么要做html和js文件名和层级约定)</li>
+<li>第4个也是第一个任务的依赖，它将所有js文件从business，进行打包压缩后放到asset/js目录下，并保持相应的目录层级</li>
+</ol>
+<h3 id="发布环节"><a href="#发布环节" class="headerlink" title="发布环节"></a>发布环节</h3><p>将dist这类版本直接放到服务器即可。src这类目录为了安全还是不放上去的好</p>
+<h2 id="Gulp"><a href="#Gulp" class="headerlink" title="Gulp"></a>Gulp</h2><p>这里为打包环节做个简单摘要，说下自己的task设计流程：</p>
+<ol>
+<li>生成配置json文件——gulp json,主要用到了jsonfile和filewalker</li>
+<li>进行模块打包，压缩——gulp jspm，主要用到了gulp-jspm</li>
+<li>进行inject操作，处理css和js——gulp inject,主要用到了gulp-inject，gulp-hash，gulp-rev，gulp-rev-replace和gulp-usermin</li>
+</ol>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>得益于前端变革般的发展，以及类似yeoman这类手脚架模板工具的普及和众多社区的贡献，优秀的手脚架貌似变得越来越多，有越来越廉价的感觉。但是这类手脚架一来往往都是基于SPA的设计，并不适合MPA来使用;二来是这类手脚架一般都是使用简单的requireJs这个加载器而非现在文章提及的可以支持UMD规范并有命令行工具支持的加载器，因此，并不能满足项目和业务快速迭代的需求，因此，有了这篇文章。</p>
+<p>每一个被星星点亮手脚架其实都是无数经验积累的产物，愿大家可以在巨人的肩膀上更近一步。</p>
+<p>本文只是一篇基于SystemJS工作流的总结。尚不敢妄称手脚架模板。</p>
+<p>恩，文章对自己的这个流程已经有了非常丰富的记载，而gulp这个，限于篇幅，我决定单开一篇来介绍它。</p>
+<div style="text-align:center;">-------------------------The End-------------------------</div>
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/03/27/git-plus/" rel="prev" title="Git笔记-续">
+      <i class="fa fa-chevron-left"></i> Git笔记-续
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/04/02/http-1/" rel="next" title="HTTP笔记(一)">
+      HTTP笔记(一) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SystemJS%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">SystemJS介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SystemJS%E4%B8%93%E5%B1%9E%E5%8C%85%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7"><span class="nav-number">3.</span> <span class="nav-text">SystemJS专属包管理工具</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85jspm"><span class="nav-number">3.1.</span> <span class="nav-text">安装jspm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.2.</span> <span class="nav-text">初始化项目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85%E5%8C%85"><span class="nav-number">3.3.</span> <span class="nav-text">下载安装包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84git%E6%BA%90"><span class="nav-number">3.4.</span> <span class="nav-text">构建自己的git源</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SystemJS%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">SystemJS基本用法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#jQuery%E6%8F%92%E4%BB%B6%E4%BD%BF%E7%94%A8%EF%BC%9A"><span class="nav-number">4.1.</span> <span class="nav-text">jQuery插件使用：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E4%BE%9D%E8%B5%96%E5%A4%84%E7%90%86%EF%BC%9A"><span class="nav-number">4.2.</span> <span class="nav-text">多依赖处理：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E7%BC%96%E5%86%99%E4%B8%9A%E5%8A%A1%E4%BB%A3%E7%A0%81"><span class="nav-number">4.3.</span> <span class="nav-text">如何编写业务代码:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E6%94%B9%E4%BB%A3%E7%A0%81%EF%BC%8C%E5%85%A8%E5%B1%80%E6%9A%B4%E9%9C%B2"><span class="nav-number">4.4.</span> <span class="nav-text">不改代码，全局暴露</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8JS%E4%B8%AD%E5%BC%95%E7%94%A8%E6%A8%A1%E5%9D%97"><span class="nav-number">4.5.</span> <span class="nav-text">在JS中引用模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AMD%E5%92%8CCMD%E7%9A%84%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8"><span class="nav-number">4.6.</span> <span class="nav-text">AMD和CMD的循环引用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E5%9F%BA%E6%9C%AC%E5%92%8C%E6%89%8B%E8%84%9A%E6%9E%B6%E8%AE%BE%E8%AE%A1"><span class="nav-number">5.</span> <span class="nav-text">项目基本和手脚架设计</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95%E5%9F%BA%E7%A1%80%E8%AE%BE%E8%AE%A1"><span class="nav-number">5.1.</span> <span class="nav-text">文件目录基础设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#workflow"><span class="nav-number">5.2.</span> <span class="nav-text">workflow</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%8F%91"><span class="nav-number">5.2.1.</span> <span class="nav-text">开发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%93%E5%8C%85%E7%8E%AF%E8%8A%82%EF%BC%9A"><span class="nav-number">5.2.2.</span> <span class="nav-text">打包环节：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E5%B8%83%E7%8E%AF%E8%8A%82"><span class="nav-number">5.2.3.</span> <span class="nav-text">发布环节</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Gulp"><span class="nav-number">5.3.</span> <span class="nav-text">Gulp</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

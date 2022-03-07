@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="开始读react代码。续上一篇继续分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react render环节分析">
+<meta property="og:url" content="http://www.que01.top/2018/04/20/react-render/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="开始读react代码。续上一篇继续分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/20180823151956.png">
+<meta property="og:image" content="http://www.que01.top/images/20180823140712.png">
+<meta property="article:published_time" content="2018-04-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.632Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react render">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/20180823151956.png">
+
+<link rel="canonical" href="http://www.que01.top/2018/04/20/react-render/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react render环节分析 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2018/04/20/react-render/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react render环节分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-04-20 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-20T00:00:00+08:00">2018-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2018/04/20/react-render/" class="post-meta-item leancloud_visitors" data-flag-title="react render环节分析" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">开始读react代码。续上一篇继续分析。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="render微观细节"><a href="#render微观细节" class="headerlink" title="render微观细节"></a>render微观细节</h1><h2 id="start"><a href="#start" class="headerlink" title="start"></a>start</h2><p>这里从Component开始分析，因为我们一般使用 react时候最基础的用法是： </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// jsx file </span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HelloMessage</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123; </span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123; </span><br><span class="line">    <span class="keyword">return</span> ( </span><br><span class="line">      &lt;div&gt;</span><br><span class="line">        Hello Wolrd</span><br><span class="line">      &lt;/div&gt; </span><br><span class="line">    ); </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// main.js</span></span><br><span class="line">ReactDOM.render(</span><br><span class="line">  &lt;HelloMessage name=<span class="string">&quot;Taylor&quot;</span> /&gt;, </span><br><span class="line">  mountNode</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>所以这里暂时以这个为目标，看看react最终是怎样实现这个jsx到js再到html上显示出HelloWorld的 </p>
+<p>当代码开始处理时候首先时通过 babel的预处理，这段代码关键的地方被转译后是这样 </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ReactDOM.render(</span><br><span class="line">  React.createElement(HelloMessage, &#123; <span class="attr">name</span>: Taylor &#125;, <span class="string">&quot;&quot;</span>), </span><br><span class="line">  mountNode</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>不过值得一提是createElement实质上并不会直接处理<HelloMessage name="Taylor" />， </p>
+<p>如果HelloMessage里面还有更多元素，那么第三个参数依旧用React.createElement来遍历子节点创建元素直到没有更多子元素了——这就是为什么 jsx里面render的元素必须用一个元素包裹起来的原因。 </p>
+<p>举例来说，就像下面代码:</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HelloMessage</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123; </span><br><span class="line">  <span class="function"><span class="title">render</span>(<span class="params"></span>)</span> &#123; </span><br><span class="line">    <span class="keyword">return</span> ( </span><br><span class="line">      &lt;div&gt;</span><br><span class="line">        &lt;span&gt;</span><br><span class="line">        	&lt;span&gt;Helloword&lt;/span&gt;</span><br><span class="line">        &lt;/span&gt;</span><br><span class="line">      &lt;/div&gt; </span><br><span class="line">    ); </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br><span class="line">ReactDOM.render(</span><br><span class="line">  &lt;HelloMessage name=<span class="string">&quot;Taylor&quot;</span> /&gt;, </span><br><span class="line">  mountNode</span><br><span class="line">)</span><br><span class="line"><span class="comment">// 被转换为:</span></span><br><span class="line">ReactDOM.render(</span><br><span class="line">    React.createElement(</span><br><span class="line">        HelloMessage, </span><br><span class="line">        &#123; <span class="attr">name</span>: Taylor &#125;, </span><br><span class="line">        React.createElement(</span><br><span class="line">            <span class="string">&quot;div&quot;</span>,</span><br><span class="line">            <span class="literal">null</span>,</span><br><span class="line">            React.createElement(</span><br><span class="line">              <span class="string">&quot;span&quot;</span>,</span><br><span class="line">              <span class="literal">null</span>,</span><br><span class="line">              React.createElement(</span><br><span class="line">                <span class="string">&quot;span&quot;</span>,</span><br><span class="line">                <span class="literal">null</span>,</span><br><span class="line">                <span class="string">&quot;Helloword&quot;</span></span><br><span class="line">              )</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line">    ), mountNode</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这里暂时跳过React.createElement执行过程，先了解一下React.render是如何将react这些渲染到HTML上的。</p>
+<p>在此之前，我们先在ReactDomComponent-test.js line 42打一个断点，然后在webstorm里点调试，接下来前往src/renderers/dom/ReactDOM.js目录将光标定位到568行。点击 <img src="/images/20180823151956.png" width="30px">图标,程序将会运行到这一行并断点，这样我们可以看到createElement函数最终返回的结构。它是这样的</p>
+<p><img src="/images/20180823140712.png"></p>
+<h2 id="Render的流程"><a href="#Render的流程" class="headerlink" title="Render的流程"></a>Render的流程</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ReactMount.render</span><br><span class="line">	-&gt; ReactMount._renderSubtreeIntoContainer</span><br><span class="line">		-&gt;  ReactMount._renderNewRootComponent</span><br><span class="line">			-&gt; ReactUpdates.batchedUpdates</span><br><span class="line">				-&gt; ReactUpdates.batchedMountComponentIntoNode</span><br><span class="line">					-&gt; mountComponentIntoNode(ReactMount.js中)</span><br><span class="line">						-&gt; ReactMount._mountImageIntoNode</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="ReactMount-renderSubtreeIntoContainer"><a href="#ReactMount-renderSubtreeIntoContainer" class="headerlink" title="ReactMount._renderSubtreeIntoContainer"></a>ReactMount._renderSubtreeIntoContainer</h3><p>_renderSubtreeIntoContainer做了哪些事情呢？</p>
+<ul>
+<li>参数校验:<ul>
+<li>setState异步回调是否合法 </li>
+<li>目标渲染的元素是否是createElement返回的合法结构</li>
+<li>是否传入了根节点容器</li>
+</ul>
+</li>
+<li>使用TopLevelWrapper包装目标渲染元素 &amp;&amp; 设定Context预备传入</li>
+<li>是否是更新环节 当前例子这里设置的null 如果更新环节需要保留一些状态传入</li>
+<li>将ReactElement、根节点容器、重用标记(shouldReuseMarkup)、Context传入ReactMount._renderNewRootComponent进行渲染</li>
+</ul>
+<h3 id="ReactMount-renderNewRootComponent"><a href="#ReactMount-renderNewRootComponent" class="headerlink" title="ReactMount._renderNewRootComponent"></a>ReactMount._renderNewRootComponent</h3><p>它做了这些:</p>
+<ul>
+<li>参数校验<ul>
+<li>ReactCurrentOwner校验</li>
+<li>容器合法性校验</li>
+</ul>
+</li>
+<li>记录scroll值</li>
+<li>生成最终会被挂载上去的ReactNode(框架内私有表现形式，componentInstance) </li>
+<li>调用ReactUpdates.batchedUpdates进行更新</li>
+</ul>
+<h3 id="ReactUpdates-batchedUpdates"><a href="#ReactUpdates-batchedUpdates" class="headerlink" title="ReactUpdates.batchedUpdates"></a>ReactUpdates.batchedUpdates</h3><p>它做了这些:</p>
+<ul>
+<li>确认事务模型就绪 &amp;&amp; batchingStrategy就绪</li>
+<li>调用batchingStrategy.batchedUpdates进行下一步</li>
+<li>根据isBatchingUpdates进行调度处理<ul>
+<li>如果为true 那么仅执行传入的callback</li>
+<li>如果为false 使用transaction.perform对callback进行调用(这里有前置和收尾处理 这是事务的特点)</li>
+</ul>
+</li>
+<li>不管如何callback会被执行(这里callback是batchedMountComponentIntoNode,定义在ReactMount.js中)</li>
+</ul>
+<h3 id="batchedMountComponentIntoNode"><a href="#batchedMountComponentIntoNode" class="headerlink" title="batchedMountComponentIntoNode"></a>batchedMountComponentIntoNode</h3><p>它做了:</p>
+<ul>
+<li>获取ReactReconcileTransaction事务实例</li>
+<li>使用该事务实例调用mountComponentIntoNode来进行下一步更新</li>
+</ul>
+<h3 id="mountComponentIntoNode"><a href="#mountComponentIntoNode" class="headerlink" title="mountComponentIntoNode"></a>mountComponentIntoNode</h3><p>这个函数的作用是挂载组件并将其渲染到DOM</p>
+<p>它做了:</p>
+<ul>
+<li>调用ReactReconciler.mountComponent生成markup标记内部含有{children: markup数组, node:HTMLElement}。此时mountComponent实质是ReactDomComponent.mountComponent。可以参考ReactDomComponent篇看看这个函数做了什么。</li>
+<li>调用ReactMount._mountImageIntoNode渲染markup(markup.node是HTML元素可以直接插入DOM)</li>
+</ul>
+<h3 id="ReactMount-mountImageIntoNode"><a href="#ReactMount-mountImageIntoNode" class="headerlink" title="ReactMount._mountImageIntoNode"></a>ReactMount._mountImageIntoNode</h3><p>这个函数是最终的函数 它没有返回值，只是将相关处理好的结果插入DOM中 </p>
+<p>在这个例子时里面因为没有旧的元素而是全部新生成所以进入了</p>
+<p>useCreateElement分支，这个分支中将会删除所有的</p>
+<p>container子元素，并执行DOMLazyTree.insertTreeBefore</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (transaction.useCreateElement) &#123;</span><br><span class="line">  <span class="keyword">while</span> (container.lastChild) &#123;</span><br><span class="line">    container.removeChild(container.lastChild);</span><br><span class="line">  &#125;</span><br><span class="line">  DOMLazyTree.insertTreeBefore(container, markup, <span class="literal">null</span>);</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>而DOMLazyTree.insertTreeBefore这个函数，这个函数里面有一个比较核心的函数insertTreeChildren，这个函数会调用insertTreeChildren，insertTreeChildren又会根据传入的 tree的 node长度递归调用insertTreeChildren，总之这两个函数会互相调用。直到所有的children都被放入其对应的node，并渲染到对应容器里面。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (children.length) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; children.length; i++) &#123;</span><br><span class="line">    insertTreeBefore(node, children[i], <span class="literal">null</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最终，它的执行结果是 insertTreeBefore最外层获取了一个markup, 这个markup的node最终将所有的children里面的node渲染到这个markup的node节点 也就是我们最最终想要渲染的HTMLELement。获取之后，就被插入到了container里面。</p>
+<p>最终，整个渲染就到此结束了。</p>
+<h1 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h1><ul>
+<li>ReactReconciler.mountComponent过程是怎样的</li>
+<li>事件的处理是怎样的</li>
+<li>生命周期的实现</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react-render/" rel="tag"># react render</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/15/react-build/" rel="prev" title="react工程结构浅析">
+      <i class="fa fa-chevron-left"></i> react工程结构浅析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/26/react-lifecycle/" rel="next" title="react生命周期分析">
+      react生命周期分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#render%E5%BE%AE%E8%A7%82%E7%BB%86%E8%8A%82"><span class="nav-number">1.</span> <span class="nav-text">render微观细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#start"><span class="nav-number">1.1.</span> <span class="nav-text">start</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Render%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">Render的流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactMount-renderSubtreeIntoContainer"><span class="nav-number">1.2.1.</span> <span class="nav-text">ReactMount._renderSubtreeIntoContainer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactMount-renderNewRootComponent"><span class="nav-number">1.2.2.</span> <span class="nav-text">ReactMount._renderNewRootComponent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactUpdates-batchedUpdates"><span class="nav-number">1.2.3.</span> <span class="nav-text">ReactUpdates.batchedUpdates</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#batchedMountComponentIntoNode"><span class="nav-number">1.2.4.</span> <span class="nav-text">batchedMountComponentIntoNode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mountComponentIntoNode"><span class="nav-number">1.2.5.</span> <span class="nav-text">mountComponentIntoNode</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReactMount-mountImageIntoNode"><span class="nav-number">1.2.6.</span> <span class="nav-text">ReactMount._mountImageIntoNode</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TODO"><span class="nav-number">2.</span> <span class="nav-text">TODO</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

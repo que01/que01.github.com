@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前几天基本上是把大部分开发常用的东西理顺了，不过既然以React做开发，那么组件之间的通讯这个环节绕不过，虽然redux理念早就搞明白，但是在react-starter-kit上面还是折腾了好几日。另外antd也是非常值得使用的。这里也提一提。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React全家桶:react-starter-kit之二">
+<meta property="og:url" content="http://www.que01.top/2016/06/16/react-starter-kit-2/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="前几天基本上是把大部分开发常用的东西理顺了，不过既然以React做开发，那么组件之间的通讯这个环节绕不过，虽然redux理念早就搞明白，但是在react-starter-kit上面还是折腾了好几日。另外antd也是非常值得使用的。这里也提一提。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/antd-plugins-error.png">
+<meta property="og:image" content="http://www.que01.top/images/pages.png">
+<meta property="og:image" content="http://www.que01.top/images/redux.png">
+<meta property="article:published_time" content="2016-06-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.595Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta property="article:tag" content="express">
+<meta property="article:tag" content="react同构应用">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/antd-plugins-error.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/06/16/react-starter-kit-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React全家桶:react-starter-kit之二 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/06/16/react-starter-kit-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React全家桶:react-starter-kit之二
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-16 00:00:00" itemprop="dateCreated datePublished" datetime="2016-06-16T00:00:00+08:00">2016-06-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/06/16/react-starter-kit-2/" class="post-meta-item leancloud_visitors" data-flag-title="React全家桶:react-starter-kit之二" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">前几天基本上是把大部分开发常用的东西理顺了，不过既然以React做开发，那么组件之间的通讯这个环节绕不过，虽然redux理念早就搞明白，但是在react-starter-kit上面还是折腾了好几日。另外antd也是非常值得使用的。这里也提一提。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="之前"><a href="#之前" class="headerlink" title="之前"></a>之前</h1><p>好像也没有太多值得一提的地方，但是react-starter-kit这个当前相当先进(激进)同构技术栈各个难题的克服，还是给了我很大的满足的感。在这个过程中，不仅仅是mongodb、mongoose、express、react和redux的单个技术点，同时也是各个技术点的交叉和融合。特别是GraphQL，实在是给我留下了极其深刻的映像和震撼。</p>
+<h1 id="Antd"><a href="#Antd" class="headerlink" title="Antd"></a>Antd</h1><p>Antd可以说是难得的国产精品。<br>说起国产的技术产品，怎么说呢，在早些时候requireJS比较火的时候，阿里出过SeaJS，但是坑很多，如果使用SeaJS，现有的各种模块面临极其繁琐的重新封装。<br>阿里的Alice当初也尝试过，但是也没有用起来。<br>百度的开源的产品让人最深刻的Echarts和Ueditor，但是除了这两个，其他的出的开源产品基本都是处于无维护和没人用的状况。<br>腾讯没啥重量级开源产品，但是其团队成员做的ArtTemplate,artDialog等,其实体验还真的不错。<br>…<br>Antd算是阿里推出的一项重量级开源产品。</p>
+<p>好了，不扯太多。我们先在项目内部集成antd。</p>
+<p>首先是安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install antd --save-dev</span><br></pre></td></tr></table></figure>
+<p>如何使用这里就不说了，这是API的活儿了。<br>不过当你弄完以后，打开使用了antd的页面，你会在控制台看到一下提示：</p>
+<p><img src="/images/antd-plugins-error.png" alt="antd-plugins-error"></p>
+<p>提示是说用的未编译版本，请使用指定插件来限制打包体积。好吧，然后打开network选项卡看看到底大了多少。。。<br>结果是main.js达到坑爹的8.9M，使用前则是5M左右。考虑到react-starter-kit是各种框架集成，antd一个人用这么多体积确实是太大了。所以老实把插件安装起来好了。</p>
+<p>安装:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install babel-plugin-antd --save-dev</span><br></pre></td></tr></table></figure>
+<p>安装完毕之后要进行一些配置。打开<code>tool/webpack.config.js</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">        test: &#x2F;\.jsx?$&#x2F;,</span><br><span class="line">        loader: &#39;babel-loader&#39;,</span><br><span class="line">        include: [</span><br><span class="line">          path.resolve(__dirname, &#39;..&#x2F;node_modules&#x2F;react-routing&#x2F;src&#39;),</span><br><span class="line">          path.resolve(__dirname, &#39;..&#x2F;src&#39;),</span><br><span class="line">        ],</span><br><span class="line">        query: &#123;</span><br><span class="line">          &#x2F;&#x2F; https:&#x2F;&#x2F;github.com&#x2F;babel&#x2F;babel-loader#options</span><br><span class="line">          cacheDirectory: DEBUG,</span><br><span class="line">          &#x2F;&#x2F; https:&#x2F;&#x2F;babeljs.io&#x2F;docs&#x2F;usage&#x2F;options&#x2F;</span><br><span class="line">          babelrc: false,</span><br><span class="line">          presets: [</span><br><span class="line">            &#39;react&#39;,</span><br><span class="line">            &#39;es2015&#39;,</span><br><span class="line">            &#39;stage-0&#39;,</span><br><span class="line">          ],</span><br><span class="line">          plugins: [</span><br><span class="line">            [&quot;antd&quot;],</span><br><span class="line">            &#39;transform-runtime&#39;,</span><br><span class="line">            ...DEBUG ? [] : [</span><br><span class="line">              &#39;transform-react-remove-prop-types&#39;,</span><br><span class="line">              &#39;transform-react-constant-elements&#39;,</span><br><span class="line">              &#39;transform-react-inline-elements&#39;,</span><br><span class="line">            ],</span><br><span class="line">          ],</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码挺长，但是其实无非是plugins数组里面加一个<code>["antd"],</code>。<br>到这里babel-plugin-antd基本就能用了，github上面的文档说css也可以实现模块化，但是按文档操作会导致编译报错，这里就先不折腾了。直接将css文件复制到publice目录，然后在view/index.html里面引入。</p>
+<h1 id="Redux-amp-react-redux"><a href="#Redux-amp-react-redux" class="headerlink" title="Redux &amp; react-redux"></a>Redux &amp; react-redux</h1><p>Redux 是 JavaScript 状态容器，提供可预测化的状态管理。通过它可以有条不紊的维护当前越来越复杂的应用状态。Redux虽然不像GraphQL那样可以让人眼前一亮，但是对深谙开发流程但是对状态维护苦恼的开发者来说它是救市良药。具体的大家可以去看看 <a target="_blank" rel="noopener" href="http://cn.redux.js.org/">《Redux中文文档》</a>。</p>
+<p>react-redux是一个将redux和react整合起来的package，它是胶水。但是需要说明的是:redux专注于状态维护，和React本质上是没有任何关系的。</p>
+<p>当写到这里时候，我将默认读者已经阅读过中文文档，对Redux用途和redux三大基础概念:action,reducer和store有了基础认识。</p>
+<h2 id="react-redux"><a href="#react-redux" class="headerlink" title="react-redux"></a>react-redux</h2><p>react-redux提供两个关键模块：Provider和connect。</p>
+<h3 id="Provider"><a href="#Provider" class="headerlink" title="Provider"></a>Provider</h3><p>Provider这个模块是作为整个App的容器，在你原有的App Container的基础上再包上一层，它的工作很简单，就是接受Redux的store作为props，并将其声明为context的属性之一。</p>
+<p>这里就列举一下react-starter-kit里面Provider的设置，打开 <code>src/components/App/App.js</code>,可以很清楚的看到render函数的内容:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">render() &#123;</span><br><span class="line">  if (this.props.error) &#123;</span><br><span class="line">    return this.props.children;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  const store &#x3D; this.props.context.store;</span><br><span class="line">  return (</span><br><span class="line">    &lt;Provider store&#x3D;&#123;store&#125;&gt;</span><br><span class="line">      &lt;div&gt;</span><br><span class="line">        &lt;Header &#x2F;&gt;</span><br><span class="line">        &#123;this.props.children&#125;</span><br><span class="line">        &lt;Feedback &#x2F;&gt;</span><br><span class="line">        &lt;Footer &#x2F;&gt;</span><br><span class="line">      &lt;&#x2F;div&gt;</span><br><span class="line">    &lt;&#x2F;Provider&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Redux的store作为props，并将其声明为context的属性之一，子组件可以在声明了contextTypes之后可以方便的通过this.context.store访问到store——但是这里store本质上给connect用的。</p>
+<p>Provider本质上为为子组件提供整体的舞台。</p>
+<h3 id="connect"><a href="#connect" class="headerlink" title="connect"></a>connect</h3><p>conect正如其名，连接了react和redux。</p>
+<p>这里回首一下redux的流程:store保存整体状态，通过调用store.dispatch一个action，来调用对应action的reducer，最终redux会根据action来更新state(应用的状态，而非react组件的state)。</p>
+<p>通过connect,React-redux应用中，store中维护的state就是我们的应用state，一个React组件作为View层，做两件事：render和响应用户操作。于是connect就是将store中的必要数据作为props传递给React组件来render，并包装action creator用于在响应用户操作时dispatch一个action。</p>
+<p>如果这样说还是不太能理解，那么那就直白一些，redux的store可以视为一个可以保存状态的内存盘，而connect则赋予react组件随处修改store的能力。</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><p>如果这样还是没有明白，我们来实际做个小功能，一个基于antd页码组件的翻页小模块。大致效果如图:<br><img src="/images/pages.png" alt="preview"></p>
+<p>这里用到的antd里面的tabs组件和Pagination组件还有Spin组件(显示加载中)。</p>
+<p>这是一个比较常见的功能，这里简单说一下功能点:</p>
+<ol>
+<li>tabs切换选项卡显示</li>
+<li>最新选项卡显示一个标签云+分页展示模块。</li>
+<li>点击页码时候进行内容切换</li>
+<li>切换每页条数时候更新数量</li>
+<li>内容和页码组件的其他融合</li>
+</ol>
+<p>为了简单，这些就都放在home路由的组件里面了。<br>不过开始说redux之前，我们先把路铺好。这里需要提前准备的有：</p>
+<ol>
+<li>api接口</li>
+<li>相对tabs组件和Spin组件</li>
+</ol>
+<h4 id="api"><a href="#api" class="headerlink" title="api"></a>api</h4><p>首先说说api，分页功能需要整理总条目数。我们调整了news的api数据源：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">router.all(&#39;&#x2F;news&#39;, (req, res) &#x3D;&gt; &#123;</span><br><span class="line">  const pageSize &#x3D; req.body.pageSize||req.query.pageSize||10;</span><br><span class="line">  const currentPage &#x3D; req.body.currentPage||req.query.currentPage||1;</span><br><span class="line">  const index &#x3D; (currentPage-1)*pageSize;</span><br><span class="line"></span><br><span class="line">  News.count(&#123;&#125;, function(err, count) &#123;</span><br><span class="line">    News</span><br><span class="line">      .find()</span><br><span class="line">      .skip(index)</span><br><span class="line">      .limit(pageSize)</span><br><span class="line">      .exec(function(err,news)&#123;</span><br><span class="line">        res.json(&#123;</span><br><span class="line">          code:200,</span><br><span class="line">          news:news,</span><br><span class="line">          count:count</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>不算复杂，仅仅是添加了一个count字段，然后一个skip来和limit来实现获取指定分页数据。我们这里使用GraphQL来做数据接口。实际实现就不具体提及。因为这里主要是讲react-redux。<br>最终我们发送这样一个片段:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#96;</span><br><span class="line">&#123;</span><br><span class="line">    news(currentPage: $ &#123;</span><br><span class="line">        currentPage || this.props.currentPage</span><br><span class="line">    &#125;, pageSize: $ &#123;</span><br><span class="line">        pageSize || this.props.pageSize</span><br><span class="line">    &#125;) &#123;</span><br><span class="line">        title, link, contentSnippet</span><br><span class="line">    &#125;, tags &#123;</span><br><span class="line">        name</span><br><span class="line">    &#125;, count &#123;</span><br><span class="line">        count</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#96;</span><br></pre></td></tr></table></figure>
+<p>返回这样一个结构的结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;data&quot;: &#123;</span><br><span class="line">    &quot;news&quot;: [</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;title&quot;: &quot;测试标题1&quot;,</span><br><span class="line">        &quot;link&quot;: &quot;http:&#x2F;&#x2F;www.baidu.com&quot;,</span><br><span class="line">        &quot;contentSnippet&quot;: &quot;测试摘要测试摘要&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;title&quot;: &quot;测试标题2&quot;,</span><br><span class="line">        &quot;link&quot;: &quot;http:&#x2F;&#x2F;www.baidu.com&quot;,</span><br><span class="line">        &quot;contentSnippet&quot;: &quot;测试摘要测试摘要&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    ],</span><br><span class="line">    &quot;tags&quot;: [</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;name&quot;: &quot;javascript&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;name&quot;: &quot;css&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    ],</span><br><span class="line">    &quot;count&quot;: &#123;</span><br><span class="line">      &quot;count&quot;: 17</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="相对tabs组件和Spin组件"><a href="#相对tabs组件和Spin组件" class="headerlink" title="相对tabs组件和Spin组件"></a>相对tabs组件和Spin组件</h4><p>接下来整理其他相对独立不需要进行状态交互的模块.下面是Home组件的render方法的关键代码:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">var Home &#x3D; React.createClass(&#123;</span><br><span class="line">  ...</span><br><span class="line">  render: function() &#123;</span><br><span class="line">    let content;</span><br><span class="line">    if(this.state.newsLoading)&#123;</span><br><span class="line">      content &#x3D; &lt;Spin &#x2F;&gt;;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">      content &#x3D; (</span><br><span class="line">		&lt;!-- 这里是列表组件 --&gt;</span><br><span class="line">      )</span><br><span class="line">    &#125;;</span><br><span class="line">    return (</span><br><span class="line">        &lt;div className&#x3D;&#123;s.root&#125;&gt;</span><br><span class="line">          &lt;div className&#x3D;&#123;s.container&#125;&gt;</span><br><span class="line">            &lt;Tabs type&#x3D;&quot;card&quot;&gt;</span><br><span class="line">              &lt;TabPane tab&#x3D;&quot;最新&quot; key&#x3D;&quot;1&quot;&gt;</span><br><span class="line">                &lt;CloudTags tags&#x3D;&#123;this.state.tags||[]&#125; &#x2F;&gt;</span><br><span class="line">                &#123;content&#125;</span><br><span class="line">                &lt;PaginationContainer &#x2F;&gt;</span><br><span class="line">              &lt;&#x2F;TabPane&gt;</span><br><span class="line">              &lt;TabPane tab&#x3D;&quot;热门&quot; key&#x3D;&quot;2&quot;&gt;选项卡二内容&lt;&#x2F;TabPane&gt;</span><br><span class="line">              &lt;TabPane tab&#x3D;&quot;更新&quot; key&#x3D;&quot;3&quot;&gt;选项卡三内容&lt;&#x2F;TabPane&gt;</span><br><span class="line">            &lt;&#x2F;Tabs&gt;</span><br><span class="line">          &lt;&#x2F;div&gt;</span><br><span class="line">        &lt;&#x2F;div&gt;</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>当 <code>this.state.newsLoading===true</code>时候显示Spin组件,否则显示列表。至于Tabs组件这个，貌似标签结构已经足够清晰，就不说了。<br>需要说明的是，为了尽量减少请求，标签云的数据也一起请求过来了，这也是GraphQL的一个优势展现。</p>
+<p>这两步走完，可以提起react-redux正文了。</p>
+<h4 id="react-redux-1"><a href="#react-redux-1" class="headerlink" title="react-redux"></a>react-redux</h4><p>开始之前，还是希望大家可以去看看这篇文章: <a target="_blank" rel="noopener" href="https://leozdgao.me/reacthe-reduxde-qiao-jie-react-redux/">React和Redux的连接react-redux</a>,对react-redux有相对基础认识</p>
+<h5 id="react-starter-kit的Redux处理"><a href="#react-starter-kit的Redux处理" class="headerlink" title="react-starter-kit的Redux处理"></a>react-starter-kit的Redux处理</h5><p>首先，我们需要一个Provider(如果你不知道这是啥，还是先去看看刚才提到的文章)。这个模块是作为整个App的容器。</p>
+<p>我们看看react-starter-kit是怎么规划这个模块的：<br>首先是 <code>routes/index.js</code> ，这个文件里面是整个应用的路由规则规划。我们看关键代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">export default &#123;</span><br><span class="line">  path: &#39;&#x2F;&#39;,</span><br><span class="line">  children: [</span><br><span class="line">    home,</span><br><span class="line">	&lt;!-- ...略 --&gt;</span><br><span class="line">    error,</span><br><span class="line">  ],</span><br><span class="line">  async action(&#123; next, render, context &#125;) &#123;</span><br><span class="line">    const component &#x3D; await next();</span><br><span class="line">    if (component &#x3D;&#x3D;&#x3D; undefined) return component;</span><br><span class="line">    return render(</span><br><span class="line">      &lt;App context&#x3D;&#123;context&#125;&gt;&#123;component&#125;&lt;&#x2F;App&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码的意思是，所有的component，最后输出的时候，都必须放到line12中这个APP容器中去。<br>这个APP容器的关键代码是这样的:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">render() &#123;</span><br><span class="line">  if (this.props.error) &#123;</span><br><span class="line">    return this.props.children;</span><br><span class="line">  &#125;</span><br><span class="line">  const store &#x3D; this.props.context.store;</span><br><span class="line">  return (</span><br><span class="line">    &lt;Provider store&#x3D;&#123;store&#125;&gt;</span><br><span class="line">      &lt;div&gt;</span><br><span class="line">        &lt;Header &#x2F;&gt;</span><br><span class="line">        &#123;this.props.children&#125;</span><br><span class="line">        &lt;Feedback &#x2F;&gt;</span><br><span class="line">        &lt;Footer &#x2F;&gt;</span><br><span class="line">      &lt;&#x2F;div&gt;</span><br><span class="line">    &lt;&#x2F;Provider&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总体来说，就是通过这种方式把Provider全局使用起来了，所有的路由，都会被APP这个容器包裹起来，方便后面是用connect来链接react和redux。</p>
+<h5 id="connect-1"><a href="#connect-1" class="headerlink" title="connect"></a>connect</h5><p>接下来我们来处理状态相关的东西。<br>当前的应用状态是这样的：<br><img src="/images/redux.png" alt="redux state"></p>
+<p>在开始之前还是说一下各个组件之间的数据交互。</p>
+<ol>
+<li>列表数据从来自一个API，里面包含news的列表，同时也包含了条目总数。</li>
+<li>条目总数会传到页码组件，同时，页码组件会绑定当前页，页码和条目总数。当组件改变当前页和pageSize会触发news更新</li>
+<li>news更新如果总数添加了，又会将总数更新一次传到页码组件里面更新页码。</li>
+</ol>
+<p>很显然，如果各个组件之间太独立，那么手工传值就会非常让心心烦，也不方便维护，但是如果放到全局的store内部，自动传入到各个组件，那么就变得非常还用且容易维护了。</p>
+<p>先来处理一下页码组件,这是在Home文件夹下单独建立的文件PaginationContainer.js：</p>
+<script src="https://gist.github.com/que01/2048b15527b02b10efb5fa316f2d3764.js"></script>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> connect(<span class="function"><span class="params">state</span> =&gt;</span> (&#123;</span><br><span class="line">  currentPage: state.runtime.currentPage,</span><br><span class="line">  newsTotalItem:state.runtime.newsTotalItem,</span><br><span class="line">&#125;), &#123;<span class="attr">setRuntime</span>:setRuntimeVariable&#125;)(PaginationContainer);</span><br></pre></td></tr></table></figure>
+<p>这个算是将react和redux连接的关键代码，意思是将store上两个属性，映射到currentPage和newTotalItem两个props上，然后react里面就可以直接使用this.props.currentPage,和this.props.newsTotalItem了。setRuntime则是将一个方法也放到对应props上，这样可以使用这个方法来更新store。后面可以看到，我们之后更新store里面的数据都是使用的这个方法。例如onChange和onShowSizeChange都是这样。</p>
+<p>当点击不同页码，会触发onChange,而更改每页数量，会触发onShowChage。当这些钩子被触发之后，会更新store内部数据，最后反应到Home组件，被News对应的列表接受到，最终更新页面.</p>
+<p>然后是对应的Home.js;</p>
+<script src="https://gist.github.com/que01/217f36f2ffe552cf8b4603c51a87c7b3.js"></script>
+
+<p>所有的逻辑都在这里面了。这里来详细说一说。<br>Home这个文件应该从生命周期讲起。</p>
+<p>在这些周期里面最先执行的是getInitialState,它返回了react的初始state，这里就是放了一个tags和news的数组，用来存放需要遍历的内容，而newsLoading这个状态主要是在news载入前产生loading的效果，这个很常见了。</p>
+<p>接下来是componentDidMount，当react组件载入完毕后执行它，它会运行restNewsState函数,其实就是从api里面获取tags，news和count这三个关键数据。<br>我们来看看这个函数成功后的回调里面的关键代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//总条目数</span></span><br><span class="line">self.props.setRuntime(&#123;</span><br><span class="line">  name:<span class="string">&quot;newsTotalItem&quot;</span>,</span><br><span class="line">  value:data.count.count</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//内部状态</span></span><br><span class="line">(context||<span class="built_in">this</span>).setState(&#123;</span><br><span class="line">  news:data.news,</span><br><span class="line">  tags:data.tags,</span><br><span class="line">  newsLoading:<span class="literal">false</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>首先是将count的数量放到store的runtime对象的newsTotalItem上。因为这个数据会共享到页码组件。然后是更新内部的news，tags，newLoading，因为这几个数据是不需要共享的，所以直接放到react内部的state上去。</p>
+<p>但是当我们更新内部的state时候会产生一个副作用，那就是会触发componentWillReceiveProps,但是我们也不能不管，因为不用这个钩子，那么会导致PageSize改变，currentPage改变之后我们的news List不会被更新。<br>所以这个时候需要用到shouldComponentUpdate，这个钩子在componentWillReceiveProps之前运行，它返回true，那么才会进行更新，也就是运行componentWillReceiveProps，所以我们在这里对状态进行对比即可，如果没有变更，那么我们返回false即可，这里的对比使用了lodash的isEqual,lodash确实很好用.</p>
+<p>最后使用connect将Home包裹起来返回export之即可。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这篇文章其实是长话短说，很多细节都略过了，比如tags其实也应该是react-redux中的一环，比如count的GraphQL查询该怎样写。甚至，react和redux的连接，我也没有写出理论来，只是引用了一篇文章来偷偷懒。<br>但是个人还是觉得够了react和redux的连接，需要对redux有了解，需要对react-redux有了解，我认为我做的只是最后一环，如何在react-starter-kit里面给他来一个最后的实践。<br>难者不会，会着不难，这是一个通行万道的钥匙。有了第一次的成功，其实一切无非水到渠成。这也是本文的目的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+              <a href="/tags/express/" rel="tag"># express</a>
+              <a href="/tags/react%E5%90%8C%E6%9E%84%E5%BA%94%E7%94%A8/" rel="tag"># react同构应用</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/06/08/react-starter-kit-1/" rel="prev" title="React全家桶:react-starter-kit之一">
+      <i class="fa fa-chevron-left"></i> React全家桶:react-starter-kit之一
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/07/01/react-starter-kit-3/" rel="next" title="React全家桶:react-starter-kit之三">
+      React全家桶:react-starter-kit之三 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B9%8B%E5%89%8D"><span class="nav-number">1.</span> <span class="nav-text">之前</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Antd"><span class="nav-number">2.</span> <span class="nav-text">Antd</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Redux-amp-react-redux"><span class="nav-number">3.</span> <span class="nav-text">Redux &amp; react-redux</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#react-redux"><span class="nav-number">3.1.</span> <span class="nav-text">react-redux</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Provider"><span class="nav-number">3.1.1.</span> <span class="nav-text">Provider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#connect"><span class="nav-number">3.1.2.</span> <span class="nav-text">connect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">3.1.3.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#api"><span class="nav-number">3.1.3.1.</span> <span class="nav-text">api</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9B%B8%E5%AF%B9tabs%E7%BB%84%E4%BB%B6%E5%92%8CSpin%E7%BB%84%E4%BB%B6"><span class="nav-number">3.1.3.2.</span> <span class="nav-text">相对tabs组件和Spin组件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#react-redux-1"><span class="nav-number">3.1.3.3.</span> <span class="nav-text">react-redux</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#react-starter-kit%E7%9A%84Redux%E5%A4%84%E7%90%86"><span class="nav-number">3.1.3.3.1.</span> <span class="nav-text">react-starter-kit的Redux处理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#connect-1"><span class="nav-number">3.1.3.3.2.</span> <span class="nav-text">connect</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

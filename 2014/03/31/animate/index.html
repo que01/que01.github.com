@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Javascript的元素运动之javascript动画本质和动画种类  在web如此发达,电子商务如火如荼的时节,各种web交互方式渐渐层出不穷,创新不歇.这其中,javascript的元素运动绝对是其中的中坚力量,当然,Ajax也是,但是这不是本文重点.本文就Javascript的运动做一些本质上的思考,谨做个人学习总结.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Javascript的元素运动(一)">
+<meta property="og:url" content="http://www.que01.top/2014/03/31/animate/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="Javascript的元素运动之javascript动画本质和动画种类  在web如此发达,电子商务如火如荼的时节,各种web交互方式渐渐层出不穷,创新不歇.这其中,javascript的元素运动绝对是其中的中坚力量,当然,Ajax也是,但是这不是本文重点.本文就Javascript的运动做一些本质上的思考,谨做个人学习总结.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2014-03-31T00:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.531Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2014/03/31/animate/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Javascript的元素运动(一) | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2014/03/31/animate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Javascript的元素运动(一)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-03-31 08:00:00" itemprop="dateCreated datePublished" datetime="2014-03-31T08:00:00+08:00">2014-03-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2014/03/31/animate/" class="post-meta-item leancloud_visitors" data-flag-title="Javascript的元素运动(一)" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">Javascript的元素运动之javascript动画本质和动画种类  在web如此发达,电子商务如火如荼的时节,各种web交互方式渐渐层出不穷,创新不歇.这其中,javascript的元素运动绝对是其中的中坚力量,当然,Ajax也是,但是这不是本文重点.本文就Javascript的运动做一些本质上的思考,谨做个人学习总结.</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="开始写之前的话"><a href="#开始写之前的话" class="headerlink" title="开始写之前的话"></a>开始写之前的话</h2><p>其实在这篇文章之前写过一次animate,但是再回首时候它几经不堪入目。有些看小时候作文的感觉。那时候把事情想的太复杂。</p>
+<p>JS的运动,如果说复杂呢，js运动涉及运动设计到的算法真的是很复杂，然而说简单，其实它在运行机制上，真的很简单很简单。</p>
+<h2 id="动画的生成"><a href="#动画的生成" class="headerlink" title="动画的生成"></a>动画的生成</h2><p>想了好久，怎样构成一个动画呢？动画有两种,直线运动和曲线，这里仅仅说直线运动的分类</p>
+<ul>
+<li>匀速运动</li>
+<li>变速运动</li>
+</ul>
+<p>匀速的运动很好模拟，使用setInterval来模拟，每隔一段时间对物体的位置累加一个相同的单位即可，那么问题来了,变速匀速怎样处理呢？匀速可以累加，而变速运动类型很多，怎样去处理这个加法的变量？</p>
+<p>参考了一下开源方案，最后发现其实处理过程中简单归纳起来其实也不外如是，其实和上面的思路是一样的，它使用函数(内部封装Tween算法)来计算这个变量。具体流程是这样的：</p>
+<ol>
+<li>通过算法计算变量</li>
+<li>通过一个postion封装来处理物体位置</li>
+<li>通过setInterval来每个一段时间调用postion(传入算法执行后的变量)来更新物体位置</li>
+</ol>
+<p>在这个过程中,时间是维系和贯穿这个过程的唯一要素，3个过程中都不能缺少它。<br>为了下次不再为物理动画头疼，这里直接用Tween的算法了，即是总结，也是一个加深和记录。</p>
+<p>这里先贴一份Tween算法:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Tween = &#123;</span><br><span class="line">	linear: <span class="function"><span class="keyword">function</span> (<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//匀速</span></span><br><span class="line">		<span class="keyword">return</span> c*t/d + b; </span><br><span class="line">	&#125;,</span><br><span class="line">	easeIn: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//加速曲线</span></span><br><span class="line">		<span class="keyword">return</span> c*(t/=d)*t + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	easeOut: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//减速曲线</span></span><br><span class="line">		<span class="keyword">return</span> -c *(t/=d)*(t-<span class="number">2</span>) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	easeBoth: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//加速减速曲线</span></span><br><span class="line">		<span class="keyword">if</span> ((t/=d/<span class="number">2</span>) &lt; <span class="number">1</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> c/<span class="number">2</span>*t*t + b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> -c/<span class="number">2</span> * ((--t)*(t-<span class="number">2</span>) - <span class="number">1</span>) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	easeInStrong: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//加加速曲线</span></span><br><span class="line">		<span class="keyword">return</span> c*(t/=d)*t*t*t + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	easeOutStrong: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//减减速曲线</span></span><br><span class="line">		<span class="keyword">return</span> -c * ((t=t/d-<span class="number">1</span>)*t*t*t - <span class="number">1</span>) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	easeBothStrong: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;  <span class="comment">//加加速减减速曲线</span></span><br><span class="line">		<span class="keyword">if</span> ((t/=d/<span class="number">2</span>) &lt; <span class="number">1</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> c/<span class="number">2</span>*t*t*t*t + b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> -c/<span class="number">2</span> * ((t-=<span class="number">2</span>)*t*t*t - <span class="number">2</span>) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	elasticIn: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d, a, p</span>)</span>&#123;  <span class="comment">//正弦衰减曲线（弹动渐入）</span></span><br><span class="line">		<span class="keyword">if</span> (t === <span class="number">0</span>) &#123; </span><br><span class="line">			<span class="keyword">return</span> b; </span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ( (t /= d) == <span class="number">1</span> ) &#123;</span><br><span class="line">			<span class="keyword">return</span> b+c; </span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!p) &#123;</span><br><span class="line">			p=d*<span class="number">0.3</span>; </span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!a || a &lt; <span class="built_in">Math</span>.abs(c)) &#123;</span><br><span class="line">			a = c; </span><br><span class="line">			<span class="keyword">var</span> s = p/<span class="number">4</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> s = p/(<span class="number">2</span>*<span class="built_in">Math</span>.PI) * <span class="built_in">Math</span>.asin (c/a);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> -(a*<span class="built_in">Math</span>.pow(<span class="number">2</span>,<span class="number">10</span>*(t-=<span class="number">1</span>)) * <span class="built_in">Math</span>.sin( (t*d-s)*(<span class="number">2</span>*<span class="built_in">Math</span>.PI)/p )) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	elasticOut: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d, a, p</span>)</span>&#123;    <span class="comment">//正弦增强曲线（弹动渐出）</span></span><br><span class="line">		<span class="keyword">if</span> (t === <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ( (t /= d) == <span class="number">1</span> ) &#123;</span><br><span class="line">			<span class="keyword">return</span> b+c;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!p) &#123;</span><br><span class="line">			p=d*<span class="number">0.3</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!a || a &lt; <span class="built_in">Math</span>.abs(c)) &#123;</span><br><span class="line">			a = c;</span><br><span class="line">			<span class="keyword">var</span> s = p / <span class="number">4</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> s = p/(<span class="number">2</span>*<span class="built_in">Math</span>.PI) * <span class="built_in">Math</span>.asin (c/a);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> a*<span class="built_in">Math</span>.pow(<span class="number">2</span>,-<span class="number">10</span>*t) * <span class="built_in">Math</span>.sin( (t*d-s)*(<span class="number">2</span>*<span class="built_in">Math</span>.PI)/p ) + c + b;</span><br><span class="line">	&#125;,    </span><br><span class="line">	elasticBoth: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d, a, p</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (t === <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ( (t /= d/<span class="number">2</span>) == <span class="number">2</span> ) &#123;</span><br><span class="line">			<span class="keyword">return</span> b+c;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!p) &#123;</span><br><span class="line">			p = d*(<span class="number">0.3</span>*<span class="number">1.5</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ( !a || a &lt; <span class="built_in">Math</span>.abs(c) ) &#123;</span><br><span class="line">			a = c; </span><br><span class="line">			<span class="keyword">var</span> s = p/<span class="number">4</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> s = p/(<span class="number">2</span>*<span class="built_in">Math</span>.PI) * <span class="built_in">Math</span>.asin (c/a);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (t &lt; <span class="number">1</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> - <span class="number">0.5</span>*(a*<span class="built_in">Math</span>.pow(<span class="number">2</span>,<span class="number">10</span>*(t-=<span class="number">1</span>)) * </span><br><span class="line">					<span class="built_in">Math</span>.sin( (t*d-s)*(<span class="number">2</span>*<span class="built_in">Math</span>.PI)/p )) + b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> a*<span class="built_in">Math</span>.pow(<span class="number">2</span>,-<span class="number">10</span>*(t-=<span class="number">1</span>)) * </span><br><span class="line">				<span class="built_in">Math</span>.sin( (t*d-s)*(<span class="number">2</span>*<span class="built_in">Math</span>.PI)/p )*<span class="number">0.5</span> + c + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	backIn: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d, s</span>)</span>&#123;     <span class="comment">//回退加速（回退渐入）</span></span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> s == <span class="string">&#x27;undefined&#x27;</span>) &#123;</span><br><span class="line">		   s = <span class="number">1.70158</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> c*(t/=d)*t*((s+<span class="number">1</span>)*t - s) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	backOut: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d, s</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> s == <span class="string">&#x27;undefined&#x27;</span>) &#123;</span><br><span class="line">			s = <span class="number">3.70158</span>;  <span class="comment">//回缩的距离</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> c*((t=t/d-<span class="number">1</span>)*t*((s+<span class="number">1</span>)*t + s) + <span class="number">1</span>) + b;</span><br><span class="line">	&#125;, </span><br><span class="line">	backBoth: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d, s</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> s == <span class="string">&#x27;undefined&#x27;</span>) &#123;</span><br><span class="line">			s = <span class="number">1.70158</span>; </span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ((t /= d/<span class="number">2</span> ) &lt; <span class="number">1</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> c/<span class="number">2</span>*(t*t*(((s*=(<span class="number">1.525</span>))+<span class="number">1</span>)*t - s)) + b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> c/<span class="number">2</span>*((t-=<span class="number">2</span>)*t*(((s*=(<span class="number">1.525</span>))+<span class="number">1</span>)*t + s) + <span class="number">2</span>) + b;</span><br><span class="line">	&#125;,</span><br><span class="line">	bounceIn: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;    <span class="comment">//弹球减振（弹球渐出）</span></span><br><span class="line">		<span class="keyword">return</span> c - Tween[<span class="string">&#x27;bounceOut&#x27;</span>](d-t, <span class="number">0</span>, c, d) + b;</span><br><span class="line">	&#125;,       </span><br><span class="line">	bounceOut: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">if</span> ((t/=d) &lt; (<span class="number">1</span>/<span class="number">2.75</span>)) &#123;</span><br><span class="line">			<span class="keyword">return</span> c*(<span class="number">7.5625</span>*t*t) + b;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (t &lt; (<span class="number">2</span>/<span class="number">2.75</span>)) &#123;</span><br><span class="line">			<span class="keyword">return</span> c*(<span class="number">7.5625</span>*(t-=(<span class="number">1.5</span>/<span class="number">2.75</span>))*t + <span class="number">0.75</span>) + b;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (t &lt; (<span class="number">2.5</span>/<span class="number">2.75</span>)) &#123;</span><br><span class="line">			<span class="keyword">return</span> c*(<span class="number">7.5625</span>*(t-=(<span class="number">2.25</span>/<span class="number">2.75</span>))*t + <span class="number">0.9375</span>) + b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> c*(<span class="number">7.5625</span>*(t-=(<span class="number">2.625</span>/<span class="number">2.75</span>))*t + <span class="number">0.984375</span>) + b;</span><br><span class="line">	&#125;,      </span><br><span class="line">	bounceBoth: <span class="function"><span class="keyword">function</span>(<span class="params">t, b, c, d</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (t &lt; d/<span class="number">2</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> Tween[<span class="string">&#x27;bounceIn&#x27;</span>](t*<span class="number">2</span>, <span class="number">0</span>, c, d) * <span class="number">0.5</span> + b;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> Tween[<span class="string">&#x27;bounceOut&#x27;</span>](t*<span class="number">2</span>-d, <span class="number">0</span>, c, d) * <span class="number">0.5</span> + c*<span class="number">0.5</span> + b;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里说下参数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">t: current time（当前时间）</span><br><span class="line">b: beginning value（初始值）</span><br><span class="line">c: change <span class="keyword">in</span> value（变化量）</span><br><span class="line">d: duration（持续时间）</span><br><span class="line">个别算法有其他参数，这里仅就共通处做总结	</span><br></pre></td></tr></table></figure>
+
+<p>这个不太好理解到底怎么用了，我们来个场景：<br>现在div#ABC中有个div#move,ABC我相对定位，move为绝对定位且top和left均为0；现在要开始一次运动：<br>move要在1s内从left:0运行到left:500px的位置。<br>那么现在t、b、c、d到底是多少呢？t=0，b=0，c=500-0=500，d=1000(ms)</p>
+<p><a class="jsbin-embed" target="_blank" rel="noopener" href="http://jsbin.com/wonowu/embed?js,output">JS Bin on jsbin.com</a><script src="http://static.jsbin.com/js/embed.min.js?3.35.5"></script></p>
+<p>可以看到这个DEMO中的例子,这里基本仅仅是用的命令式编程没考虑什么复用性，但是整个过程中还是分成了上面说到的三个步骤：算法计算位置，postion函数处理css定位,setIntereval处理按帧刷新。</p>
+<p>这作为第一篇就这样了，这一篇仅仅作为<b>变速运动</b>的上手,虽然没法理解Tween算法的意义，但是数学作为科学的基础，交给专业的人处理就好了，我目前仅仅打算做个安静的FrontEnder用全部精力来紧跟前端潮流。</p>
+<p>下一篇有时间再总结一下关于运动的其他知识点，这里列一下：</p>
+<ol>
+<li>动画基础理论：刷新率&amp;setTimeout和setInterval精度</li>
+<li>曲线运动和算法整理</li>
+<li>结合闭包做一个可以复用的动画封装</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/03/22/github_learn/" rel="prev" title="github学习笔记">
+      <i class="fa fa-chevron-left"></i> github学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/04/01/javascript_event/" rel="next" title="javasript事件类型整理">
+      javasript事件类型整理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E5%86%99%E4%B9%8B%E5%89%8D%E7%9A%84%E8%AF%9D"><span class="nav-number">1.</span> <span class="nav-text">开始写之前的话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E7%94%BB%E7%9A%84%E7%94%9F%E6%88%90"><span class="nav-number">2.</span> <span class="nav-text">动画的生成</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

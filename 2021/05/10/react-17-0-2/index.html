@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="重新读react。17.0.2.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-17.0.2">
+<meta property="og:url" content="http://www.que01.top/2021/05/10/react-17-0-2/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="重新读react。17.0.2.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/react17-0-2.png">
+<meta property="article:published_time" content="2021-05-10T06:10:35.000Z">
+<meta property="article:modified_time" content="2022-03-07T02:37:31.578Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/react17-0-2.png">
+
+<link rel="canonical" href="http://www.que01.top/2021/05/10/react-17-0-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-17.0.2 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2021/05/10/react-17-0-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-17.0.2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-10 14:10:35" itemprop="dateCreated datePublished" datetime="2021-05-10T14:10:35+08:00">2021-05-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-07 10:37:31" itemprop="dateModified" datetime="2022-03-07T10:37:31+08:00">2022-03-07</time>
+              </span>
+
+          
+            <span id="/2021/05/10/react-17-0-2/" class="post-meta-item leancloud_visitors" data-flag-title="react-17.0.2" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">重新读react。17.0.2.</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="react-本身"><a href="#react-本身" class="headerlink" title="react 本身"></a>react 本身</h1><p>react 不仅仅是浏览器端在用，而且服务器端和 reactNative 端其实也还是在使用。<br>纯<br>这就决定了 react 库本身只是一个很纯粹的数据结构类型的库。</p>
+<p>但是前端其实很难脱离 react-dom 去看源码，在这个不断的跳转中其实已经分不清什么是 react，什么是 react-dom。</p>
+<p>但是说到底，react 就是 react, 而非 react-dom。虽然常规来说，如果不看 react-dom，其实很难处乎其外去理解 react。但是这篇，还是很克制的去单的分析 react 本身。</p>
+<p>时间已经到了 21 年 5 月。所以这里的版本是 17.0.2。但是 react 这个库 实质很多地方已经一年多没有修改过了。所以如果早期有理解，这里依然还是那样。</p>
+<h1 id="整体结构"><a href="#整体结构" class="headerlink" title="整体结构"></a>整体结构</h1><p><img src="/images/react17-0-2.png" alt="react17.0.2"></p>
+<p>这张图比较大，可以右键打开到特定地方点击放大镜查看(chrome)。<br>这里对导出的函数和变量做一点分析。</p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">createMutableSource,</span><br><span class="line">createRef,</span><br><span class="line">Component,</span><br><span class="line">PureComponent,</span><br><span class="line">createElement,</span><br><span class="line">cloneElement,</span><br><span class="line">createContext,</span><br><span class="line">createFactory,</span><br><span class="line">forwardRef,</span><br><span class="line">lazy,</span><br><span class="line">memo,</span><br><span class="line">useCallback,</span><br><span class="line">useContext,</span><br><span class="line">useEffect,</span><br><span class="line">useImperativeHandle,</span><br><span class="line">useDebugValue,</span><br><span class="line">useLayoutEffect,</span><br><span class="line">useMemo,</span><br><span class="line">useMutableSource,</span><br><span class="line">useReducer,</span><br><span class="line">useRef,</span><br><span class="line">useState,</span><br><span class="line">isValidElement,</span><br><span class="line">useTransition,</span><br><span class="line">startTransition,</span><br><span class="line">useDeferredValue,</span><br><span class="line">block,</span><br><span class="line">createFundamental <span class="keyword">as</span> unstable_createFundamental,</span><br><span class="line">useOpaqueIdentifier <span class="keyword">as</span> unstable_useOpaqueIdentifier,</span><br></pre></td></tr></table></figure>
+
+<h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Children</span><br><span class="line">REACT_FRAGMENT_TYPE <span class="keyword">as</span> Fragment,</span><br><span class="line">REACT_PROFILER_TYPE <span class="keyword">as</span> Profiler,</span><br><span class="line">REACT_STRICT_MODE_TYPE <span class="keyword">as</span> StrictMode,</span><br><span class="line">REACT_DEBUG_TRACING_MODE_TYPE <span class="keyword">as</span> unstable_DebugTracingMode,</span><br><span class="line">REACT_SUSPENSE_TYPE <span class="keyword">as</span> Suspense,</span><br><span class="line">ReactSharedInternals <span class="keyword">as</span> __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,</span><br><span class="line">REACT_SUSPENSE_LIST_TYPE <span class="keyword">as</span> SuspenseList,</span><br><span class="line">REACT_LEGACY_HIDDEN_TYPE <span class="keyword">as</span> unstable_LegacyHidden,</span><br><span class="line">REACT_SCOPE_TYPE <span class="keyword">as</span> unstable_Scope,</span><br></pre></td></tr></table></figure>
+
+<h1 id="细节分析"><a href="#细节分析" class="headerlink" title="细节分析"></a>细节分析</h1><p>这篇主要分析返回的数据结构，看情况记录一下以前写过这些数据是如何使用之类。</p>
+<h2 id="Fn-createMutableSource"><a href="#Fn-createMutableSource" class="headerlink" title="Fn#createMutableSource"></a>Fn#createMutableSource</h2><p>这个函数过于简单 基本直接贴也可以:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createMutableSource</span>&lt;<span class="title">Source</span>: <span class="title">$NonMaybeType</span>&lt;<span class="title">mixed</span>&gt;&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  source: Source,</span></span></span><br><span class="line"><span class="function"><span class="params">  getVersion: MutableSourceGetVersionFn,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">MutableSource</span>&lt;<span class="title">Source</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> mutableSource: MutableSource&lt;Source&gt; = &#123;</span><br><span class="line">    _getVersion: getVersion,</span><br><span class="line">    _source: source,</span><br><span class="line">    _workInProgressVersionPrimary: <span class="literal">null</span>,</span><br><span class="line">    _workInProgressVersionSecondary: <span class="literal">null</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> mutableSource;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数主要用于<code>useMutableSource</code>, 官方文档在这里<a target="_blank" rel="noopener" href="https://github.com/reactjs/rfcs/blob/master/text/0147-use-mutable-source.md">0147-use-mutable-source.md</a>。</p>
+<blockquote>
+<p>useMutableSource() enables React components to safely and efficiently read from a mutable external source in Concurrent Mode. </p>
+</blockquote>
+<h2 id="Fn-createRef"><a href="#Fn-createRef" class="headerlink" title="Fn#createRef"></a>Fn#createRef</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createRef</span>(<span class="params"></span>): <span class="title">RefObject</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> refObject = &#123;</span><br><span class="line">    current: <span class="literal">null</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> refObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里超级常见了， 常常会用到的ref.current就是这里。</p>
+<h2 id="Fn-Component"><a href="#Fn-Component" class="headerlink" title="Fn#Component"></a>Fn#Component</h2><p>这里Component说是一个函数其实不太合适，日常来说，我们都是把它作为一个组件使用的。它是react项目无法避开的一个知识点。</p>
+<p>但是在纯粹的React库里面它是一个构造器。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Component</span>(<span class="params">props, context, updater</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.props = props;</span><br><span class="line">  <span class="built_in">this</span>.context = context;</span><br><span class="line">  <span class="built_in">this</span>.refs = emptyObject;</span><br><span class="line">  <span class="built_in">this</span>.updater = updater || ReactNoopUpdateQueue;</span><br><span class="line">&#125;</span><br><span class="line">Component.prototype.isReactComponent = &#123;&#125;;</span><br><span class="line">Component.prototype.setState = <span class="function"><span class="keyword">function</span>(<span class="params">partialState, callback</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.updater.enqueueSetState(<span class="built_in">this</span>, partialState, callback, <span class="string">&#x27;setState&#x27;</span>);</span><br><span class="line">&#125;;</span><br><span class="line">Component.prototype.forceUpdate = <span class="function"><span class="keyword">function</span>(<span class="params">callback</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.updater.enqueueForceUpdate(<span class="built_in">this</span>, callback, <span class="string">&#x27;forceUpdate&#x27;</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>当new一个Component时候，原型链上就自动有了setState这些东西。它们依托ReactNoopUpdateQueue进行更新。</p>
+<p>当然，后面就全是细节了。这里不表。</p>
+<h2 id="Fn-PureComponent"><a href="#Fn-PureComponent" class="headerlink" title="Fn#PureComponent"></a>Fn#PureComponent</h2><p>PureComponent和Component基本相同。但是它没有了Component的原型上的setState和forceUpdate这些了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">PureComponent</span>(<span class="params">props, context, updater</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.props = props;</span><br><span class="line">  <span class="built_in">this</span>.context = context;</span><br><span class="line">  <span class="built_in">this</span>.refs = emptyObject;</span><br><span class="line">  <span class="built_in">this</span>.updater = updater || ReactNoopUpdateQueue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Fn-createContext"><a href="#Fn-createContext" class="headerlink" title="Fn#createContext"></a>Fn#createContext</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createContext</span>&lt;<span class="title">T</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  defaultValue: T,</span></span></span><br><span class="line"><span class="function"><span class="params">  calculateChangedBits: ?(a: T, b: T) =&gt; number,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">ReactContext</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (calculateChangedBits === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    calculateChangedBits = <span class="literal">null</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (__DEV__) &#123;  &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> context: ReactContext&lt;T&gt; = &#123;</span><br><span class="line">    $$typeof: REACT_CONTEXT_TYPE,</span><br><span class="line">    _calculateChangedBits: calculateChangedBits,</span><br><span class="line">    _currentValue: defaultValue,</span><br><span class="line">    _currentValue2: defaultValue,</span><br><span class="line">    _threadCount: <span class="number">0</span>,</span><br><span class="line">    Provider: (<span class="literal">null</span>: any),</span><br><span class="line">    Consumer: (<span class="literal">null</span>: any),</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  context.Provider = &#123;</span><br><span class="line">    $$typeof: REACT_PROVIDER_TYPE,</span><br><span class="line">    _context: context,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> hasWarnedAboutUsingNestedContextConsumers = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> hasWarnedAboutUsingConsumerProvider = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> hasWarnedAboutDisplayNameOnConsumer = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (__DEV__) &#123;</span><br><span class="line">		<span class="comment">// 略</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    context.Consumer = context;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> context;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里context是早前redux之类库必须用到的东西。这里主要关注ReactContext数据定义。</p>
+<h2 id="Fn-forwardRef"><a href="#Fn-forwardRef" class="headerlink" title="Fn#forwardRef"></a>Fn#forwardRef</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">forwardRef</span>&lt;<span class="title">Props</span>, <span class="title">ElementType</span>: <span class="title">React$ElementType</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  render: (props: Props, ref: React$Ref&lt;ElementType&gt;) =&gt; React$Node,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> elementType = &#123;</span><br><span class="line">    $$typeof: REACT_FORWARD_REF_TYPE,</span><br><span class="line">    render,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> elementType;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里这个函数核心还是$$typeof和render组成的这个数据结构。正常来说render是一个<code>(props)=>ReactNode</code>的函数。</p>
+<p>它主要作用还是为了方便使用ref方式获取dom结构，以便一些老旧js库基于dom来工作。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 常规使用方式</span></span><br><span class="line"><span class="keyword">const</span> Child = React.forwardRef(<span class="function">(<span class="params">props, ref</span>)=&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;div ref=&#123;ref&#125;&gt;&#123;props.txt&#125;&lt;/div&gt;</span><br><span class="line">    )</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>当要进行实例化、渲染的时候，需要执行这个render一次将ref传入。</p>
+<h2 id="Fn-lazy"><a href="#Fn-lazy" class="headerlink" title="Fn#lazy"></a>Fn#lazy</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">lazy</span>&lt;<span class="title">T</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  ctor: () =&gt; Thenable&lt;&#123;<span class="keyword">default</span>: T, ...&#125;&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">LazyComponent</span>&lt;<span class="title">T</span>, <span class="title">Payload</span>&lt;<span class="title">T</span>&gt;&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> payload: Payload&lt;T&gt; = &#123;</span><br><span class="line">    <span class="comment">// We use these fields to store the result.</span></span><br><span class="line">    _status: -<span class="number">1</span>,</span><br><span class="line">    _result: ctor,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> lazyType: LazyComponent&lt;T, Payload&lt;T&gt;&gt; = &#123;</span><br><span class="line">    $$typeof: REACT_LAZY_TYPE,</span><br><span class="line">    _payload: payload,</span><br><span class="line">    _init: lazyInitializer,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> lazyType;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 常规的使用</span></span><br><span class="line"><span class="keyword">const</span> SomeComponent = React.lazy(<span class="function">() =&gt;</span> <span class="keyword">import</span>(<span class="string">&#x27;./SomeComponent&#x27;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>这里lazy要求有一个&lt;React.Suspense&gt;容器 &amp;&amp; 浏览器的Promise环境支持。</p>
+<p>具体的lazy更多细节在ReactLazy.js里面。它的实现上和Promise非常相似。里面有多种状态</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Uninitialized = -<span class="number">1</span>;</span><br><span class="line"><span class="keyword">const</span> Pending = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">const</span> Resolved = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">const</span> Rejected = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<p>而lazy数据结构中的lazyInitializer属性，执行之后会进行类似Promise这样的操作。</p>
+<p>这个<code>_init: lazyInitializer</code>机制，大致就是为什么需要Promise(底层原理依赖它)，为什么需要&lt;React.Suspense&gt;容器(_init:lazyInitializer需要有人来执行, 返回的数据结构和内部逻辑决定了它没有自执行的可能性)。</p>
+<p>关于Promise底层依赖这个，访问<a target="_blank" rel="noopener" href="https://babeljs.io/repl">babel repl</a>，做一点尝试就很容易明白。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// from:</span></span><br><span class="line"><span class="keyword">const</span> OtherComponent = React.lazy(<span class="function">() =&gt;</span> <span class="keyword">import</span>(<span class="string">&#x27;./OtherComponent&#x27;</span>));</span><br><span class="line"><span class="comment">// to:</span></span><br><span class="line"><span class="keyword">const</span> OtherComponent = React.lazy(<span class="function">() =&gt;</span> <span class="built_in">Promise</span>.resolve().then(<span class="function">() =&gt;</span> _interopRequireWildcard(<span class="built_in">require</span>(<span class="string">&#x27;./OtherComponent&#x27;</span>))));</span><br></pre></td></tr></table></figure>
+
+<p>关于里面多出来的其他函数可能也无需去理解，看到转译出来的Promise.resolve()已经可以确定底层依赖的事实。</p>
+<h2 id="Value-Suspense"><a href="#Value-Suspense" class="headerlink" title="Value#Suspense"></a>Value#Suspense</h2><p>上文的lazy依赖于它。但是在react内部呢，Suspense仅仅是一个Symbol符号。在代码实现上，它是这样定义的：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> symbolFor = <span class="built_in">Symbol</span>.for;</span><br><span class="line">REACT_SUSPENSE_TYPE = symbolFor(<span class="string">&#x27;react.suspense&#x27;</span>);</span><br><span class="line"><span class="comment">// lazy返回结构对应的定义是</span></span><br><span class="line">REACT_LAZY_TYPE = symbolFor(<span class="string">&#x27;react.lazy&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用场景</span></span><br><span class="line"><span class="keyword">const</span> OtherComponent = React.lazy(<span class="function">() =&gt;</span> <span class="keyword">import</span>(<span class="string">&#x27;./OtherComponent&#x27;</span>));</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MyComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;React.Suspense fallback=&#123;<span class="xml"><span class="tag">&lt;<span class="name">Spinner</span> /&gt;</span></span>&#125;&gt;</span><br><span class="line">        &lt;OtherComponent /&gt;</span><br><span class="line">    &lt;/React.Suspense&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// babel对React.Suspense的转译:</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MyComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> React.createElement(React.Suspense, &#123;</span><br><span class="line">    fallback: React.createElement(Spinner, <span class="literal">null</span>)</span><br><span class="line">  &#125;, React.createElement(OtherComponent, <span class="literal">null</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>考虑createElement的定义，这里发生的事情大致是这样:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createElement</span>(<span class="params">type, config, children</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ReactElement(</span><br><span class="line">    type, <span class="comment">// 这里type = symbolFor(&#x27;react.suspense&#x27;) = REACT_SUSPENSE_TYPE</span></span><br><span class="line">    key,</span><br><span class="line">    ref,</span><br><span class="line">    self,</span><br><span class="line">    source,</span><br><span class="line">    ReactCurrentOwner.current,</span><br><span class="line">    props: &#123; <span class="comment">// 细节有忽略 大致如此</span></span><br><span class="line">    	...config, <span class="comment">// 这里基本等价 fallback 也就是那个Spinner组件</span></span><br><span class="line">	    children, <span class="comment">// 这里对应的LazyComponent</span></span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>以下是ReactDom范畴:</strong></p>
+<p>简单看了一下新版本的ReactDom, render一路往下到了updateContainer。在这个函数中有一点点细节:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">update=&#123;</span><br><span class="line">  callback: callback, <span class="comment">// callback返回Spinner组件</span></span><br><span class="line">  payload: &#123; element &#125; <span class="comment">// element是我们的React.Suspense容器组件</span></span><br><span class="line">&#125;</span><br><span class="line">enqueueUpdate(current, update); <span class="comment">// current是容器 Fiber形式</span></span><br><span class="line">scheduleUpdateOnFiber(current, lane, eventTime);</span><br></pre></td></tr></table></figure>
+
+<p>enqueueUpdate将update挂载到了current这个fiber节点。scheduleUpdateOnFiber开始执行。</p>
+<h2 id="Fn-memo"><a href="#Fn-memo" class="headerlink" title="Fn#memo"></a>Fn#memo</h2><p>来自ReactMemo文件。</p>
+<p>返回的是这样的一个数据结构:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> elementType = &#123;</span><br><span class="line">  $$typeof: REACT_MEMO_TYPE,</span><br><span class="line">  type, <span class="comment">// type这里是组件</span></span><br><span class="line">  compare: compare === <span class="literal">undefined</span> ? <span class="literal">null</span> : compare,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>常规使用上:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MyComponent</span>(<span class="params">props</span>) </span>&#123;</span><br><span class="line">  <span class="comment">/* render using props */</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">areEqual</span>(<span class="params">prevProps, nextProps</span>) </span>&#123;</span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">    return true if passing nextProps to render would return</span></span><br><span class="line"><span class="comment">    the same result as passing prevProps to render,</span></span><br><span class="line"><span class="comment">    otherwise return false</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> React.memo(MyComponent, areEqual);</span><br></pre></td></tr></table></figure>
+
+<p>它用于一些函数式组件的性能优化。解决shouldComponentUpdate只能用于classComponent的局限。</p>
+<p>这个数据结构的设计还是很容易理解的,$$typeof用来判断类型，compare用来判断是否需要更新，type这是渲染方法。React这种数据驱动的View的模式, type作为render函数, 只要使用compare精细判别一下props变化, 一般是针对作为对象的props属性,就可以进行视图一致、业务精细化处理的刷新。</p>
+<h2 id="HookS-useXXX系列"><a href="#HookS-useXXX系列" class="headerlink" title="HookS#useXXX系列"></a>HookS#useXXX系列</h2><p>这里太长, 单独拆开了说。<a href="/2021/06/13/2021-6-13-react-17-0-2-hooks/">点这里</a></p>
+<p>主要分析了 useState 和 useEffect两个，写到最后其实有些兴味索然，不过还是可以看看吧。</p>
+<h2 id="block"><a href="#block" class="headerlink" title="block"></a>block</h2><p>这是一个当前尚未发布的功能。关联<a target="_blank" rel="noopener" href="https://github.com/facebook/react/issues/22152">issue</a></p>
+<blockquote>
+<p>“Blocks” fixture app which made by built-in API, ‘react-fetch’, Server Component combination that useful to play new features v18 later.</p>
+</blockquote>
+<p>简单说这是一个[内置API+远程数据获取+SSR]的混合体。</p>
+<p>实际上这属于一个资料很少的功能，当前实际上也很难找到demo可以参考，当前最合适用来理解这个功能的demo应当是<code>ReactBlocks-test.js</code>。</p>
+<p>我去大致看了一下这个test，大致是测试Block这个api，可以实现实现数据获取,数据缓存,带有Suspense安全边界这样的一个功能。</p>
+<p>个人猜想它大致还是针对当前我们一些业务组件不得不在组件里面耦合远程api请求、以及复用组件产生的。</p>
+<p>当前它还没有发布, 对它有个初步认知应该就可以了。</p>
+<h2 id="useOpaqueIdentifier"><a href="#useOpaqueIdentifier" class="headerlink" title="useOpaqueIdentifier"></a>useOpaqueIdentifier</h2><p>这是工具函数, 用来生成唯一id，从前为了这个id使用过uuid-v4这个库。<br>它比uuid-v4更优越的地方可能在于它是SSR-safe的，当这样当SSR环境生成的id和客户端生成的id就不会出现冲突的可能。</p>
+<blockquote>
+<p>🌠 React is getting a new hook, <code>useOpaqueIdentifier</code>, which can be used to generate unique IDs (to be used for form labels, aria-labelledby, etc), in an SSR-safe way.</p>
+</blockquote>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; useOpaqueIdentifier &#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> TextField = <span class="function">(<span class="params">&#123; value, onChange, label &#125;</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> id = useOpaqueIdentifier()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;div className=<span class="string">&quot;text-field&quot;</span>&gt;</span><br><span class="line">      &lt;label htmlFor=&#123;id&#125;&gt;&#123;label&#125;&lt;/label&gt;</span><br><span class="line">      &lt;input <span class="keyword">type</span>=<span class="string">&quot;text&quot;</span> id=&#123;id&#125; value=&#123;value&#125; onChange=&#123;onChange&#125; /&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  )</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> TextField</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/09/what-are-you-doing/" rel="prev" title="what-are-you-doing">
+      <i class="fa fa-chevron-left"></i> what-are-you-doing
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/13/2021-6-13-react-17-0-2-hooks/" rel="next" title="react-17.0.2-hooks 之 useState">
+      react-17.0.2-hooks 之 useState <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#react-%E6%9C%AC%E8%BA%AB"><span class="nav-number">1.</span> <span class="nav-text">react 本身</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">整体结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">2.1.</span> <span class="nav-text">函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">2.2.</span> <span class="nav-text">变量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%86%E8%8A%82%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">细节分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-createMutableSource"><span class="nav-number">3.1.</span> <span class="nav-text">Fn#createMutableSource</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-createRef"><span class="nav-number">3.2.</span> <span class="nav-text">Fn#createRef</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-Component"><span class="nav-number">3.3.</span> <span class="nav-text">Fn#Component</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-PureComponent"><span class="nav-number">3.4.</span> <span class="nav-text">Fn#PureComponent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-createContext"><span class="nav-number">3.5.</span> <span class="nav-text">Fn#createContext</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-forwardRef"><span class="nav-number">3.6.</span> <span class="nav-text">Fn#forwardRef</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-lazy"><span class="nav-number">3.7.</span> <span class="nav-text">Fn#lazy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Value-Suspense"><span class="nav-number">3.8.</span> <span class="nav-text">Value#Suspense</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fn-memo"><span class="nav-number">3.9.</span> <span class="nav-text">Fn#memo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HookS-useXXX%E7%B3%BB%E5%88%97"><span class="nav-number">3.10.</span> <span class="nav-text">HookS#useXXX系列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#block"><span class="nav-number">3.11.</span> <span class="nav-text">block</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#useOpaqueIdentifier"><span class="nav-number">3.12.</span> <span class="nav-text">useOpaqueIdentifier</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深理解，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React全家桶:react-starter-kit之一">
+<meta property="og:url" content="http://www.que01.top/2016/06/08/react-starter-kit-1/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深理解，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-06-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.593Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta property="article:tag" content="express">
+<meta property="article:tag" content="react同构应用">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/06/08/react-starter-kit-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React全家桶:react-starter-kit之一 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/06/08/react-starter-kit-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React全家桶:react-starter-kit之一
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-08 00:00:00" itemprop="dateCreated datePublished" datetime="2016-06-08T00:00:00+08:00">2016-06-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/06/08/react-starter-kit-1/" class="post-meta-item leancloud_visitors" data-flag-title="React全家桶:react-starter-kit之一" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">上一篇文章看看差不多是整整一个月前的事情了。这一个月的空闲时间主要就用来折腾react-starter-kit这个东西了。折腾到今天虽然还是有很多东西没有折腾好。但是已经可以整理一下所获所得。一来加深理解，二来聊做备忘，如果可以帮到更多人，那更是我的幸运。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>一直想做个项目，以react为前端，node做后端，实现前后端都可以使用javascript开发。所以在github上找手脚架时候，找到了react-starter-kit，8k多的star，于是就拍板使用它了。这就是这系列笔记的来源之所以。</p>
+<p>然而最终发现，react-starter-kit实在不是一个平易近人的项目，匮乏的文档，匮乏的demo，匮乏的说明，尤其是，匮乏的starter-guide，实在有些匹配不上react-starter-kit这个名字。</p>
+<p>——然而已经入坑了，那就只好慢慢填坑爬出来——一把辛酸泪。。。</p>
+<h1 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h1><p>在展开所有内容之前，还是有必要讲讲React Starter Kit涵盖了哪些。以下是github项目上介绍：</p>
+<blockquote>
+<p>React Starter Kit — isomorphic web app boilerplate (Node.js, Express, GraphQL, React.js, Babel 6, PostCSS, Webpack, Browsersync)</p>
+</blockquote>
+<p>这是React Starter Kit项目的介绍。</p>
+<p>总体上呢，我认为可以分为两个部分：</p>
+<ol>
+<li>工具部分：webpack，babel，browserSync等</li>
+<li>框架部分：Express，GraphQL，redux，React等</li>
+</ol>
+<p>除此以外是个人规划部分：</p>
+<ol>
+<li>数据库:Mongodb，使用mongoose做连接池</li>
+<li>模板引擎:干掉Jade，使用artTemplate(不要问我为嘛用这个，只因为习惯了，另外憎恨Jade语法)</li>
+</ol>
+<p>加起来，react-starter-kit大概涉及到了：webpack，babel，browserSync，Express，GraphQL，redux，React，mongoose，artTemplate，名副其实的全家桶，需要的储备知识着实不少。</p>
+<h2 id="模板引擎"><a href="#模板引擎" class="headerlink" title="模板引擎"></a>模板引擎</h2><p>第一步是src/views目录下的两个jade模板。这是首页和报错页面的基础模板。其中首页模板会在各个页面被重用。</p>
+<p>下面是关键上下文代码之一</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//file:src/server.js</span></span><br><span class="line">app.get(<span class="string">&#x27;*&#x27;</span>, <span class="keyword">async</span> (req, res, next) =&gt; &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> css = [];</span><br><span class="line">    <span class="keyword">let</span> statusCode = <span class="number">200</span>;</span><br><span class="line">    <span class="keyword">const</span> template = <span class="built_in">require</span>(<span class="string">&#x27;./views/index.jade&#x27;</span>); <span class="comment">// eslint-disable-line global-require</span></span><br><span class="line">	...</span><br><span class="line">    res.status(statusCode);</span><br><span class="line">    res.send(template(data));</span><br><span class="line">  &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">    next(err);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line">app.use(<span class="function">(<span class="params">err, req, res, next</span>) =&gt;</span> &#123; <span class="comment">// eslint-disable-line no-unused-vars</span></span><br><span class="line">  <span class="built_in">console</span>.log(pe.render(err)); <span class="comment">// eslint-disable-line no-console</span></span><br><span class="line">  <span class="keyword">const</span> template = <span class="built_in">require</span>(<span class="string">&#x27;./views/error.jade&#x27;</span>); <span class="comment">// eslint-disable-line global-require</span></span><br><span class="line">  <span class="keyword">const</span> statusCode = err.status || <span class="number">500</span>;</span><br><span class="line">  res.status(statusCode);</span><br><span class="line">  res.send(template(&#123;</span><br><span class="line">    message: err.message,</span><br><span class="line">    stack: process.env.NODE_ENV === <span class="string">&#x27;production&#x27;</span> ? <span class="string">&#x27;&#x27;</span> : err.stack,</span><br><span class="line">  &#125;));</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>其中，可以看到两个地方引用(require)了jade模板，并且代码最终会被webpack打包，所以这里webapck使用了jade-loader，为了可以将index.jade改成index.html,我们需要安装 <code>tmodjs-loader</code>，确保html后缀的artTemplate模板可以被正确识别和编译。<br>下面是操作步骤</p>
+<ol>
+<li>安装tmodjs-loader: <code>npm i tmodjs-loader --save-dev</code></li>
+<li>转换jade2html: <a target="_blank" rel="noopener" href="http://html2jade.org/">html2jade</a>,将jade贴到右边左边会有编译的HTML，补充好变量位置即可。</li>
+<li>设置webpack的loader<br>在 <code>tools/webpack.config.js</code> line127左右的位置插入以下代码，为模板设置正确的loader<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  test: &#x2F;\.html$&#x2F;,</span><br><span class="line">  loader: &quot;tmodjs&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>关键上下文代码之一：<br>除此以外，在src/content目录下有若干的jade文件，这个是Content Component的jade文件，为了去除jade，我们将它转换为markdown文件即可。Content Component逻辑中已经配置好markdown文章的逻辑。不需要操作更多。</p>
+<p>至此，jade模板更换artTemplate工序完成。</p>
+<h2 id="mongoose"><a href="#mongoose" class="headerlink" title="mongoose"></a>mongoose</h2><p>为了链接mongodb，这里使用了mongoose来连接和操作。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>安装很容易，在终端下运行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i mongoose --save</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>安装完成之后我们呢需要配置一下才能够使用，在src下新建mongoose目录，用来存放Schema等相关的东西。结构如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoose</span><br><span class="line">├── Schema</span><br><span class="line">│   ├── News.js</span><br><span class="line">│   ├── Tags.js</span><br><span class="line">│   └── User.js</span><br><span class="line">└── index.js</span><br></pre></td></tr></table></figure>
+
+<p>这里仅仅展示一下News.js和index.js,已经足够展示整体结构了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//file:News.js</span></span><br><span class="line"><span class="keyword">import</span> mongoose <span class="keyword">from</span> <span class="string">&#x27;mongoose&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;mongoDbUrl&#125; <span class="keyword">from</span> <span class="string">&#x27;../../config&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> conn = mongoose.connect(mongoDbUrl);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> schema = <span class="keyword">new</span> mongoose.Schema(&#123;</span><br><span class="line">  title: <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">  link: <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">  author:<span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">  publishedDate: <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">  contentSnippet:<span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">let</span> News = mongoose.model(<span class="string">&#x27;news&#x27;</span>, schema);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span>  News;</span><br><span class="line"></span><br><span class="line"><span class="comment">//file:index.js</span></span><br><span class="line"><span class="keyword">import</span> News <span class="keyword">from</span> <span class="string">&#x27;./Schema/News&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> Tags <span class="keyword">from</span> <span class="string">&#x27;./Schema/Tags&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> User <span class="keyword">from</span> <span class="string">&#x27;./Schema/User&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> &#123;News,Tags,User&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以看到，虽然目录名字虽然叫做Schema，但是导出的是model，这是为了方便进行数据操作。至于index.js，只是为了方便导入各个Model而做的归集。</p>
+<p>另外，这里有个变量mongoDbUrl，从外部引入了，这里也贴一下相关的配置：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> mongodbInfo = &#123;</span><br><span class="line">  url:<span class="string">&quot;xxx.mlab.com&quot;</span>,</span><br><span class="line">  port:<span class="number">19839</span>,</span><br><span class="line">  user:<span class="string">&quot;xxx&quot;</span>,</span><br><span class="line">  password:<span class="string">&#x27;xxx&#x27;</span>,</span><br><span class="line">  dbName:<span class="string">&#x27;learn&#x27;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//fromat:&#x27;mongodb://username:password@ds019839.mlab.com:19839/learn&#x27;</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> mongoDbUrl = <span class="string">&#x27;mongodb://&#x27;</span>+mongodbInfo.user+<span class="string">&#x27;:&#x27;</span>+mongodbInfo.password+<span class="string">&#x27;@&#x27;</span>+mongodbInfo.url+<span class="string">&#x27;:&#x27;</span>+mongodbInfo.port+<span class="string">&#x27;/&#x27;</span>+mongodbInfo.dbName</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>实际上就是一个带了认证信息的mongodb链接。<br>这部分内容只是很简单的讲解了如何进行安装，配置，使用上还是需要对mongoose有基础的认识，需要一些知识储备。之前写过的<a href="http://www.que01.top/2016/03/20/mongodb2/">mongoDB笔记(二)</a>可以做一些浅显的参考，更具体的概念性东西，大概需要读者另外爬文了。</p>
+<h2 id="API"><a href="#API" class="headerlink" title="API"></a>API</h2><p>有了数据库连接池，那么现在往下走，基于monogoose来做一些API。API主要考虑到两个方面，一个数据读写，一个是路由设置。</p>
+<h3 id="路由"><a href="#路由" class="headerlink" title="路由"></a>路由</h3><p>我们先从路由开始开工。<br>在src下新建api文件夹，建立api/index.js文件。<br>下面弄个简单的index.js例子</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; Router &#125; <span class="keyword">from</span> <span class="string">&#x27;express&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123;News,User,Tags&#125; <span class="keyword">from</span> <span class="string">&#x27;../mongoose&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> router = <span class="keyword">new</span> Router();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取新闻数据</span></span><br><span class="line">router.all(<span class="string">&#x27;/news&#x27;</span>, <span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">  News.find().exec(<span class="function"><span class="keyword">function</span>(<span class="params">err,news</span>)</span>&#123;</span><br><span class="line">    res.json(&#123;</span><br><span class="line">      code:<span class="number">200</span>,</span><br><span class="line">      news:news</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> router;</span><br></pre></td></tr></table></figure>
+<p>完毕之后在src/server.js中添加路由相应的路由代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> api <span class="keyword">from</span> <span class="string">&#x27;./api&#x27;</span>;</span><br><span class="line">...</span><br><span class="line">app.use(<span class="string">&#x27;/api&#x27;</span>, api);</span><br></pre></td></tr></table></figure>
+
+<h3 id="数据读写"><a href="#数据读写" class="headerlink" title="数据读写"></a>数据读写</h3><p>数据读写的代码其实在上面已经贴出来了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">News.find().exec(function()&#123;</span><br><span class="line">	&#x2F;&#x2F;读取完毕之后的回调</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>不过这里仅仅是非常简单的全部查询，并没有限制性的条件，这在大多数时候是不存在的，不过这里还算合用(马上讲到GraphQL)。如果需要了解更多的相关mongoose的查询语句，可以参考我之前写的笔记<a href="http://www.que01.top/2016/03/24/mongodb3/">mongoDB笔记(三)</a>,这篇笔记对响应的查询都有比较详细的记录。</p>
+<h3 id="小总结"><a href="#小总结" class="headerlink" title="小总结"></a>小总结</h3><p>到这里，就可以使用浏览器访问 <code>/api/news</code> 来获取json数据了。</p>
+<h2 id="GraphQL"><a href="#GraphQL" class="headerlink" title="GraphQL"></a>GraphQL</h2><p>GraphQL是个很赞的东西。怎么形容它呢？当前前端有个词，叫做响应式，页面会根据屏幕宽度来展现不同的外观。而GraphQL的最大优势和这个词汇有点像。它可以从前端接受查询语句，然后按照要求返回指定的字段。</p>
+<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><p>也许指定的字段这个不太能突出GraphQL的优势，这里举些例子吧。</p>
+<p>例一：<br>当前如果有个接口 <code>/api/list</code>，返回的数据结构是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	code:200,</span><br><span class="line">	message:&quot;success&quot;,</span><br><span class="line">	data:[</span><br><span class="line">		&#123;</span><br><span class="line">			name:&quot;&quot;,</span><br><span class="line">			title:&quot;&quot;,</span><br><span class="line">			sum:&quot;&quot;,</span><br><span class="line">			color:&quot;&quot;,</span><br><span class="line">			height:&quot;&quot;,</span><br><span class="line">			width:&quot;&quot;,</span><br><span class="line">			logo:&quot;&quot;,</span><br><span class="line">			brand:&quot;&quot;</span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而实际上，页面逻辑需要这样的就够了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	code:200,</span><br><span class="line">	message:&quot;success&quot;,</span><br><span class="line">	data:[</span><br><span class="line">		&#123;</span><br><span class="line">			name:&quot;&quot;,</span><br><span class="line">		&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果前端队这个接口高度复用，不同页面只是过去了name,title,brand等数据进行了单独的调用，可以复用的时候实现最优json结构保持简洁和节省流量带宽吗？</p>
+<p>例二：<br>数据结构和例一相同，但是当初接口设计时候只需要做查询就够了，又或者设计时候只接受name进行过滤，到那时现在我们需要队brand进行过滤，此时应该怎么办？</p>
+<p>例三：<br>有两个接口 <code>/api/list1</code>和<code>/api/list2</code>，结构和例一一致，但是两种不同品类商品<br>假如我们有这样一个需求：</p>
+<ol>
+<li>从list1中过滤出brand==”que01”</li>
+<li>从list2中过滤出color== “yellow”</li>
+<li>将结果分别赋值给{data1:[],data2:[])</li>
+</ol>
+<p>此时常规的办法的是怎样的？先请求一次list1,过滤，然后请求list2，过滤。拼接。两次请求，3次数据处理，如果服务端承担了这个过滤，也必须请求两次，然后进行合并操作。我们可以更简单一些嘛？</p>
+<p><b>是的。在GraphQL中，这些可以毫不费力的实现。</b>这实在是一个超级令人激动的东西。<br>React-starter-kit本身已经集成了GraphQL。但是要使用起来，还是有一些注意事项。不过本文主要立足于怎么将GraphQL在react-starter-kit中用来了，所以就不做太多的理论说明了，有时间单独总结一下它的使用，上面的例子，只是为了让大家明白他的优势。</p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>在react-starter-kit中使用GraphQL不是一件太困难的事情。</p>
+<p>在server.js中有以下代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">app.use(<span class="string">&#x27;/graphql&#x27;</span>, expressGraphQL(<span class="function"><span class="params">req</span> =&gt;</span> (&#123;</span><br><span class="line">  schema,</span><br><span class="line">  graphiql: <span class="literal">true</span>,</span><br><span class="line">  rootValue: &#123; <span class="attr">request</span>: req &#125;,</span><br><span class="line">  pretty: process.env.NODE_ENV !== <span class="string">&#x27;production&#x27;</span>,</span><br><span class="line">&#125;)));</span><br></pre></td></tr></table></figure>
+<p>GraphQL已经作为中间件载入了。这里仅对初步使用作出讲解。下面是src/data目录的结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">├── models</span><br><span class="line">├── queries</span><br><span class="line">│   ├── content.js</span><br><span class="line">│   ├── news.js</span><br><span class="line">│   └── tags.js</span><br><span class="line">├── schema.js</span><br><span class="line">├── sequelize.js</span><br><span class="line">└── types</span><br><span class="line">    ├── ContentType.js</span><br><span class="line">    ├── NewsItemType.js</span><br><span class="line">    └── TagsType.js</span><br></pre></td></tr></table></figure>
+<p>下面是我个人初步的schema.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">  GraphQLSchema <span class="keyword">as</span> Schema,</span><br><span class="line">  GraphQLObjectType <span class="keyword">as</span> ObjectType,</span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">&#x27;graphql&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> tags <span class="keyword">from</span> <span class="string">&#x27;./queries/tags&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> content <span class="keyword">from</span> <span class="string">&#x27;./queries/content&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> news <span class="keyword">from</span> <span class="string">&#x27;./queries/news&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> schema = <span class="keyword">new</span> Schema(&#123;</span><br><span class="line">  query: <span class="keyword">new</span> ObjectType(&#123;</span><br><span class="line">    name: <span class="string">&#x27;Query&#x27;</span>,</span><br><span class="line">    fields: &#123;</span><br><span class="line">      tags,</span><br><span class="line">      content,</span><br><span class="line">      news,</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;),</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> schema;</span><br></pre></td></tr></table></figure>
+<p>这里是最外层的接口了。其中tags，news，content都是最外层的api，也是我们需要自行定制的地方。<br>做好这些以后我们查询时候发送请求到<code>/graphql</code>接口。<br>下面这是发送过去的类似json的<b>字符串</b>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  news &#123;</span><br><span class="line">    title</span><br><span class="line">    link</span><br><span class="line">    author</span><br><span class="line">    publishedDate</span><br><span class="line">    contentSnippet</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后返回的数据：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;data&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;news&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">&quot;title&quot;</span>: <span class="string">&quot;测试标题1&quot;</span>,</span><br><span class="line">        <span class="string">&quot;link&quot;</span>: <span class="string">&quot;http://www.baidu.com&quot;</span>,</span><br><span class="line">        <span class="string">&quot;author&quot;</span>: <span class="string">&quot;que01&quot;</span>,</span><br><span class="line">        <span class="string">&quot;publishedDate&quot;</span>: <span class="string">&quot;2014-11-11&quot;</span>,</span><br><span class="line">        <span class="string">&quot;contentSnippet&quot;</span>: <span class="string">&quot;测试摘要测试摘要&quot;</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">&quot;title&quot;</span>: <span class="string">&quot;测试标题2&quot;</span>,</span><br><span class="line">        <span class="string">&quot;link&quot;</span>: <span class="string">&quot;http://www.baidu.com&quot;</span>,</span><br><span class="line">        <span class="string">&quot;author&quot;</span>: <span class="string">&quot;que01&quot;</span>,</span><br><span class="line">        <span class="string">&quot;publishedDate&quot;</span>: <span class="string">&quot;2014-11-11&quot;</span>,</span><br><span class="line">        <span class="string">&quot;contentSnippet&quot;</span>: <span class="string">&quot;测试摘要测试摘要&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里值得一提的是,title,link,author,publishedDate,contentSnippet这些字段可以任意顺序组合,删减。</p>
+<p>简单的用法的我们暂时就这样简单的一笔跳过，详细的如果有时间另外写一篇讲解这个。我们现在来看看如何处理数据源。我们配合之前做好的api作为数据源来支挽GraphQL。</p>
+<p>为了方便，这里使用tags来讲解。下面是tags.js的详细代码。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; GraphQLList <span class="keyword">as</span> List,GraphQLString &#125; <span class="keyword">from</span> <span class="string">&#x27;graphql&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> _ <span class="keyword">from</span> <span class="string">&#x27;lodash&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> fetch <span class="keyword">from</span> <span class="string">&#x27;../../core/fetch&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> TagsType <span class="keyword">from</span> <span class="string">&#x27;../types/TagsType&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> url = <span class="string">&#x27;/api/tags&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> items = [];</span><br><span class="line"><span class="keyword">let</span> lastFetchTask;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tags = &#123;</span><br><span class="line">  type: <span class="keyword">new</span> List(TagsType),</span><br><span class="line">  args: &#123;</span><br><span class="line">    id: &#123; <span class="attr">type</span>: GraphQLString &#125;,</span><br><span class="line">    name: &#123; <span class="attr">type</span>: GraphQLString &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="keyword">async</span> <span class="function"><span class="title">resolve</span>(<span class="params">reqObj,&#123;id,name&#125;</span>)</span> &#123;</span><br><span class="line"></span><br><span class="line">    lastFetchTask = <span class="keyword">await</span> fetch(url)</span><br><span class="line">      .then(<span class="function"><span class="params">response</span> =&gt;</span> response.json())</span><br><span class="line">      .then(<span class="function"><span class="params">data</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (data.code === <span class="number">200</span>) &#123;</span><br><span class="line">          items = data.tags;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(!!id)&#123;</span><br><span class="line">          items = _.filter(items,&#123;<span class="attr">id</span>:+id&#125;)</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(!!name)&#123;</span><br><span class="line">          items = _.filter(items,&#123;<span class="attr">name</span>:name&#125;)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> items;</span><br><span class="line">      &#125;)</span><br><span class="line">      .finally(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">        lastFetchTask = <span class="literal">null</span>;</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (items.length) &#123;</span><br><span class="line">      <span class="keyword">return</span> items;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> lastFetchTask;</span><br><span class="line"></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> tags;</span><br></pre></td></tr></table></figure>
+
+<p>这里args里面定义了接口接受的参数，resolve则定义了处理数据的方式并返回数据(第二个参数是传递的请求参数组成的数组)，type则定义了数据类型。做好相应的逻辑配置之后，我们不仅可以想news那样直接返回所有数据，还可以传递参数id和name之一过去过滤数据.like this:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//request：</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="function"><span class="title">tags</span>(<span class="params">name:<span class="string">&quot;css&quot;</span></span>)</span> &#123;</span><br><span class="line">    id,</span><br><span class="line">    name</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//response:</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;data&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;tags&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">&quot;id&quot;</span>: <span class="string">&quot;2&quot;</span>,</span><br><span class="line">        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;css&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到这里，最简单的使用就可以跑起来了。这已经可以满足最基础的场景应用。这部分我们到此为止。下一步我们讲讲自定义组件和页面。</p>
+<h2 id="自定义组件和页面"><a href="#自定义组件和页面" class="headerlink" title="自定义组件和页面"></a>自定义组件和页面</h2><p>react-starter-kit定义了一些页面，但是很显然，我们不能满足修改已有进行改造使用，更多时候我们需要更多的页面…以及…更多的组件构成的页面…</p>
+<p>这里仍旧以<code>/tags</code>页面为说明，这是一个新建的页面，使用了自定义的组件和数据源来构建的新的页面。<br>我们第一步要做的是在<code>/src/routes</code>下新建一个页面，然后在内部建立 <code>Tags.css、Tags.js、index.js</code>三个文件，保持同其他route组件的一致性。</p>
+<p>下面是具体code：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;file:Tags.js</span><br><span class="line">import React, &#123; PropTypes &#125; from &#39;react&#39;;</span><br><span class="line">import withStyles from &#39;isomorphic-style-loader&#x2F;lib&#x2F;withStyles&#39;;</span><br><span class="line">import s from &#39;.&#x2F;Tags.css&#39;;</span><br><span class="line"></span><br><span class="line">const title &#x3D; &#39;热门标签&#39;;</span><br><span class="line"></span><br><span class="line">function Tags(props, context) &#123;</span><br><span class="line">  context.setTitle(title);</span><br><span class="line">  return (</span><br><span class="line">    &lt;div className&#x3D;&#123;s.root&#125;&gt;</span><br><span class="line">      &lt;div className&#x3D;&#123;s.container&#125;&gt;</span><br><span class="line">        &lt;h1&gt;&#123;title&#125;&lt;&#x2F;h1&gt;</span><br><span class="line">        &lt;div&gt;</span><br><span class="line">          &#123;props.tags.map((item, index) &#x3D;&gt; (</span><br><span class="line">            &lt;span className&#x3D;&#123;s.tags&#125; key&#x3D;&#123;index&#125;&gt;&#123;item.name&#125;&lt;&#x2F;span&gt;</span><br><span class="line">          ))&#125;</span><br><span class="line">        &lt;&#x2F;div&gt;</span><br><span class="line">      &lt;&#x2F;div&gt;</span><br><span class="line">    &lt;&#x2F;div&gt;</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Tags.contextTypes &#x3D; &#123; setTitle: PropTypes.func.isRequired &#125;;</span><br><span class="line"></span><br><span class="line">export default withStyles(s)(Tags);</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;file:index.js</span><br><span class="line">import React from &#39;react&#39;;</span><br><span class="line">import Tags from &#39;.&#x2F;Tags&#39;;</span><br><span class="line">import fetch from &#39;..&#x2F;..&#x2F;core&#x2F;fetch&#39;;</span><br><span class="line"></span><br><span class="line">export default &#123;</span><br><span class="line"></span><br><span class="line">  path: &#39;&#x2F;tags&#39;,</span><br><span class="line"></span><br><span class="line">  async action() &#123;</span><br><span class="line">    const resp &#x3D; await fetch(&#39;&#x2F;graphql&#39;, &#123;</span><br><span class="line">      method: &#39;post&#39;,</span><br><span class="line">      headers: &#123;</span><br><span class="line">        Accept: &#39;application&#x2F;json&#39;,</span><br><span class="line">        &#39;Content-Type&#39;: &#39;application&#x2F;json&#39;,</span><br><span class="line">      &#125;,</span><br><span class="line">      body: JSON.stringify(&#123;</span><br><span class="line">        query: &#39;&#123;tags&#123;name&#125;&#125;&#39;,</span><br><span class="line">      &#125;),</span><br><span class="line">      credentials: &#39;include&#39;,</span><br><span class="line">    &#125;);</span><br><span class="line">    const &#123; data &#125; &#x3D; await resp.json();</span><br><span class="line"></span><br><span class="line">    return &lt;Tags tags&#x3D;&#123;data.tags&#125; &#x2F;&gt;;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>css代码就不贴了，虽然它是组件的重要组成部分，但是就逻辑来说，它无关紧要，不是吗？这里简单说下这两个文件，如果说Tags.js是组件的结构逻辑，那么index.js就是数据获取并渲染Tags.js组件的文件。</p>
+<p>做好以上步骤以后，我们需要做最后一步，将其添加到路由内部，是我们访问 <code>/tags</code>时候可以访问到。<br>一下是关键代码，文件位置是 <code>/src/routes/index.js</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tags <span class="keyword">from</span> <span class="string">&#x27;./tags&#x27;</span>;</span><br><span class="line">	...</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  path: <span class="string">&#x27;/&#x27;</span>,</span><br><span class="line">  children: [</span><br><span class="line">    home,</span><br><span class="line">    contact,</span><br><span class="line">    login,</span><br><span class="line">    registerSuccess,</span><br><span class="line">    tags,</span><br><span class="line">    register,</span><br><span class="line">    content,</span><br><span class="line">    error,</span><br><span class="line">  ],</span><br><span class="line">  <span class="keyword">async</span> <span class="function"><span class="title">action</span>(<span class="params">&#123; next, render, context &#125;</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> component = <span class="keyword">await</span> next();</span><br><span class="line">    <span class="keyword">if</span> (component === <span class="literal">undefined</span>) <span class="keyword">return</span> component;</span><br><span class="line">    <span class="keyword">return</span> render(</span><br><span class="line">      &lt;App context=&#123;context&#125;&gt;&#123;component&#125;&lt;/App&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>关键点在于import和children中的tags。这里有个非常重要的事情是，自定义组件，请放在content上面(<b>重要的事情说三遍:</b>请放在content上面!请放在content上面!请放在content上面!),如果你不这样做，就无法保证自己路由优先基本，实质上代码逻辑中，经个人调试，会有一个『*』的路由，如果你不放到上面，它就被『*』匹配了,这样就没你的页面什么事情了，因为根本不会往下走了！</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文虽然不是深度性的文章，但是确实是一个大纲性质和入门的文章。不管是mongoose、API、GraphQL还是React，他们几乎每个都能写本书。<br>所以说，文章虽然浅显，但是真想用好react-starter-kit，还是需要相对巨量的知识储备。</p>
+<p>react-starter-kit，个人认为，虽然是for starter，但是是相对于react-starter-kit的受众starter来说，它实在不是相对于前端初学者。</p>
+<p>虽然是个starter-kit，但是：</p>
+<pre><code>—— 如果你没有学过express，请不必细看下去；
+—— 如果你没有学过mongoose，请不必细看下去；
+—— 如果你没有学过React，请不必细看下去；
+—— 如果你没有打算学GraphQL，请不必细看下去；</code></pre>
+<p>就这样吧，感叹下，前端实在太快，如果没有足够的知识储备，真的无法走在前沿。<br>——向小伙伴们祝好！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+              <a href="/tags/express/" rel="tag"># express</a>
+              <a href="/tags/react%E5%90%8C%E6%9E%84%E5%BA%94%E7%94%A8/" rel="tag"># react同构应用</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/05/07/a-simple-mvvm-framwork-1/" rel="prev" title="MVVM的简单实现-脏检测">
+      <i class="fa fa-chevron-left"></i> MVVM的简单实现-脏检测
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/06/16/react-starter-kit-2/" rel="next" title="React全家桶:react-starter-kit之二">
+      React全家桶:react-starter-kit之二 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AE%B9"><span class="nav-number">2.</span> <span class="nav-text">内容</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E"><span class="nav-number">2.1.</span> <span class="nav-text">模板引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mongoose"><span class="nav-number">2.2.</span> <span class="nav-text">mongoose</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.2.2.</span> <span class="nav-text">配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#API"><span class="nav-number">2.3.</span> <span class="nav-text">API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1"><span class="nav-number">2.3.1.</span> <span class="nav-text">路由</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99"><span class="nav-number">2.3.2.</span> <span class="nav-text">数据读写</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.3.</span> <span class="nav-text">小总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GraphQL"><span class="nav-number">2.4.</span> <span class="nav-text">GraphQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF"><span class="nav-number">2.4.1.</span> <span class="nav-text">优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8"><span class="nav-number">2.4.2.</span> <span class="nav-text">使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BB%84%E4%BB%B6%E5%92%8C%E9%A1%B5%E9%9D%A2"><span class="nav-number">2.5.</span> <span class="nav-text">自定义组件和页面</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

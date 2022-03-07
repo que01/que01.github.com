@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="这里是V16的update部分。主要还是对render phase环节的分析，当我开始写这个小简介的时候，我突然更能明白v16对于v15的领先处。在v15时候，想要单独对数据流和DOM渲染进行分层分析其实是做不到的，它的树结构注定了它数据变动、Diff、渲染密不可分。而v16却可以实现这个分层，真的深入了解后，对这个分层的实现，心里实在叹为观止。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="react-v16-Update renderPhase篇">
+<meta property="og:url" content="http://www.que01.top/2019/08/07/react-v16-Update-renderPhase/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="这里是V16的update部分。主要还是对render phase环节的分析，当我开始写这个小简介的时候，我突然更能明白v16对于v15的领先处。在v15时候，想要单独对数据流和DOM渲染进行分层分析其实是做不到的，它的树结构注定了它数据变动、Diff、渲染密不可分。而v16却可以实现这个分层，真的深入了解后，对这个分层的实现，心里实在叹为观止。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-07T09:23:46.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.680Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="React">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2019/08/07/react-v16-Update-renderPhase/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>react-v16-Update renderPhase篇 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/08/07/react-v16-Update-renderPhase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          react-v16-Update renderPhase篇
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-07 17:23:46" itemprop="dateCreated datePublished" datetime="2019-08-07T17:23:46+08:00">2019-08-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/08/07/react-v16-Update-renderPhase/" class="post-meta-item leancloud_visitors" data-flag-title="react-v16-Update renderPhase篇" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">这里是V16的update部分。主要还是对render phase环节的分析，当我开始写这个小简介的时候，我突然更能明白v16对于v15的领先处。在v15时候，想要单独对数据流和DOM渲染进行分层分析其实是做不到的，它的树结构注定了它数据变动、Diff、渲染密不可分。而v16却可以实现这个分层，真的深入了解后，对这个分层的实现，心里实在叹为观止。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这篇主要还是笔记性质，一边探索一边记录。</p>
+<p>因为Fiber链表性质，Update被重新实现，这里需要重新分析一下。</p>
+<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><p>这一节主要是对源码的分析。</p>
+<p>先预设置一个简单的例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span></span>&#123;</span><br><span class="line">  state = &#123;</span><br><span class="line">    text: <span class="string">&#x27;Text&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">  changeText = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.setState(&#123;</span><br><span class="line">      text: <span class="string">&#x27;Hello World&#x27;</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">&quot;App&quot;</span>&gt;</span><br><span class="line">        &lt;header className=<span class="string">&quot;App-header&quot;</span>&gt;</span><br><span class="line">          &lt;div&gt;&#123;<span class="built_in">this</span>.state.text&#125;&lt;/div&gt;</span><br><span class="line">          &lt;button onClick=&#123;<span class="built_in">this</span>.changeText&#125;&gt;change Text&lt;/button&gt;</span><br><span class="line">        &lt;/header&gt;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们忽略事件相关的东西，专注setState。</p>
+<h2 id="始于setState"><a href="#始于setState" class="headerlink" title="始于setState"></a>始于setState</h2><p>基于v15的理解，不管是props更新，还是state更新，实质上归根结底，还是setState触发的更新。</p>
+<p>v16的props更新呢，它会不遵循这个路线吗？思前想后的结果是：不会。所以这里就直接分析setState了。</p>
+<p>这里寻找这个定义挺容易的,直接命令行输入 <code>grep -rn &#39;prototype.setState&#39; ./packages</code>就可以查出来。当然，断点更容易出来。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Component.prototype.setState = <span class="function"><span class="keyword">function</span>(<span class="params">partialState, callback</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">this</span>.updater.enqueueSetState(<span class="built_in">this</span>, partialState, callback, <span class="string">&#x27;setState&#x27;</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这里涉及到了<code>this.updater</code>。不妨全局查一下:<code>grep -rn &#39;\.updater =&#39; ./packages</code>。出来的结果只有<code>./packages/react-reconciler/src/ReactFiberClassComponent.js:497</code>,也就是<code>adoptClassInstance</code>函数可能是调用，观察这个赋值的目标<code>classComponentUpdater</code>，也能基本证明这个猜测。</p>
+<p>所以这里<code>this.updater.enqueueSetState</code>实质上就是<code>classComponentUpdater.enqueueSetState</code>。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">enqueueSetState</span>(<span class="params">inst, payload, callback</span>)</span> &#123;</span><br><span class="line">  <span class="comment">// 此时inst为App实例 payload=&#123;text: &#x27;Hello World&#x27;&#125; callback=undefined</span></span><br><span class="line">  <span class="keyword">const</span> fiber = getInstance(inst);</span><br><span class="line">  <span class="keyword">const</span> currentTime = requestCurrentTime();</span><br><span class="line">  <span class="keyword">const</span> expirationTime = computeExpirationForFiber(currentTime, fiber);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> update = createUpdate(expirationTime);</span><br><span class="line">  update.payload = payload;</span><br><span class="line">  <span class="keyword">if</span> (callback !== <span class="literal">undefined</span> &amp;&amp; callback !== <span class="literal">null</span>) &#123;</span><br><span class="line">    update.callback = callback;</span><br><span class="line">  &#125;</span><br><span class="line">  flushPassiveEffects(); <span class="comment">// 这个例子中这个函数什么也没做</span></span><br><span class="line">  enqueueUpdate(fiber, update);</span><br><span class="line">  scheduleWork(fiber, expirationTime);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这里关系到update的实质上就是<code>enqueueUpdate(fiber, update)</code>，说白了，这里update主要还是设置一个expirationTime, fiber节点上的更新队列才是实质核心。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">enqueueUpdate</span>&lt;<span class="title">State</span>&gt;(<span class="params">fiber: Fiber, update: Update&lt;State&gt;</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// Update queues are created lazily.</span></span><br><span class="line">  <span class="keyword">const</span> alternate = fiber.alternate;</span><br><span class="line">  <span class="keyword">let</span> queue1;</span><br><span class="line">  <span class="keyword">let</span> queue2;</span><br><span class="line">  <span class="keyword">if</span> (alternate === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// There&#x27;s only one fiber.</span></span><br><span class="line">    <span class="comment">// 仅有一个fiber节点 此时更新是一个初始渲染 </span></span><br><span class="line">    <span class="comment">// 此时由memoizedState创建一个更新即可 此时memoizedState是&#123;element: ReactNode&#125;结构</span></span><br><span class="line">    queue1 = fiber.updateQueue;</span><br><span class="line">    queue2 = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (queue1 === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// createUpdateQueue返回一个空update，baseState = &#123;text: &#x27;Text&#x27;&#125;</span></span><br><span class="line">      queue1 = fiber.updateQueue = createUpdateQueue(fiber.memoizedState);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 没有进入此分支</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (queue2 === <span class="literal">null</span> || queue1 === queue2) &#123;</span><br><span class="line">    <span class="comment">// There&#x27;s only a single queue.</span></span><br><span class="line">    <span class="comment">// 此时只有一个queue</span></span><br><span class="line">    appendUpdateToQueue(queue1, update);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 没有进入此分支</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里enqueueUpdate主要是调用appendUpdateToQueue。这个函数基本可以理解为向update数组push一个元素。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">appendUpdateToQueue</span>(<span class="params">queue, update</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// lastUpdate===null说明之前是空的队列</span></span><br><span class="line">    <span class="keyword">if</span> (queue.lastUpdate === <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 此例中进入这个分支了 update是一个对象，结构如下</span></span><br><span class="line">        <span class="comment">// &#123;</span></span><br><span class="line">        <span class="comment">//   callback: null</span></span><br><span class="line">        <span class="comment">//   expirationTime: 1073741823</span></span><br><span class="line">        <span class="comment">//   next: null</span></span><br><span class="line">        <span class="comment">//   nextEffect: null</span></span><br><span class="line">        <span class="comment">//   payload: &#123;text: &quot;Hello World&quot;&#125;</span></span><br><span class="line">        <span class="comment">//   tag: 0</span></span><br><span class="line">        <span class="comment">// &#125;</span></span><br><span class="line">        queue.firstUpdate = queue.lastUpdate = update;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 否则将update放到链表队列尾部</span></span><br><span class="line">        queue.lastUpdate.next = update;</span><br><span class="line">        queue.lastUpdate = update;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>走完这一步时候，<code>fiber&lt;APP&gt;.updateQueue</code>链表加入了update，updateQueue上firstEffect指向了这个update。</p>
+<p>然后<code>enqueueSetState</code>开始执行<code>scheduleWork(fiber, expirationTime)</code>。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">scheduleWork</span>(<span class="params">fiber: Fiber, expirationTime: ExpirationTime</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// root指向FiberRoot</span></span><br><span class="line">  <span class="keyword">const</span> root = scheduleWorkToRoot(fiber, expirationTime);</span><br><span class="line">  <span class="keyword">if</span> (root === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    !isWorking &amp;&amp;</span><br><span class="line">    nextRenderExpirationTime !== NoWork &amp;&amp;</span><br><span class="line">    expirationTime &gt; nextRenderExpirationTime</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="comment">// This is an interruption. (Used for performance tracking.)</span></span><br><span class="line">    interruptedBy = fiber;</span><br><span class="line">    resetStack();</span><br><span class="line">  &#125;</span><br><span class="line">  markPendingPriorityLevel(root, expirationTime);</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    <span class="comment">// If we&#x27;re in the render phase, we don&#x27;t need to schedule this root</span></span><br><span class="line">    <span class="comment">// for an update, because we&#x27;ll do it before we exit...</span></span><br><span class="line">    !isWorking ||</span><br><span class="line">    isCommitting ||</span><br><span class="line">    <span class="comment">// ...unless this is a different root than the one we&#x27;re rendering.</span></span><br><span class="line">    nextRoot !== root</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="keyword">const</span> rootExpirationTime = root.expirationTime;</span><br><span class="line">    requestWork(root, rootExpirationTime);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这个函数主要是从Fiber<APP>开始往上遍历，更新对应节点的childExpirationTime属性，然后返回FiberRoot节点。childExpirationTime用来判定是否要更新child，这里不做细表。然后接下来会执行<code>requestWork(root, rootExpirationTime)</code>。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">requestWork</span>(<span class="params">root: FiberRoot, expirationTime: ExpirationTime</span>) </span>&#123;</span><br><span class="line">  addRootToSchedule(root, expirationTime);</span><br><span class="line">  <span class="keyword">if</span> (isRendering) &#123;</span><br><span class="line">    <span class="comment">// 禁止递归调用 后面的任务在结束后再重新开始</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isBatchingUpdates) &#123; <span class="comment">// 此时isBatchingUpdates === true</span></span><br><span class="line">    <span class="comment">// 在批处理结束后开始清洗工作(针对脏组件|Fiber?)</span></span><br><span class="line">    <span class="keyword">if</span> (isUnbatchingUpdates) &#123; <span class="comment">// 此时isUnbatchingUpdates === false 里面逻辑不会进入</span></span><br><span class="line">      <span class="comment">// 除非被排除在unbatchedUpdates，否则现在需要开始进行清洗</span></span><br><span class="line">      nextFlushedRoot = root;</span><br><span class="line">      nextFlushedExpirationTime = Sync;</span><br><span class="line">      performWorkOnRoot(root, Sync, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 后面因为return 都不会执行 也就不会直接进入render调用栈</span></span><br><span class="line">  <span class="comment">// <span class="doctag">TODO:</span> Get rid of Sync and use current time?</span></span><br><span class="line">  <span class="keyword">if</span> (expirationTime === Sync) &#123;</span><br><span class="line">    performSyncWork();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    scheduleCallbackWithExpirationTime(root, expirationTime);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时入注释中所标，这个函数几乎不会执行任何东西，除了开头那一句——<code>addRootToSchedule(root, expirationTime)</code>。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">addRootToSchedule</span>(<span class="params">root, expirationTime</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// Add the root to the schedule.</span></span><br><span class="line">  <span class="comment">// Check if this root is already part of the schedule.</span></span><br><span class="line">  <span class="keyword">if</span> (root.nextScheduledRoot === <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// This root is not already scheduled. Add it.</span></span><br><span class="line">    root.expirationTime = expirationTime;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (lastScheduledRoot === <span class="literal">null</span>) &#123;</span><br><span class="line">      firstScheduledRoot = lastScheduledRoot = root;</span><br><span class="line">      root.nextScheduledRoot = root;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 没进来 略</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	<span class="comment">// 没进来 略</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>作为一个链表，lastScheduledRoot代表的是下一个操作、读取的目标。所以这里线索基本上可以锁定到读取了lastScheduledRoot变量的函数。这里能列入候选的函数只有两个</p>
+<ul>
+<li>findHighestPriorityRoot</li>
+<li>addRootToSchedule</li>
+</ul>
+<p>但是满足场景的目标只有findHighestPriorityRoot。进一步反推，findHighestPriorityRoot调用者只有performWork——所以呢，不管什么，这个场景下，最后引起DOM更新的，必定、也必须是performWork。</p>
+<blockquote>
+<p>Tips: 这里之所以说lastScheduledRoot代表的是下一个操作，是因为这里没有对应的nextScheduledRoot变量，这个nextScheduledRoot直接挂到root节点上了，所以lastScheduledRoot就是下一个，也是最后一个。</p>
+</blockquote>
+<blockquote>
+<p>Tips: 关于findHighestPriorityRoot可以后面看看Reconciler部分分析，会有详细分析。这里仅仅做脉络推导。</p>
+</blockquote>
+<blockquote>
+<p>Tips: lastScheduledRoot实际上在React-DOM里面就一个指向fiberRoot或者干脆为null，addRootToSchedule实质上只是更新了fiberRoot.expirationTime。</p>
+</blockquote>
+<h2 id="略过的Event"><a href="#略过的Event" class="headerlink" title="略过的Event"></a>略过的Event</h2><p>不管怎样，v16更新后更新逻辑因为基础数据结构变化，出了一些必要的变化，总之这里更新后DOM确确实实不再是setState直接引起的了。它被耦合进了事件这一块。当更新队列处理完毕之后，React只是不动声色lastScheduledRoot赋值给了fiberRoot，然后由事件机制处理了后续。</p>
+<p>但是这里不打算调过头去研究新的Event了。所以还是通过断点来过去调用栈。这里产生的调用栈是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dispatchInteractiveEvent</span><br><span class="line">-&gt;interactiveUpdates</span><br><span class="line">--&gt;dispatchEvent</span><br><span class="line">---&gt;performSyncWork</span><br><span class="line">----&gt;performWork</span><br><span class="line">-----&gt;performWorkOnRoot -&gt; renderRoot &amp; completeRoot</span><br></pre></td></tr></table></figure>
+
+<p>这里暂时不管是如何调用下来的，但是这里能确认的是当断点走过performWorkOnRoot函数。Text在DOM上就完成了从Text到HelloWorld的过程。</p>
+<h2 id="performWorkOnRoot"><a href="#performWorkOnRoot" class="headerlink" title="performWorkOnRoot"></a>performWorkOnRoot</h2><p>这个函数其实在render篇已经提到过了。不过这里重点是要把Update部分单独拎出来讲，侧重点有所不同。</p>
+<p>这里基础的路径还是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">performWorkOnRoot</span><br><span class="line">-&gt;beginWork</span><br><span class="line">--&gt;updateClassComponent</span><br><span class="line">----&gt;updateClassInstance</span><br><span class="line">-----&gt;processUpdateQueue</span><br><span class="line">------&gt;getStateFromUpdate</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getStateFromUpdate</span>&lt;<span class="title">State</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  workInProgress: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  queue: UpdateQueue&lt;State&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  update: Update&lt;State&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  prevState: State,</span></span></span><br><span class="line"><span class="function"><span class="params">  nextProps: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  instance: any,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">any</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (update.tag) &#123;</span><br><span class="line">    <span class="keyword">case</span> ReplaceState: &#123;</span><br><span class="line">		<span class="comment">// 略</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> CaptureUpdate: &#123;</span><br><span class="line">		<span class="comment">// 略</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> UpdateState: &#123;</span><br><span class="line">      <span class="keyword">const</span> payload = update.payload;</span><br><span class="line">      <span class="keyword">let</span> partialState;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> payload === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">        partialState = payload.call(instance, prevState, nextProps);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        partialState = payload;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (partialState === <span class="literal">null</span> || partialState === <span class="literal">undefined</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> prevState;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Object</span>.assign(&#123;&#125;, prevState, partialState);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> ForceUpdate: &#123;</span><br><span class="line">      hasForceUpdate = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">return</span> prevState;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> prevState;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里场景下的核心是<code>Object.assign(&#123;&#125;, prevState, partialState)</code>。很好理解。</p>
+<p>processUpdateQueue这个函数在这里需要关注点的是，更新了workInProgress.memoizedState。但是这是App这个fiber节点的事情。不妨回顾有关ChildReconciler的分析。当我们把文首的例子拆成Fiber，有几个节点呢(这里由FunctionComponent-&gt;ClassComponent了)？</p>
+<p>这里答案是6个。我们添加一个button。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> FiberRoot tag = <span class="number">3</span></span><br><span class="line"><span class="number">2.</span> fiberNode&#123;elementType = App&#125; tag = <span class="number">1</span></span><br><span class="line"><span class="number">3.</span> fiberNode&#123;elementType = <span class="string">&#x27;div&#x27;</span>&#125; tag = <span class="number">5</span></span><br><span class="line"><span class="number">4.</span> fiberNode&#123;elementType = <span class="string">&#x27;header&#x27;</span>&#125; tag = <span class="number">5</span></span><br><span class="line"><span class="number">5.</span> fiberNode&#123;elementType = <span class="string">&#x27;div&#x27;</span>&#125; tag = <span class="number">5</span></span><br><span class="line"><span class="number">6.</span> fiberNode&#123;elementType = <span class="string">&#x27;button&#x27;</span>&#125; tag = <span class="number">5</span></span><br></pre></td></tr></table></figure>
+
+<p>这里完全可以做一个小结，在这个更新的的render环节，主要是两个Fiber节点变了。</p>
+<ul>
+<li>第二个节点memoizedState变化为{text: ‘Hello World’}</li>
+<li>第五个节点里面memoizedProps和pendingProps节点里面分别保存了新旧不同的children。</li>
+</ul>
+<p>以v15的Diff算法。会针对第五个节点执行创建新节点对旧节点进行替换、插入第六个节点。我们后面再看看V16里面是如何实现Diff的。</p>
+<p>总之，这是completeRoot环节的问题。切略过不提。</p>
+<h2 id="Hook的实现"><a href="#Hook的实现" class="headerlink" title="Hook的实现"></a>Hook的实现</h2><p>原本想过如何去理解Hook，但是最后决定把它作为Update的一个小结来分析。</p>
+<p>由很多人说Hook其实可以作为Redux的替代，但是Redux本身是借助setState实现，所以这里看看Hook是如何处理的。</p>
+<p>这里需要一个新的例子。这里改造一下。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; useState &#125; <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">App</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> [text, setText] = useState(<span class="string">&#x27;Text&#x27;</span>);</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    &lt;div className=<span class="string">&quot;App&quot;</span>&gt;</span><br><span class="line">      &lt;header className=<span class="string">&quot;App-header&quot;</span>&gt;</span><br><span class="line">        &lt;div&gt;&#123;text&#125;&lt;/div&gt;</span><br><span class="line">        &lt;button onClick=&#123;<span class="function">() =&gt;</span> &#123; setText(<span class="string">&#x27;Hello World&#x27;</span>) &#125;&#125;&gt;change Text&lt;/button&gt;</span><br><span class="line">      &lt;/header&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看看useState的定义：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">useState</span>&lt;<span class="title">S</span>&gt;(<span class="params">initialState: (() =&gt; S) | S</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> dispatcher = resolveDispatcher();</span><br><span class="line">  <span class="keyword">return</span> dispatcher.useState(initialState);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">resolveDispatcher</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> dispatcher = ReactCurrentDispatcher.current;</span><br><span class="line">  <span class="keyword">return</span> dispatcher;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> ReactCurrentDispatcher = &#123;</span><br><span class="line">  current: (<span class="literal">null</span>: <span class="literal">null</span> | Dispatcher),</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个逻辑埋得有点深。断点在<code>useState(&#39;Text&#39;)</code>之前，可以发现它是<code>ƒ bound dispatchAction()</code>,最终是对dispatchAction的处理。</p>
+<p>再看看调试工具里面的调用栈。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">App (App.js:<span class="number">5</span>)</span><br><span class="line">renderWithHooks (react-dom.development.js:<span class="number">13449</span>)</span><br><span class="line">updateFunctionComponent (react-dom.development.js:<span class="number">15199</span>)</span><br><span class="line">beginWork (react-dom.development.js:<span class="number">16252</span>)</span><br><span class="line">performUnitOfWork (react-dom.development.js:<span class="number">20279</span>)</span><br><span class="line">workLoop (react-dom.development.js:<span class="number">20320</span>)</span><br><span class="line">renderRoot (react-dom.development.js:<span class="number">20400</span>)</span><br><span class="line">performWorkOnRoot (react-dom.development.js:<span class="number">21357</span>)</span><br><span class="line">performWork (react-dom.development.js:<span class="number">21267</span>)</span><br><span class="line">performSyncWork (react-dom.development.js:<span class="number">21241</span>)</span><br><span class="line">interactiveUpdates$<span class="number">1</span> (react-dom.development.js:<span class="number">21526</span>)</span><br><span class="line">interactiveUpdates (react-dom.development.js:<span class="number">2268</span>)</span><br><span class="line">dispatchInteractiveEvent (react-dom.development.js:<span class="number">5085</span>)</span><br></pre></td></tr></table></figure>
+
+<p>根据renderWithHooks函数，可以做出的论断是ReactCurrentDispatcher.current 可能的值是 HooksDispatcherOnUpdate &amp;&amp; HooksDispatcherOnMount。初始渲染阶段，它是HooksDispatcherOnMount，之后它是HooksDispatcherOnUpdate。</p>
+<p>这里得看看HooksDispatcherOnMount，然后才是HooksDispatcherOnUpdate。</p>
+<p>为什么是这个顺序？因为setText是一个函数，后面在update环节会调用。而它里面有很多变量，必须在这里形成闭包缓存起来以备后面使用。</p>
+<p>如果无法理解这个mount &amp; update。这里做个简要分析:</p>
+<ul>
+<li>当我们初次渲染渲染时候，App函数会运行，useState会运行第一次。这是一个初始化</li>
+<li>当App里面onClick触发setText时候，useState里面会有第二次运行。但是我们的useState依然会运行第二次。</li>
+<li>这里问题来了: 这两次useState运行过程中，又应当是怎样的实现的数据变更和变量传递呢？</li>
+</ul>
+<h3 id="Mount-amp-amp-Dispatch"><a href="#Mount-amp-amp-Dispatch" class="headerlink" title="Mount &amp;&amp; Dispatch"></a>Mount &amp;&amp; Dispatch</h3><p>第一阶段是Mount，这是初始化渲染环节里面的处理方式。</p>
+<p>HooksDispatcherOnMount.useState:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mountState</span>&lt;<span class="title">S</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  initialState: (() =&gt; S) | S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">BasicStateAction</span>&lt;<span class="title">S</span>&gt;&gt;] </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> hook = mountWorkInProgressHook();</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> initialState === <span class="string">&#x27;function&#x27;</span>) &#123;</span><br><span class="line">    initialState = initialState();</span><br><span class="line">  &#125;</span><br><span class="line">  hook.memoizedState = hook.baseState = initialState;</span><br><span class="line">  <span class="keyword">const</span> queue = (hook.queue = &#123;</span><br><span class="line">    last: <span class="literal">null</span>,</span><br><span class="line">    dispatch: <span class="literal">null</span>,</span><br><span class="line">    lastRenderedReducer: basicStateReducer,</span><br><span class="line">    lastRenderedState: (initialState: any),</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">const</span> dispatch: Dispatch&lt;</span><br><span class="line">    BasicStateAction&lt;S&gt;,</span><br><span class="line">  &gt; = (queue.dispatch = (dispatchAction.bind(</span><br><span class="line">    <span class="literal">null</span>,</span><br><span class="line">    <span class="comment">// Flow doesn&#x27;t know this is non-null, but we do.</span></span><br><span class="line">    ((currentlyRenderingFiber: any): Fiber),</span><br><span class="line">    queue,</span><br><span class="line">  ): any));</span><br><span class="line">  <span class="keyword">return</span> [hook.memoizedState, dispatch];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>mountWorkInProgressHook构建了一个空的Hook数据结构,它和Fiber很像，或者说，它是fiber的一个子集。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> type Hook = &#123;</span><br><span class="line">  memoizedState: any,</span><br><span class="line">  baseState: any,</span><br><span class="line">  baseUpdate: Update&lt;any, any&gt; | <span class="literal">null</span>,</span><br><span class="line">  queue: UpdateQueue&lt;any, any&gt; | <span class="literal">null</span>,</span><br><span class="line">  next: Hook | <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Tips: Hook也被储存在链表结构中。它们使用以下变量进行储存，next连接所有Hook:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">let currentHook: Hook | null &#x3D; null;</span><br><span class="line">let nextCurrentHook: Hook | null &#x3D; null;</span><br><span class="line">let firstWorkInProgressHook: Hook | null &#x3D; null;</span><br><span class="line">let workInProgressHook: Hook | null &#x3D; null;</span><br><span class="line">let nextWorkInProgressHook: Hook | null &#x3D; null;</span><br></pre></td></tr></table></figure>
+<p>这里初始化渲染是将firstWorkInProgressHook,workInProgressHook都设为了这个新建的hook。</p>
+</blockquote>
+<p>而currentlyRenderingFiber变量在renderWithHooks函数里面有定义,它是当前渲染的Fiber节点。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">currentlyRenderingFiber = workInProgress;</span><br></pre></td></tr></table></figure>
+
+<p>所以说，就这个setText函数来说，未看其内容，已经可以知道，它可以获取queue(尤其是内部的memoizedState值，这里场景是text变量)，同时也可以访问到对应的Fiber节点，它形成一个闭包。接下来看看dispatchAction函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dispatchAction</span>&lt;<span class="title">S</span>, <span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  fiber: Fiber,</span></span></span><br><span class="line"><span class="function"><span class="params">  queue: UpdateQueue&lt;S, A&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  action: A,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> alternate = fiber.alternate;</span><br><span class="line">  <span class="keyword">if</span> (</span><br><span class="line">    fiber === currentlyRenderingFiber ||</span><br><span class="line">    (alternate !== <span class="literal">null</span> &amp;&amp; alternate === currentlyRenderingFiber)</span><br><span class="line">  ) &#123;</span><br><span class="line">	<span class="comment">// 这里没有进入此分支 暂时略过</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    flushPassiveEffects();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> currentTime = requestCurrentTime();</span><br><span class="line">    <span class="keyword">const</span> expirationTime = computeExpirationForFiber(currentTime, fiber);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> update: Update&lt;S, A&gt; = &#123;</span><br><span class="line">      expirationTime,</span><br><span class="line">      action,</span><br><span class="line">      eagerReducer: <span class="literal">null</span>,</span><br><span class="line">      eagerState: <span class="literal">null</span>,</span><br><span class="line">      next: <span class="literal">null</span>,</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Append the update to the end of the list.</span></span><br><span class="line">    <span class="comment">// 以下逻辑是 是将update添加到链表尾部</span></span><br><span class="line">    <span class="comment">// 当queue.last===null.此时queue是空的。queue.next = queue.last = update</span></span><br><span class="line">    <span class="comment">// 否则。走下面注释的逻辑</span></span><br><span class="line">    <span class="keyword">const</span> last = queue.last;</span><br><span class="line">    <span class="keyword">if</span> (last === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// This is the first update. Create a circular list.</span></span><br><span class="line">      update.next = update;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> first = last.next;</span><br><span class="line">      <span class="keyword">if</span> (first !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 检查queue.last 如果有值。追加到update.next上</span></span><br><span class="line">        update.next = first;</span><br><span class="line">      &#125;</span><br><span class="line">	  <span class="comment">// queue.last.next = update。将update放到了queue链表最后一个下一个节点</span></span><br><span class="line">      last.next = update; </span><br><span class="line">    &#125;</span><br><span class="line">    queue.last = update; <span class="comment">// 正式将last指针移到update</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      fiber.expirationTime === NoWork &amp;&amp;</span><br><span class="line">      (alternate === <span class="literal">null</span> || alternate.expirationTime === NoWork)</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="comment">// The queue is currently empty, which means we can eagerly compute the</span></span><br><span class="line">      <span class="comment">// next state before entering the render phase. If the new state is the</span></span><br><span class="line">      <span class="comment">// same as the current state, we may be able to bail out entirely.</span></span><br><span class="line">      <span class="comment">// 当前队列为空，这意味我们可以直接进行新的state计算 如果新的state和旧的完全一直</span></span><br><span class="line">      <span class="comment">// 那么就可以什么不做了</span></span><br><span class="line">      <span class="keyword">const</span> lastRenderedReducer = queue.lastRenderedReducer;</span><br><span class="line">      <span class="keyword">if</span> (lastRenderedReducer !== <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> prevDispatcher;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">const</span> currentState: S = (queue.lastRenderedState: any);</span><br><span class="line">          <span class="keyword">const</span> eagerState = lastRenderedReducer(currentState, action);</span><br><span class="line">          <span class="comment">// Stash the eagerly computed state, and the reducer used to compute</span></span><br><span class="line">          <span class="comment">// it, on the update object. If the reducer hasn&#x27;t changed by the</span></span><br><span class="line">          <span class="comment">// time we enter the render phase, then the eager state can be used</span></span><br><span class="line">          <span class="comment">// without calling the reducer again.</span></span><br><span class="line">          <span class="comment">// 缓存之前update对象上 计算出的state，以及用来计算这个state的reducer函数</span></span><br><span class="line">          <span class="comment">// 如果reducer函数在进入render phase时没有变化，那么可直接使用之前缓存的值而不需要重新计算</span></span><br><span class="line">          update.eagerReducer = lastRenderedReducer;</span><br><span class="line">          update.eagerState = eagerState;</span><br><span class="line">          <span class="keyword">if</span> (is(eagerState, currentState)) &#123;</span><br><span class="line">						<span class="comment">// 这是一个捷径。我们可以直接结束而不去规划re-render</span></span><br><span class="line">            <span class="comment">// 但是它还是有可能稍后重新定义update——如果后面这个组件因为其他原因被re-render</span></span><br><span class="line">            <span class="comment">// 并且此时Reducer函数被更改的话。</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">          <span class="comment">// Suppress the error. It will throw again in the render phase.</span></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123; &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    scheduleWork(fiber, expirationTime);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>虽然里面逻辑很多，但是它核心的地方却只有几个:</p>
+<ul>
+<li>根据action参数(Hello World)创建了一个update</li>
+<li>update被加入到了queue链表上</li>
+<li>执行scheduleWork</li>
+</ul>
+<p>此时因为scheduleWork在batchedUpdates函数下游，isBatchingUpdates(这个变量在batchedUpdates更改并后续requestWork中引用)被赋值为true，所以scheduleWork并不会引发后面的commit phase阶段。</p>
+<p>而是由事件系统触发了。调用栈其实和上面Event提到的一致。</p>
+<p>到了这里，最后的疑问可能就是commit阶段里，后续它究竟是如何获取queue链表了，这里还是call by share相关知识了，这里不再提及，主要还是对hook变量上的queue做了修改，此时hook.queue被添加了一个update到尾部上。当setText被导出，这个hook就会因为闭包被缓存再mountState的作用域里面不会被GC。</p>
+<p>由于这个hook每次运行都会重新生成新的hook，所以多个FunctionComponent里面相同的setText使用不会读取到旧的值。</p>
+<p>而且因为hook没有被导出过，renderWithHook也由相关render阶段执行，所以也无法在React组件之外访问到它。</p>
+<p><strong>以下是重点</strong>。前面我们提到了对hook的创建，操作，链表结构，以及firstWorkInProgressHook变量。但是它们都没有做导出。这里hook是链表，它和WorkInProgress是相同的性质，它将可以类似全局性质的获取、变更。</p>
+<p>回头仔细观察renderWithHooks函数。其中两句显得尤为关键。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> children = Component(props, refOrContext);</span><br><span class="line"><span class="comment">// 略</span></span><br><span class="line"><span class="keyword">const</span> renderedWork: Fiber = (currentlyRenderingFiber: any);</span><br><span class="line">renderedWork.memoizedState = firstWorkInProgressHook;</span><br></pre></td></tr></table></figure>
+
+<p>综上，可以知道<code>renderedWork.memoizedState</code>变量被赋值未新建的那个Hook。为什么在末尾重点提到它呢？因为它不但承上，而且启下，是整个hook和fiber结构的联结点。</p>
+<blockquote>
+<p>现在已知memoizedState不但会保存常规的memoizedState值，还会保存ReactElement和Hook。</p>
+</blockquote>
+<h3 id="Update"><a href="#Update" class="headerlink" title="Update"></a>Update</h3><p>然后就是我们想知道的更新方面的环节。当renderWithHook再度调起App(),此时HooksDispatcherOnUpdate.useState就有了用武之地，它实质指向updateState。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateState</span>&lt;<span class="title">S</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  initialState: (() =&gt; S) | S,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">BasicStateAction</span>&lt;<span class="title">S</span>&gt;&gt;] </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> updateReducer(basicStateReducer, (initialState: any));</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">basicStateReducer</span>&lt;<span class="title">S</span>&gt;(<span class="params">state: S, action: BasicStateAction&lt;S&gt;</span>): <span class="title">S</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">typeof</span> action === <span class="string">&#x27;function&#x27;</span> ? action(state) : action;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而updateReducer里面有这样的返回：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateReducer</span>&lt;<span class="title">S</span>, <span class="title">I</span>, <span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  reducer: (S, A) =&gt; S,</span></span></span><br><span class="line"><span class="function"><span class="params">  initialArg: I,</span></span></span><br><span class="line"><span class="function"><span class="params">  init?: I =&gt; S, </span>): [<span class="title">S</span>, <span class="title">Dispatch</span>&lt;<span class="title">A</span>&gt;] </span>&#123;</span><br><span class="line">      <span class="keyword">const</span> hook = updateWorkInProgressHook();</span><br><span class="line">      <span class="keyword">const</span> queue = hook.queue;</span><br><span class="line">      <span class="keyword">const</span> dispatch: Dispatch&lt;A&gt; = (queue.dispatch: any);</span><br><span class="line">      <span class="keyword">return</span> [hook.memoizedState, dispatch];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里hook执行后的返回值大致如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  baseState: <span class="string">&quot;Text&quot;</span></span><br><span class="line">  baseUpdate: <span class="literal">null</span></span><br><span class="line">  memoizedState: <span class="string">&quot;Text&quot;</span></span><br><span class="line">  next: <span class="literal">null</span></span><br><span class="line">  queue: &#123;</span><br><span class="line">    dispatch: ƒ ()</span><br><span class="line">    last: &#123;<span class="attr">expirationTime</span>: <span class="number">1073741823</span>, <span class="attr">action</span>: <span class="string">&quot;Hello World&quot;</span>, <span class="attr">eagerReducer</span>: ƒ, <span class="attr">eagerState</span>: <span class="string">&quot;Hello World&quot;</span>, <span class="attr">next</span>: &#123;…&#125;&#125;</span><br><span class="line">    lastRenderedReducer: ƒ basicStateReducer(state, action)</span><br><span class="line">    lastRenderedState: <span class="string">&quot;Text&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>参见<code>updateWorkInProgressHook</code>,它返回的主要是nextCurrentHook的一个副本。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateWorkInProgressHook</span>(<span class="params"></span>): <span class="title">Hook</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (nextWorkInProgressHook !== <span class="literal">null</span>) &#123;</span><br><span class="line">	<span class="comment">// 略 未进入此分支</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Clone from the current hook.</span></span><br><span class="line">    currentHook = nextCurrentHook;</span><br><span class="line">    <span class="keyword">const</span> newHook: Hook = &#123;</span><br><span class="line">      memoizedState: currentHook.memoizedState,</span><br><span class="line">      baseState: currentHook.baseState,</span><br><span class="line">      queue: currentHook.queue,</span><br><span class="line">      baseUpdate: currentHook.baseUpdate,</span><br><span class="line"></span><br><span class="line">      next: <span class="literal">null</span>,</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (workInProgressHook === <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="comment">// This is the first hook in the list.</span></span><br><span class="line">      workInProgressHook = firstWorkInProgressHook = newHook;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// Append to the end of the list.</span></span><br><span class="line">      workInProgressHook = workInProgressHook.next = newHook;</span><br><span class="line">    &#125;</span><br><span class="line">    nextCurrentHook = currentHook.next;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> workInProgressHook;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里关键是<code>nextCurrentHook</code>变量，再回头看看renderWithHooks，里面有一句:</p>
+<p><code>nextCurrentHook = current !== null ? current.memoizedState : null</code>。</p>
+<p>所以一切都顺理成章了。它们都指向了之前创建的hook。</p>
+<p>到这里我们就可以明白，这个遍历是如何从dispatch传递到update环节的。在Mount环节，我们初始化了一个Hook，然后再dispatch我们更新了这个Hook，并将他赋值到了当前fiberNode的memoizedState属性。最后我们更新环节则更换了一个useState函数，它在里面获取了dispatch变更后的Hook，然后执行了后续渲染。</p>
+<p>在之前的ChildReconciler篇里面其实有提到renderWithHooks。但是那时候只是专注于它的结果，它返回的是一颗展开完毕的VDOM树。</p>
+<p>这里我们仍然不做接下来的细节分析，但是，对于最简单的Hook更新，我们已经对其数据流变化一清二楚了。</p>
+<h3 id="Commit"><a href="#Commit" class="headerlink" title="Commit"></a>Commit</h3><p>这里还是走的Event这块。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dispatchInteractiveEvent</span><br><span class="line">-&gt;interactiveUpdates</span><br><span class="line">--&gt;dispatchEvent</span><br><span class="line">---&gt;performSyncWork</span><br><span class="line">----&gt;performWork</span><br><span class="line">-----&gt;performWorkOnRoot -&gt; renderRoot &amp; completeRoot</span><br></pre></td></tr></table></figure>
+
+<p>但是为了能更好代入Hook这块，我们做一些更细致的工作:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">dispatchInteractiveEvent</span><br><span class="line">-&gt;interactiveUpdates</span><br><span class="line">--&gt;dispatchEvent</span><br><span class="line">---&gt;performSyncWork</span><br><span class="line">----&gt;performWork</span><br><span class="line">-----&gt;performWorkOnRoot -&gt; renderRoot() &#123;</span><br><span class="line">  workLoop</span><br><span class="line">    -&gt;performUnitOfWork</span><br><span class="line">    --&gt;beginWork</span><br><span class="line">    ----&gt;updateFunctionComponent -&gt;renderWithHooks</span><br><span class="line">&#125; &amp; completeRoot</span><br></pre></td></tr></table></figure>
+
+<p>这样，就能将Event这块和Hook这块衔接上了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/React/" rel="tag"># React</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/07/react-v16-Update-commitPhase/" rel="prev" title="react-v16-Update-commitPhase">
+      <i class="fa fa-chevron-left"></i> react-v16-Update-commitPhase
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/07/react-v16-ChildReconciler/" rel="next" title="react-v16-ChildReconciler">
+      react-v16-ChildReconciler <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%86%E8%8A%82"><span class="nav-number">2.</span> <span class="nav-text">细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A7%8B%E4%BA%8EsetState"><span class="nav-number">2.1.</span> <span class="nav-text">始于setState</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%95%A5%E8%BF%87%E7%9A%84Event"><span class="nav-number">2.2.</span> <span class="nav-text">略过的Event</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#performWorkOnRoot"><span class="nav-number">2.3.</span> <span class="nav-text">performWorkOnRoot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hook%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.4.</span> <span class="nav-text">Hook的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mount-amp-amp-Dispatch"><span class="nav-number">2.4.1.</span> <span class="nav-text">Mount &amp;&amp; Dispatch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Update"><span class="nav-number">2.4.2.</span> <span class="nav-text">Update</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Commit"><span class="nav-number">2.4.3.</span> <span class="nav-text">Commit</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

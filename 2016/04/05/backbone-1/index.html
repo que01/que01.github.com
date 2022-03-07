@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="《论前端工程师的修养》里面说，前端的价值，20%是知识，这里包含诸多框架经验，80%则是能力，这能力包括编程能力、架构能力和工程能力。想想觉得总结得真的很好。不在乎前进的路难，而在乎浮云遮眼不知何将往。backbone很小，但是架构可以参考学习一番。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="backbone初探(一)-猜想和API">
+<meta property="og:url" content="http://www.que01.top/2016/04/05/backbone-1/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="《论前端工程师的修养》里面说，前端的价值，20%是知识，这里包含诸多框架经验，80%则是能力，这能力包括编程能力、架构能力和工程能力。想想觉得总结得真的很好。不在乎前进的路难，而在乎浮云遮眼不知何将往。backbone很小，但是架构可以参考学习一番。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/Backbone.png">
+<meta property="article:published_time" content="2016-04-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.577Z">
+<meta property="article:author" content="que01">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/Backbone.png">
+
+<link rel="canonical" href="http://www.que01.top/2016/04/05/backbone-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>backbone初探(一)-猜想和API | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/04/05/backbone-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          backbone初探(一)-猜想和API
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-05 00:00:00" itemprop="dateCreated datePublished" datetime="2016-04-05T00:00:00+08:00">2016-04-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/04/05/backbone-1/" class="post-meta-item leancloud_visitors" data-flag-title="backbone初探(一)-猜想和API" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">《论前端工程师的修养》里面说，前端的价值，20%是知识，这里包含诸多框架经验，80%则是能力，这能力包括编程能力、架构能力和工程能力。想想觉得总结得真的很好。不在乎前进的路难，而在乎浮云遮眼不知何将往。backbone很小，但是架构可以参考学习一番。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>前几天在前端群里面闲聊时候，有好多年的老同行感叹说，08年出来的那帮人那时候很少用框架，jQuery在那时候还没有多少人用，不像现在有N多框架可以选，现在的新人着实幸福。我回答说，08年其实也是幸福的时代，可以专心研究javascript基础，而不像现在这样，被漫天的框架潮流拖着走。群友总结说，跟着时代的走的好处是，后来者，要重走一次历史线路，是一件很艰难的事情。 </p>
+<p>那么，此刻，刻意来学backbone和其中思想，便应当是后来人对历史的其中一次回首，目标真的是进一步提升对MVC的理解.</p>
+<p>《论前端工程师的修养》里面说，前端的价值，20%是知识，这里包含诸多框架经验，80%则是能力，这能力包括编程能力、架构能力和工程能力。想想觉得总结得真的很好。</p>
+<p>不在乎前进的路难，而在乎浮云遮眼不知何将往。</p>
+<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>文章写之前，我必须声明一次，这不是一番深思熟虑改之又改的文章，而仅仅是一个学习笔记，我想将backbone整理过程中，一路的想法细细展示出来。聊做以后再回首的记忆。</p>
+<p>大抵最美好的青春岁月，都给编程了，留个印记也好。。。</p>
+<h1 id="预计的学习线路"><a href="#预计的学习线路" class="headerlink" title="预计的学习线路"></a>预计的学习线路</h1><p>目标是先浏览一次API，然后熟悉API，做一些小项目，然后开始根据API来对源码进行原理猜测，最后进行源码架构整理阅读进行印证。<br>简单说的话，就是一句，看api，实践一下，然后猜测实现细节，然后看源码。</p>
+<h1 id="API熟悉环节"><a href="#API熟悉环节" class="headerlink" title="API熟悉环节"></a>API熟悉环节</h1><p>先找个<a target="_blank" rel="noopener" href="http://123.56.156.13/api/backbone/">中文的API</a>看，这样进度会快点。文档是1.12的翻译，我认为不是太落后当前其实也够学习用了。</p>
+<p>先整理一下Backbone的API大类，以一直以来源码阅读经验来看，从宏观向微观读，理解架构再理解细节才是唯一的了解和阅读源码的路径：</p>
+<ul>
+<li>Backbone.Events</li>
+<li>Backbone.Model</li>
+<li>Backbone.Collection</li>
+<li>Backbone.Router</li>
+<li>Backbone.history</li>
+<li>Backbone.sync</li>
+<li>Backbone.View</li>
+<li>Utility<ul>
+<li>Backbone.noConflict</li>
+<li>Backbone.$</li>
+</ul>
+</li>
+</ul>
+<p>简单的看了下这几部分的构成，从命名来看，很显然里面有事件、模型、集合，路由、历史、同步、视图、辅助工具这几个大类的东西，其他细节应该都是依附在这几个对象下作为方法使用。</p>
+<p>这里猜测一下可能的库的延伸发展路径：</p>
+<ol>
+<li>Backbone作为以MVC(Model-View-Collection)主导的思想的框架，最主要的，那么也只可能是MVC三个角色了，Model-View-Collection这三个对象，应当就是BackBone编写开始最先写下三个的词汇。</li>
+<li>现代网页程序对交互的处理必须依托事件来触发，所以需要一个Events来对时间进行统筹处理，API的说明是，一些事件对Model也有作用，那么这里面应该有一个订阅-发布模式的处理方案。</li>
+<li>Router是路由处理，这个应当是考虑到当前页面复杂的结构设计，所以产生的一个模块，对路由统筹处理，以达到归并路由逻辑，防止到处横生节蔓的方案。</li>
+<li>history这个应当是html5的hashchange事件的封装，依托hashchange事件，来处理单页面路由刷新页面后导致状态丢失和无法前进后退的处理方案。</li>
+<li>sync这个模块应当是所有前端数据同后端服务器进行ajax交互的统一封装。</li>
+<li>关于Model和Collection的关系，猜测应当是：Model(对象数据，也可能被封装)既是Collection(数组数据，也可能被封装)中的一个个对象，也是内部每个对象的整体数据结构骨架,所有Model都保持统一的结构，以便实现ORM。</li>
+<li>Utility这个貌似不用说了，大家都知道。</li>
+</ol>
+<h1 id="API细节整理"><a href="#API细节整理" class="headerlink" title="API细节整理"></a>API细节整理</h1><p>这里简单整理一下，不过也可能变成一份简略版本的API…<br>不过这里一切整理从简</p>
+<h2 id="Event"><a href="#Event" class="headerlink" title="Event"></a>Event</h2><h3 id="Event的方法和简单整理"><a href="#Event的方法和简单整理" class="headerlink" title="Event的方法和简单整理"></a>Event的方法和简单整理</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Events</span><br><span class="line">  on            语法:object.on(event, callback, [context])</span><br><span class="line">  off           语法:object.off([event], [callback], [context])</span><br><span class="line">  trigger       语法:object.trigger(event, [*args]) </span><br><span class="line">  once          语法:object.once(event, callback, [context]) </span><br><span class="line">  listenTo      语法:object.listenTo(other, event, callback) </span><br><span class="line">  stopListening 语法:object.stopListening([other], [event], [callback]) </span><br><span class="line">  listenToOnce  语法:object.listenToOnce(other, event, callback) </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>事件这里定义的方法不多简单整理：</p>
+<ol>
+<li>on对off一个绑定一个解绑，listenTo对stopListening一个订阅一个取消订阅(猜测！)</li>
+<li>once对应on，一个是触发一次，一个是一直触发</li>
+<li>listenToOnce和listenTo对应类似once对应on，一个订阅一次，一个订阅N次。</li>
+</ol>
+<h3 id="Event定义的事件："><a href="#Event定义的事件：" class="headerlink" title="Event定义的事件："></a>Event定义的事件：</h3><ul>
+<li>“add” (model, collection, options) — 当一个model（模型）被添加到一个collection（集合）时触发。</li>
+<li>“remove” (model, collection, options) — 当一个model（模型）从一个collection（集合）中被删除时触发。</li>
+<li>“reset” (collection, options) — 当该collection（集合）的全部内容已被替换时触发。</li>
+<li>“sort” (collection, options) — 当该collection（集合）已被重新排序时触发。</li>
+<li>“change” (model, options) — 当一个model（模型）的属性改变时触发。</li>
+<li>“change:[attribute]” (model, value, options) — 当一个model（模型）的某个特定属性被更新时触发。</li>
+<li>“destroy” (model, collection, options) —当一个model（模型）被destroyed（销毁）时触发。</li>
+<li>“request” (model_or_collection, xhr, options) — 当一个model（模型）或collection（集合）开始发送请求到服务器时触发。</li>
+<li>“sync” (model_or_collection, resp, options) — 当一个model（模型）或collection（集合）成功同步到服务器时触发。</li>
+<li>“error” (model_or_collection, resp, options) — 当一个model（模型）或collection（集合）的请求远程服务器失败时触发。</li>
+<li>“invalid” (model, error, options) — 当model（模型）在客户端 validation（验证）失败时触发。</li>
+<li>“route:[name]” (params) —  当一个特定route（路由）相匹配时通过路由器触发。</li>
+<li>“route” (route, params) — 当任何一个route（路由）相匹配时通过路由器触发。</li>
+<li>“route” (router, route, params) — 当任何一个route（路由）相匹配时通过history（历史记录）触发。</li>
+<li>“all” — 所有事件发生都能触发这个特别的事件，第一个参数是触发事件的名称。</li>
+</ul>
+<h2 id="Model-模型和单个数据操作"><a href="#Model-模型和单个数据操作" class="headerlink" title="Model 模型和单个数据操作"></a>Model 模型和单个数据操作</h2><p>写到这里，不禁仰天长叹：Model的方法真的很多啊啊啊啊…</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">Model</span><br><span class="line">  extend 语法：Backbone.Model.extend(properties, [classProperties])用途不说了，应该同jquery的extend</span><br><span class="line">  constructor&#x2F;initialize 语法：new Model([attributes], [options]) ，用来创建初始属性</span><br><span class="line">  get 语法:model.get(attribute),获取属性值</span><br><span class="line">  set 语法:model.set(attributes, [options])  设置属性值</span><br><span class="line">  escape 语法:model.escape(attribute)，转义版get</span><br><span class="line">  has 语法:model.has(attribute), 属性值为非 null 或非 undefined 时返回 true。</span><br><span class="line">  unset 语法: model.unset(attribute, [options]) 从内部属性散列表中删除指定属性(attribute)。</span><br><span class="line">  clear 语法: model.clear([options]) 从model中删除所有属性， 包括id属性。</span><br><span class="line">  id 语法: model.id id是model的特殊属性，可以是任意字符串</span><br><span class="line">  idAttribute 语法: model.idAttribute 一个model的唯一标示符，被储存在 id 属性下</span><br><span class="line">  cid 语法: model.cid model的特殊属性，cid 或客户 id 是当所有model创建时自动产生的唯一标识符。</span><br><span class="line">  attributes 语法: model.attributes attributes 属性是包含模型状态的内部散列表</span><br><span class="line">  changed 语法: model.changed changed属性是一个包含所有属性的内部散列，自最后 set 已改变。</span><br><span class="line">  defaults 语法: model.defaults or 语法: model.defaults() defaults 散列（或函数）用于为模型指定默认属性。</span><br><span class="line">  toJSON 语法: model.toJSON([options]) 返回一个模型的 attributes 浅拷贝副本的 JSON 字符串化形式。</span><br><span class="line">  sync 语法: model.sync(method, model, [options]) 使用 Backbone.sync 可以将一个模型的状态持续发送到服务器。 </span><br><span class="line">  fetch 语法: model.fetch([options]) 通过委托给Backbone.sync从服务器重置模型的状态。</span><br><span class="line">  save 语法: model.save([attributes], [options]) 通过委托给Backbone.sync，保存模型到数据库</span><br><span class="line">  destroy 语法: model.destroy([options]) 通过委托给Backbone.sync，保存模型到数据库</span><br><span class="line">  validate 语法: model.validate(attributes, options) 自定义验证逻辑</span><br><span class="line">  validationError 语法: model.validationError 用validate最后验证失败时返回的值。</span><br><span class="line">  isValid 语法: model.isValid() 运行validate来检查模型状态。</span><br><span class="line">  url 语法: model.url() 返回模型资源在服务器上位置的相对 URL </span><br><span class="line">  urlRoot 语法: model.urlRoot or 语法: model.urlRoot() 设置生成基于模型 id 的 URLs 的默认 url 函数</span><br><span class="line">  parse 语法: model.parse(response, options) parse 会在通过 fetch 从服务器返回模型数据，以及 save 时执行</span><br><span class="line">  clone 语法: model.clone() 返回该模型的具有相同属性的新实例。</span><br><span class="line">  isNew 语法: model.isNew() 模型是否已经保存到服务器。</span><br><span class="line">  hasChanged 语法: model.hasChanged([attribute]) 标识模型从上次 set 事件发生后是否改变过。</span><br><span class="line">  changedAttributes 语法: model.changedAttributes([attributes]) 只从最后一次set开始检索已改变的模型属性散列</span><br><span class="line">  previous 语法: model.previous(attribute) 在 &quot;change&quot; 事件发生的过程中，本方法可被用于获取已改变属性的旧值</span><br><span class="line">  previousAttributes 语法: model.previousAttributes() 返回模型的上一个属性的副本。</span><br></pre></td></tr></table></figure>
+
+<p>姑且开始尝试分类一下：</p>
+<ol>
+<li>数据持久化:sync，save，fetch，destroy</li>
+<li>数据读写相关:get，set，escape，unset，clear，toJSON，validate，validationError，isValid，parse,clone</li>
+<li>Model属性相关:id，cid，attributes，changed，defaults，url，urlRoot，isNew，changedAttributes，previous，previousAttributes</li>
+</ol>
+<p>大概猜测下这些玩意儿的用途和场景：</p>
+<ol>
+<li>数据持久化:</li>
+</ol>
+<ul>
+<li>sync 数据双向同步</li>
+<li>save 本地数据同步到服务器</li>
+<li>fetch 获取服务器数据</li>
+<li>destroy 销毁指定数据</li>
+</ul>
+<ol start="2">
+<li>数据读写相关:</li>
+</ol>
+<ul>
+<li>get 获取数据</li>
+<li>set 设置数据</li>
+<li>escape 转义get的值</li>
+<li>unset 删除单个属性</li>
+<li>clear 清除整个单个条目</li>
+<li>toJSON 数据转换为json</li>
+<li>validate 验证</li>
+<li>validationError</li>
+<li>isValid 判断验证通过否</li>
+<li>parse 序列化json数据</li>
+<li>clone 深拷贝数据</li>
+</ul>
+<ol start="3">
+<li>Model属性相关:这个猜不到先放放</li>
+</ol>
+<h2 id="Collection-集合操作"><a href="#Collection-集合操作" class="headerlink" title="Collection 集合操作"></a>Collection 集合操作</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">Collection</span><br><span class="line">  extend     语法Backbone.Collection.extend(properties, [classProperties]) </span><br><span class="line">  model      语法:collection.model </span><br><span class="line">  constructor &#x2F; initialize</span><br><span class="line">  models     语法:collection.models </span><br><span class="line">  toJSON     语法:collection.toJSON([options]) </span><br><span class="line">  sync       语法:collection.sync(method, 语法:collection, [options]) </span><br><span class="line">  add        语法:collection.add(models, [options]) </span><br><span class="line">  remove     语法:collection.remove(models, [options]) </span><br><span class="line">  reset      语法:collection.reset([models], [options]) </span><br><span class="line">  set        语法:collection.set(models, [options]) </span><br><span class="line">  get        语法:collection.get(id) </span><br><span class="line">  at         语法:collection.at(index) </span><br><span class="line">  push       语法:collection.push(model, [options]) </span><br><span class="line">  pop        语法:collection.pop([options]) </span><br><span class="line">  unshift    语法:collection.unshift(model, [options]) </span><br><span class="line">  shift      语法:collection.shift([options]) </span><br><span class="line">  slice      语法:collection.slice(begin, end) </span><br><span class="line">  length     语法:collection.length </span><br><span class="line">  comparator 语法:collection.comparator </span><br><span class="line">  sort       语法:collection.sort([options]) </span><br><span class="line">  pluck      语法:collection.pluck(attribute) </span><br><span class="line">  where      语法:collection.where(attributes) </span><br><span class="line">  findWhere  语法:collection.findWhere(attributes) </span><br><span class="line">  url        语法:collection.url or 语法:collection.url() </span><br><span class="line">  parse      语法:collection.parse(response, options) </span><br><span class="line">  clone      语法:collection.clone() </span><br><span class="line">  fetch      语法:collection.fetch([options]) </span><br><span class="line">  create     语法:collection.create(attributes, [options]) </span><br></pre></td></tr></table></figure>
+
+<p>尝试分类一下：</p>
+<ol>
+<li>持久化 sync,fetch</li>
+<li>Collection对象读写相关：extend，model,models,remove,reset,get,set,findWhere,create,toJSON</li>
+<li>集合(数组)操作：push,pop,unshift,shift,slice,sort,comparator,pluck,at</li>
+</ol>
+<p>貌似差不多了,API里面方法最多了都整理完了，送了一口气，我继续整理。。。</p>
+<h2 id="Router"><a href="#Router" class="headerlink" title="Router"></a>Router</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Router</span><br><span class="line">  extend                   语法:Backbone.Router.extend(properties, [classProperties]) </span><br><span class="line">  routes                   语法:router.routes </span><br><span class="line">  constructor &#x2F; initialize 语法:new Router([options]) </span><br><span class="line">  route                    语法:router.route(route, name, [callback]) </span><br><span class="line">  navigate                 语法:outer.navigate(fragment, [options]) </span><br><span class="line">  execute                  语法:executerouter.execute(callback, args) </span><br></pre></td></tr></table></figure>
+<h2 id="history"><a href="#history" class="headerlink" title="history"></a>history</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">history</span><br><span class="line">  start 语法:Backbone.history.start([options]) 启动hashchange事件监控</span><br></pre></td></tr></table></figure>
+
+<h2 id="sync"><a href="#sync" class="headerlink" title="sync"></a>sync</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sync</span><br><span class="line">  Backbone.sync 语法:sync(method, model, [options])</span><br><span class="line">	- method – CRUD 方法 (&quot;create&quot;, &quot;read&quot;, &quot;update&quot;, or &quot;delete&quot;)</span><br><span class="line">	- model – 要被保存的模型（或要被读取的集合）</span><br><span class="line">	- options – 成功和失败的回调函数，以及所有 jQuery 请求支持的选项</span><br><span class="line">  Backbone.ajax 语法:Backbone.ajax &#x3D; function(request) &#123; ... &#125;; </span><br><span class="line">  Backbone.emulateHTTP 语法:属性值 设置为true可以用POST模拟put等http方法</span><br><span class="line">  Backbone.emulateJSON 语法:属性值 设置为true序列化JSON为formData</span><br></pre></td></tr></table></figure>
+
+<h2 id="View"><a href="#View" class="headerlink" title="View"></a>View</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">View</span><br><span class="line">  extend 语法:Backbone.View.extend(properties, [classProperties]) 开始创建自定义的视图类。</span><br><span class="line">  constructor &#x2F; initialize</span><br><span class="line">  el 语法：属性值，设置view的元素</span><br><span class="line">  $el 语法: 属性值，一个视图元素的缓存jQuery对象。</span><br><span class="line">  setElement 语法：view.setElement(element) 如果你想应用一个Backbone视图到不同的DOM元素</span><br><span class="line">  attributes 语法:属性 接受对象 或者返回对象的函数 属性的键值对,将被设置为视图el上的HTML DOM元素的属性</span><br><span class="line">  $ (jQuery)</span><br><span class="line">  template 语法:view.template([data]) </span><br><span class="line">  render 语法：view.render()   重载本函数可以实现从模型数据渲染视图模板</span><br><span class="line">  remove 语法：view.remove() 从 DOM 中移除一个视图，并解绑所有事件</span><br><span class="line">  delegateEvents 语法：delegateEvents([events])  事件委托 很多时候不需要手动运行</span><br><span class="line">  undelegateEvents 语法:undelegateEvents() 上例的相反的操作</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+<p>来一个Demo上的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">var DocumentView &#x3D; Backbone.View.extend(&#123;</span><br><span class="line">  events: &#123;</span><br><span class="line">    &quot;dblclick&quot;                : &quot;open&quot;,</span><br><span class="line">    &quot;click .icon.doc&quot;         : &quot;select&quot;,</span><br><span class="line">    &quot;contextmenu .icon.doc&quot;   : &quot;showMenu&quot;,</span><br><span class="line">    &quot;click .show_notes&quot;       : &quot;toggleNotes&quot;,</span><br><span class="line">    &quot;click .title .lock&quot;      : &quot;editAccessLevel&quot;,</span><br><span class="line">    &quot;mouseover .title .date&quot;  : &quot;showTooltip&quot;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  render: function() &#123;</span><br><span class="line">    this.$el.html(this.template(this.model.attributes));</span><br><span class="line">    return this;</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  open: function() &#123;</span><br><span class="line">    window.open(this.model.get(&quot;viewer_url&quot;));</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  select: function() &#123;</span><br><span class="line">    this.model.set(&#123;selected: true&#125;);</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  ...</span><br><span class="line"></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>集合例子来看，View的操作远比想象的要简单：</p>
+<ol>
+<li>设定模板</li>
+<li>渲染模板到指定el</li>
+<li>设定委托事件</li>
+</ol>
+<p>就这么三步了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>大致结构我猜测就是这样了，先来个简单的总结：<br>上图：<br><img src="/images/Backbone.png" alt="backbone"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/04/02/http-1/" rel="prev" title="HTTP笔记(一)">
+      <i class="fa fa-chevron-left"></i> HTTP笔记(一)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/04/16/backbone-2/" rel="next" title="backbone初探(二)-辅助函数">
+      backbone初探(二)-辅助函数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A3%B0%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">声明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A2%84%E8%AE%A1%E7%9A%84%E5%AD%A6%E4%B9%A0%E7%BA%BF%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">预计的学习线路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#API%E7%86%9F%E6%82%89%E7%8E%AF%E8%8A%82"><span class="nav-number">4.</span> <span class="nav-text">API熟悉环节</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#API%E7%BB%86%E8%8A%82%E6%95%B4%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">API细节整理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Event"><span class="nav-number">5.1.</span> <span class="nav-text">Event</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Event%E7%9A%84%E6%96%B9%E6%B3%95%E5%92%8C%E7%AE%80%E5%8D%95%E6%95%B4%E7%90%86"><span class="nav-number">5.1.1.</span> <span class="nav-text">Event的方法和简单整理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Event%E5%AE%9A%E4%B9%89%E7%9A%84%E4%BA%8B%E4%BB%B6%EF%BC%9A"><span class="nav-number">5.1.2.</span> <span class="nav-text">Event定义的事件：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Model-%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%8D%95%E4%B8%AA%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C"><span class="nav-number">5.2.</span> <span class="nav-text">Model 模型和单个数据操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Collection-%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C"><span class="nav-number">5.3.</span> <span class="nav-text">Collection 集合操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Router"><span class="nav-number">5.4.</span> <span class="nav-text">Router</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#history"><span class="nav-number">5.5.</span> <span class="nav-text">history</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sync"><span class="nav-number">5.6.</span> <span class="nav-text">sync</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View"><span class="nav-number">5.7.</span> <span class="nav-text">View</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

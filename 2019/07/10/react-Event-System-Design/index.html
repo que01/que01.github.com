@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前几天对React Event的路径进行了一些更新，这更新说多不多说少不少，本来以为画了好几个图心里会放心很多，但是最后再看看源码目录结构，还有之前文章里面提到的合成事件略过的句子，终究是觉得还是没做到位，所以这一篇目标是整理一下React事件体系的宏观体系，而不是上一篇细枝末节的到繁琐的源码探究。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React事件体系设计">
+<meta property="og:url" content="http://www.que01.top/2019/07/10/react-Event-System-Design/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="前几天对React Event的路径进行了一些更新，这更新说多不多说少不少，本来以为画了好几个图心里会放心很多，但是最后再看看源码目录结构，还有之前文章里面提到的合成事件略过的句子，终究是觉得还是没做到位，所以这一篇目标是整理一下React事件体系的宏观体系，而不是上一篇细枝末节的到繁琐的源码探究。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.que01.top/images/react-event-design.png">
+<meta property="article:published_time" content="2019-07-10T01:44:41.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.671Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.que01.top/images/react-event-design.png">
+
+<link rel="canonical" href="http://www.que01.top/2019/07/10/react-Event-System-Design/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React事件体系设计 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2019/07/10/react-Event-System-Design/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React事件体系设计
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-10 09:44:41" itemprop="dateCreated datePublished" datetime="2019-07-10T09:44:41+08:00">2019-07-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2019/07/10/react-Event-System-Design/" class="post-meta-item leancloud_visitors" data-flag-title="React事件体系设计" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">前几天对React Event的路径进行了一些更新，这更新说多不多说少不少，本来以为画了好几个图心里会放心很多，但是最后再看看源码目录结构，还有之前文章里面提到的合成事件略过的句子，终究是觉得还是没做到位，所以这一篇目标是整理一下React事件体系的宏观体系，而不是上一篇细枝末节的到繁琐的源码探究。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="源码结构"><a href="#源码结构" class="headerlink" title="源码结构"></a>源码结构</h1><p>关于事件的源码，主要分布在3个地方。</p>
+<p>第一个，<code>src/renderers/dom/client/eventPlugins/</code></p>
+<p>第二个，<code>src/renderers/dom/client/syntheticEvents/</code></p>
+<p>第三个，<code>src/renderers/shared/stack/event/</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">src/renderers/dom/client/eventPlugins/</span><br><span class="line">├── BeforeInputEventPlugin.js</span><br><span class="line">├── ChangeEventPlugin.js</span><br><span class="line">├── DefaultEventPluginOrder.js</span><br><span class="line">├── EnterLeaveEventPlugin.js</span><br><span class="line">├── FallbackCompositionState.js</span><br><span class="line">├── SelectEventPlugin.js</span><br><span class="line">├── SimpleEventPlugin.js</span><br><span class="line">├── TapEventPlugin.js</span><br><span class="line"></span><br><span class="line">src/renderers/dom/client/syntheticEvents/</span><br><span class="line">├── SyntheticAnimationEvent.js</span><br><span class="line">├── SyntheticClipboardEvent.js</span><br><span class="line">├── SyntheticCompositionEvent.js</span><br><span class="line">├── SyntheticDragEvent.js</span><br><span class="line">├── SyntheticFocusEvent.js</span><br><span class="line">├── SyntheticInputEvent.js</span><br><span class="line">├── SyntheticKeyboardEvent.js</span><br><span class="line">├── SyntheticMouseEvent.js</span><br><span class="line">├── SyntheticTouchEvent.js</span><br><span class="line">├── SyntheticTransitionEvent.js</span><br><span class="line">├── SyntheticUIEvent.js</span><br><span class="line">├── SyntheticWheelEvent.js</span><br><span class="line"></span><br><span class="line">src/renderers/shared/stack/event</span><br><span class="line">├── EventConstants.js</span><br><span class="line">├── EventPluginHub.js</span><br><span class="line">├── EventPluginRegistry.js</span><br><span class="line">├── EventPluginUtils.js</span><br><span class="line">├── EventPropagators.js</span><br><span class="line">├── PluginModuleType.js</span><br><span class="line">├── ReactSyntheticEventType.js</span><br><span class="line">├── SyntheticEvent.js</span><br><span class="line">└── eventPlugins</span><br><span class="line">    ├── ResponderEventPlugin.js</span><br><span class="line">    ├── ResponderSyntheticEvent.js</span><br><span class="line">    ├── ResponderTouchHistoryStore.js</span><br><span class="line">    ├── TouchHistoryMath.js</span><br></pre></td></tr></table></figure>
+
+<h1 id="合成事件设计"><a href="#合成事件设计" class="headerlink" title="合成事件设计"></a>合成事件设计</h1><p>这里首先得看看合成事件是怎样设计的。</p>
+<p>从<code>src/renderers/dom/client/syntheticEvents/</code>可以看到，诸多的合成事件，基本都是走的以下处理:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">SyntheticInputEvent</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  dispatchConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">  dispatchMarker,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEvent,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEventTarget,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> SyntheticEvent.call(</span><br><span class="line">    <span class="built_in">this</span>,</span><br><span class="line">    dispatchConfig,</span><br><span class="line">    dispatchMarker,</span><br><span class="line">    nativeEvent,</span><br><span class="line">    nativeEventTarget,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line">SyntheticEvent.augmentClass(SyntheticInputEvent, InputEventInterface);</span><br><span class="line"><span class="built_in">module</span>.exports = SyntheticInputEvent;</span><br></pre></td></tr></table></figure>
+
+<p>这里主要就是两个调用<code>SyntheticEvent.call(args)</code> 、<code>SyntheticEvent.augmentClass</code>。</p>
+<p>这里就看看SyntheticEvent它到底做了什么。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">SyntheticEvent.augmentClass = <span class="function"><span class="keyword">function</span>(<span class="params">Class, Interface</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> Super = <span class="built_in">this</span>; <span class="comment">// this指向SyntheticEvent 此处augmentClass作为SyntheticEvent方法</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> E = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;; <span class="comment">// 建立一个空函数</span></span><br><span class="line">  E.prototype = Super.prototype; <span class="comment">// 为空行书设定SyntheticEvent的原型</span></span><br><span class="line">  <span class="keyword">var</span> prototype = <span class="keyword">new</span> E(); <span class="comment">// new这个函数，新的函数原型链指向了SyntheticEvent的原型</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将Class的(此场景是SyntheticInputEvent)原型合并到new出来的新函数上</span></span><br><span class="line">  <span class="built_in">Object</span>.assign(prototype, Class.prototype); </span><br><span class="line">  <span class="comment">// 设定Class原型 并重置constructor为自身</span></span><br><span class="line">  <span class="comment">// 相当于 Class.prototype = prototype();Class.prototype.constructor = Class;</span></span><br><span class="line">  <span class="comment">// 但是这个方法可以减少一层原型链调用</span></span><br><span class="line">  Class.prototype = prototype;</span><br><span class="line">  Class.prototype.constructor = Class;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 其实也就是设定了this.constructor.Interface;</span></span><br><span class="line">  <span class="comment">// Interface的值 此处是SyntheticEvent.Interface 和 InputEventInterface的并集</span></span><br><span class="line">  <span class="comment">// 这里可以注意到第一个参数是&#123;&#125;, SyntheticEvent.Interface没有被污染</span></span><br><span class="line">  Class.Interface = <span class="built_in">Object</span>.assign(&#123;&#125;, Super.Interface, Interface);</span><br><span class="line">  Class.augmentClass = Super.augmentClass;</span><br><span class="line"></span><br><span class="line">  PooledClass.addPoolingTo(Class, PooledClass.fourArgumentPooler);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">SyntheticEvent</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  dispatchConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">  targetInst,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEvent,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEventTarget,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 基于上面SyntheticInputEvent的例子，这里this指向SyntheticInputEvent</span></span><br><span class="line">  <span class="comment">// 具体指向还得看SyntheticEvent.call第一个参数传入的context</span></span><br><span class="line">  <span class="built_in">this</span>.dispatchConfig = dispatchConfig;</span><br><span class="line">  <span class="built_in">this</span>._targetInst = targetInst;</span><br><span class="line">  <span class="built_in">this</span>.nativeEvent = nativeEvent;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 此处是SyntheticEvent.Interface 和 InputEventInterface的并集</span></span><br><span class="line">  <span class="keyword">var</span> Interface = <span class="built_in">this</span>.constructor.Interface;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> propName <span class="keyword">in</span> Interface) &#123;</span><br><span class="line">    <span class="comment">// 如果propName在原型上 跳过后面代码 进行下一个循环</span></span><br><span class="line">    <span class="keyword">if</span> (!Interface.hasOwnProperty(propName)) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> normalize = Interface[propName];</span><br><span class="line">    <span class="comment">// 这里后面的代码可以有这样一个论断:</span></span><br><span class="line">    <span class="comment">// Interface上的属性有两种，一种是属性，值统一为null|undefined之类</span></span><br><span class="line">    <span class="comment">// 一种是方法，这个方法接受event作为参数</span></span><br><span class="line">    <span class="comment">// 最后this被根据Interface统一赋值完毕</span></span><br><span class="line">    <span class="comment">// normalize如果是函数，this[propName]就接受事件运行返回值</span></span><br><span class="line">    <span class="comment">// 否则normalize就是值，this[propName] = nativeEvent[propName]</span></span><br><span class="line">    <span class="keyword">if</span> (normalize) &#123;</span><br><span class="line">      <span class="built_in">this</span>[propName] = normalize(nativeEvent);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (propName === <span class="string">&#x27;target&#x27;</span>) &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = nativeEventTarget;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>[propName] = nativeEvent[propName];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// https://developer.mozilla.org/zh-CN/docs/Web/API/Event/defaultPrevented</span></span><br><span class="line">  <span class="comment">// 返回一个布尔值，表明当前事件是否调用了 event.preventDefault()方法。</span></span><br><span class="line">  <span class="keyword">var</span> defaultPrevented = nativeEvent.defaultPrevented != <span class="literal">null</span></span><br><span class="line">    ? nativeEvent.defaultPrevented</span><br><span class="line">    : nativeEvent.returnValue === <span class="literal">false</span>; <span class="comment">// 旧浏览器兼容</span></span><br><span class="line">  <span class="keyword">if</span> (defaultPrevented) &#123;</span><br><span class="line">    <span class="built_in">this</span>.isDefaultPrevented = emptyFunction.thatReturnsTrue;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.isDefaultPrevented = emptyFunction.thatReturnsFalse;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">this</span>.isPropagationStopped = emptyFunction.thatReturnsFalse;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里执行的入口是<code>SyntheticEvent.augmentClass</code>，后面跟着执行<code>SyntheticEvent.call(arg)</code>，具体逻辑都详细列出来了。</p>
+<p>这两个主要做的事情检出来说说:</p>
+<ul>
+<li>合并SyntheticEvent和SyntheticInputEvent的两者的Interface，对SyntheticInputEvent按需赋值</li>
+<li>SyntheticInputEvent继承SyntheticEvent原型链</li>
+<li>SyntheticInputEvent三个属性</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">SyntheticEvent.augmentClass = <span class="function"><span class="keyword">function</span>(<span class="params">Class, Interface</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> Super = <span class="built_in">this</span>; <span class="comment">// this指向SyntheticEvent 此处augmentClass作为SyntheticEvent方法</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> E = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;; <span class="comment">// 建立一个空函数</span></span><br><span class="line">  E.prototype = Super.prototype; <span class="comment">// 为空行书设定SyntheticEvent的原型</span></span><br><span class="line">  <span class="keyword">var</span> prototype = <span class="keyword">new</span> E(); <span class="comment">// new这个函数，新的函数原型链指向了SyntheticEvent的原型</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将Class的(此场景是SyntheticInputEvent)原型合并到new出来的新函数上</span></span><br><span class="line">  <span class="built_in">Object</span>.assign(prototype, Class.prototype); </span><br><span class="line">  <span class="comment">// 设定Class原型 并重置constructor为自身</span></span><br><span class="line">  <span class="comment">// 相当于 Class.prototype = prototype();Class.prototype.constructor = Class;</span></span><br><span class="line">  <span class="comment">// 但是这个方法可以减少一层原型链调用</span></span><br><span class="line">  Class.prototype = prototype;</span><br><span class="line">  Class.prototype.constructor = Class;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 其实也就是设定了this.constructor.Interface;</span></span><br><span class="line">  <span class="comment">// Interface的值 此处是SyntheticEvent.Interface 和 InputEventInterface的并集</span></span><br><span class="line">  <span class="comment">// 这里可以注意到第一个参数是&#123;&#125;, SyntheticEvent.Interface没有被污染</span></span><br><span class="line">  Class.Interface = <span class="built_in">Object</span>.assign(&#123;&#125;, Super.Interface, Interface);</span><br><span class="line">  Class.augmentClass = Super.augmentClass;</span><br><span class="line"></span><br><span class="line">  PooledClass.addPoolingTo(Class, PooledClass.fourArgumentPooler);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">SyntheticEvent</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  dispatchConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">  targetInst,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEvent,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEventTarget,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 基于上面SyntheticInputEvent的例子，这里this指向SyntheticInputEvent</span></span><br><span class="line">  <span class="comment">// 具体指向还得看SyntheticEvent.call第一个参数传入的context</span></span><br><span class="line">  <span class="built_in">this</span>.dispatchConfig = dispatchConfig;</span><br><span class="line">  <span class="built_in">this</span>._targetInst = targetInst;</span><br><span class="line">  <span class="built_in">this</span>.nativeEvent = nativeEvent;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 此处是SyntheticEvent.Interface 和 InputEventInterface的并集</span></span><br><span class="line">  <span class="keyword">var</span> Interface = <span class="built_in">this</span>.constructor.Interface;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> propName <span class="keyword">in</span> Interface) &#123;</span><br><span class="line">    <span class="comment">// 如果propName在原型上 跳过后面代码 进行下一个循环</span></span><br><span class="line">    <span class="keyword">if</span> (!Interface.hasOwnProperty(propName)) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> normalize = Interface[propName];</span><br><span class="line">    <span class="comment">// 这里后面的代码可以有这样一个论断:</span></span><br><span class="line">    <span class="comment">// Interface上的属性有两种，一种是属性，值统一为null|undefined之类</span></span><br><span class="line">    <span class="comment">// 一种是方法，这个方法接受event作为参数</span></span><br><span class="line">    <span class="comment">// 最后this被根据Interface统一赋值完毕</span></span><br><span class="line">    <span class="comment">// normalize如果是函数，this[propName]就接受事件运行返回值</span></span><br><span class="line">    <span class="comment">// 否则normalize就是值，this[propName] = nativeEvent[propName]</span></span><br><span class="line">    <span class="keyword">if</span> (normalize) &#123;</span><br><span class="line">      <span class="built_in">this</span>[propName] = normalize(nativeEvent);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (propName === <span class="string">&#x27;target&#x27;</span>) &#123;</span><br><span class="line">        <span class="built_in">this</span>.target = nativeEventTarget;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>[propName] = nativeEvent[propName];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// https://developer.mozilla.org/zh-CN/docs/Web/API/Event/defaultPrevented</span></span><br><span class="line">  <span class="comment">// 返回一个布尔值，表明当前事件是否调用了 event.preventDefault()方法。</span></span><br><span class="line">  <span class="keyword">var</span> defaultPrevented = nativeEvent.defaultPrevented != <span class="literal">null</span></span><br><span class="line">    ? nativeEvent.defaultPrevented</span><br><span class="line">    : nativeEvent.returnValue === <span class="literal">false</span>; <span class="comment">// 旧浏览器兼容</span></span><br><span class="line">  <span class="keyword">if</span> (defaultPrevented) &#123;</span><br><span class="line">    <span class="built_in">this</span>.isDefaultPrevented = emptyFunction.thatReturnsTrue;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.isDefaultPrevented = emptyFunction.thatReturnsFalse;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">this</span>.isPropagationStopped = emptyFunction.thatReturnsFalse;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这里执行的入口是<code>SyntheticEvent.augmentClass</code>，后面跟着执行<code>SyntheticEvent.call(arg)</code>，具体逻辑都详细列出来了。</p>
+<p>这两个主要做的事情检出来说说:</p>
+<ul>
+<li>合并SyntheticEvent和SyntheticInputEvent的两者的Interface，对SyntheticInputEvent按需赋值</li>
+<li>SyntheticInputEvent继承SyntheticEvent原型链</li>
+<li>SyntheticInputEvent三个属性dispatchConfig|_targetInst|nativeEvent的赋值</li>
+<li>isDefaultPrevented和isPropagationStopped赋值</li>
+</ul>
+<p>最后事情捡回来说SyntheticInputEvent实质上还是SyntheticEvent函数的的返回值。所以这里事情的本质还是对SyntheticEvent的继承和扩展。</p>
+<p><strong>关于这个继承，主要是基于新的合成类型的Interface和event事件进行处理的。</strong></p>
+<h2 id="合成事件-和-原生事件-区别"><a href="#合成事件-和-原生事件-区别" class="headerlink" title="合成事件 和 原生事件 区别"></a>合成事件 和 原生事件 区别</h2><p>这里反思一下，<strong>合成事件和nativeEvent的区别在哪呢</strong>？这里根据源码总结一下:</p>
+<ul>
+<li>添加了三个属性dispatchConfig|_targetInst|nativeEvent</li>
+<li>Interface上设计了一些方法，这里赋值会根据函数进行赋值，这是一个设计模式，类似vue的computed。</li>
+<li>defaultPrevented属性设为必有的布尔值,  isPropagationStopped恒等于false</li>
+</ul>
+<h2 id="合成事件的继承关系"><a href="#合成事件的继承关系" class="headerlink" title="合成事件的继承关系"></a>合成事件的继承关系</h2><p>基于合成事件 和 原生事件和关系，那么不同合成事件的关系继承，就很有一些猜测的意思了。</p>
+<p><strong>这里可以直接推论到，继承的核心，就是那些Interface对象上的属性和方法。</strong></p>
+<p>下面根据标题做了一个树，需要配合目录层级看合成事件继承关系。</p>
+<h3 id="SyntheticEvent"><a href="#SyntheticEvent" class="headerlink" title="SyntheticEvent"></a>SyntheticEvent</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> EventInterface = &#123;</span><br><span class="line">  type: <span class="literal">null</span>,</span><br><span class="line">  target: <span class="literal">null</span>,</span><br><span class="line">  <span class="comment">// currentTarget is set when dispatching; no use in copying it here</span></span><br><span class="line">  currentTarget: emptyFunction.thatReturnsNull,</span><br><span class="line">  eventPhase: <span class="literal">null</span>,</span><br><span class="line">  bubbles: <span class="literal">null</span>,</span><br><span class="line">  cancelable: <span class="literal">null</span>,</span><br><span class="line">  timeStamp: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> event.timeStamp || <span class="built_in">Date</span>.now();</span><br><span class="line">  &#125;,</span><br><span class="line">  defaultPrevented: <span class="literal">null</span>,</span><br><span class="line">  isTrusted: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="SyntheticAnimationEvent"><a href="#SyntheticAnimationEvent" class="headerlink" title="SyntheticAnimationEvent"></a>SyntheticAnimationEvent</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> AnimationEventInterface = &#123;</span><br><span class="line">  animationName: <span class="literal">null</span>,</span><br><span class="line">  elapsedTime: <span class="literal">null</span>,</span><br><span class="line">  pseudoElement: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ClipboardEventInterface"><a href="#ClipboardEventInterface" class="headerlink" title="ClipboardEventInterface"></a>ClipboardEventInterface</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ClipboardEventInterface = &#123;</span><br><span class="line">  clipboardData: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;clipboardData&#x27;</span> <span class="keyword">in</span> event</span><br><span class="line">      ? event.clipboardData</span><br><span class="line">      : <span class="built_in">window</span>.clipboardData;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="SyntheticCompositionEvent"><a href="#SyntheticCompositionEvent" class="headerlink" title="SyntheticCompositionEvent"></a>SyntheticCompositionEvent</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> CompositionEventInterface = &#123;</span><br><span class="line">  data: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="SyntheticInputEvent"><a href="#SyntheticInputEvent" class="headerlink" title="SyntheticInputEvent"></a>SyntheticInputEvent</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> InputEventInterface = &#123;</span><br><span class="line">  data: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="SyntheticTransitionEvent"><a href="#SyntheticTransitionEvent" class="headerlink" title="SyntheticTransitionEvent"></a>SyntheticTransitionEvent</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> TransitionEventInterface = &#123;</span><br><span class="line">  propertyName: <span class="literal">null</span>,</span><br><span class="line">  elapsedTime: <span class="literal">null</span>,</span><br><span class="line">  pseudoElement: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="ResponderSyntheticEvent"><a href="#ResponderSyntheticEvent" class="headerlink" title="ResponderSyntheticEvent"></a>ResponderSyntheticEvent</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ResponderEventInterface = &#123;</span><br><span class="line">  touchHistory: <span class="function"><span class="keyword">function</span>(<span class="params">nativeEvent</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>; <span class="comment">// Actually doesn&#x27;t even look at the native event.</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="SyntheticUIEvent"><a href="#SyntheticUIEvent" class="headerlink" title="SyntheticUIEvent"></a>SyntheticUIEvent</h4><p>Extends SyntheticEvent</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> UIEventInterface = &#123;</span><br><span class="line">  view: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (event.view) &#123;</span><br><span class="line">      <span class="keyword">return</span> event.view;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">var</span> target = getEventTarget(event);</span><br><span class="line">    <span class="keyword">if</span> (target.window === target) &#123;</span><br><span class="line">      <span class="keyword">return</span> target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> doc = target.ownerDocument;</span><br><span class="line">    <span class="keyword">if</span> (doc) &#123;</span><br><span class="line">      <span class="keyword">return</span> doc.defaultView || doc.parentWindow;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">window</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  detail: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> event.detail || <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h5 id="SyntheticTouchEvent"><a href="#SyntheticTouchEvent" class="headerlink" title="SyntheticTouchEvent"></a>SyntheticTouchEvent</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> TouchEventInterface = &#123;</span><br><span class="line">  touches: <span class="literal">null</span>,</span><br><span class="line">  targetTouches: <span class="literal">null</span>,</span><br><span class="line">  changedTouches: <span class="literal">null</span>,</span><br><span class="line">  altKey: <span class="literal">null</span>,</span><br><span class="line">  metaKey: <span class="literal">null</span>,</span><br><span class="line">  ctrlKey: <span class="literal">null</span>,</span><br><span class="line">  shiftKey: <span class="literal">null</span>,</span><br><span class="line">  getModifierState: getEventModifierState,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h5 id="SyntheticFocusEvent"><a href="#SyntheticFocusEvent" class="headerlink" title="SyntheticFocusEvent"></a>SyntheticFocusEvent</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> FocusEventInterface = &#123;</span><br><span class="line">  relatedTarget: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h5 id="SyntheticKeyboardEvent"><a href="#SyntheticKeyboardEvent" class="headerlink" title="SyntheticKeyboardEvent"></a>SyntheticKeyboardEvent</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> KeyboardEventInterface = &#123;</span><br><span class="line">  key: getEventKey,</span><br><span class="line">  location: <span class="literal">null</span>,</span><br><span class="line">  ctrlKey: <span class="literal">null</span>,</span><br><span class="line">  shiftKey: <span class="literal">null</span>,</span><br><span class="line">  altKey: <span class="literal">null</span>,</span><br><span class="line">  metaKey: <span class="literal">null</span>,</span><br><span class="line">  repeat: <span class="literal">null</span>,</span><br><span class="line">  locale: <span class="literal">null</span>,</span><br><span class="line">  getModifierState: getEventModifierState,</span><br><span class="line">  charCode: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (event.type === <span class="string">&#x27;keypress&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> getEventCharCode(event);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">  keyCode: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (event.type === <span class="string">&#x27;keydown&#x27;</span> || event.type === <span class="string">&#x27;keyup&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> event.keyCode;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">  which: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (event.type === <span class="string">&#x27;keypress&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> getEventCharCode(event);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (event.type === <span class="string">&#x27;keydown&#x27;</span> || event.type === <span class="string">&#x27;keyup&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> event.keyCode;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h5 id="SyntheticMouseEvent"><a href="#SyntheticMouseEvent" class="headerlink" title="SyntheticMouseEvent"></a>SyntheticMouseEvent</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> MouseEventInterface = &#123;</span><br><span class="line">  screenX: <span class="literal">null</span>,</span><br><span class="line">  screenY: <span class="literal">null</span>,</span><br><span class="line">  clientX: <span class="literal">null</span>,</span><br><span class="line">  clientY: <span class="literal">null</span>,</span><br><span class="line">  ctrlKey: <span class="literal">null</span>,</span><br><span class="line">  shiftKey: <span class="literal">null</span>,</span><br><span class="line">  altKey: <span class="literal">null</span>,</span><br><span class="line">  metaKey: <span class="literal">null</span>,</span><br><span class="line">  getModifierState: getEventModifierState,</span><br><span class="line">  button: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> button = event.button;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&#x27;which&#x27;</span> <span class="keyword">in</span> event) &#123;</span><br><span class="line">      <span class="keyword">return</span> button;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> button === <span class="number">2</span> ? <span class="number">2</span> : button === <span class="number">4</span> ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">  buttons: <span class="literal">null</span>,</span><br><span class="line">  relatedTarget: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      event.relatedTarget ||</span><br><span class="line">      (event.fromElement === event.srcElement</span><br><span class="line">        ? event.toElement</span><br><span class="line">        : event.fromElement)</span><br><span class="line">    );</span><br><span class="line">  &#125;,</span><br><span class="line">  pageX: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;pageX&#x27;</span> <span class="keyword">in</span> event</span><br><span class="line">      ? event.pageX</span><br><span class="line">      : event.clientX + ViewportMetrics.currentScrollLeft;</span><br><span class="line">  &#125;,</span><br><span class="line">  pageY: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;pageY&#x27;</span> <span class="keyword">in</span> event</span><br><span class="line">      ? event.pageY</span><br><span class="line">      : event.clientY + ViewportMetrics.currentScrollTop;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h6 id="SyntheticDragEvent"><a href="#SyntheticDragEvent" class="headerlink" title="SyntheticDragEvent"></a>SyntheticDragEvent</h6><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> DragEventInterface = &#123;</span><br><span class="line">  dataTransfer: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h6 id="SyntheticWheelEvent"><a href="#SyntheticWheelEvent" class="headerlink" title="SyntheticWheelEvent"></a>SyntheticWheelEvent</h6><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> WheelEventInterface = &#123;</span><br><span class="line">  deltaX: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;deltaX&#x27;</span> <span class="keyword">in</span> event</span><br><span class="line">      ? event.deltaX</span><br><span class="line">      : <span class="string">&#x27;wheelDeltaX&#x27;</span> <span class="keyword">in</span> event ? -event.wheelDeltaX : <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">  deltaY: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;deltaY&#x27;</span> <span class="keyword">in</span> event</span><br><span class="line">      ? event.deltaY</span><br><span class="line">      : <span class="string">&#x27;wheelDeltaY&#x27;</span> <span class="keyword">in</span> event</span><br><span class="line">        ? -event.wheelDeltaY</span><br><span class="line">        : <span class="string">&#x27;wheelDelta&#x27;</span> <span class="keyword">in</span> event ? -event.wheelDelta : <span class="number">0</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">  deltaZ: <span class="literal">null</span>,</span><br><span class="line">  deltaMode: <span class="literal">null</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="EventPlugin"><a href="#EventPlugin" class="headerlink" title="EventPlugin"></a>EventPlugin</h1><p>XXXPlugins是对合成事件的调配。根据不同的事件，它有一个方法可以专门返回合成事件实例。</p>
+<p>它的结构大致是这样的:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> DispatchConfig = &#123;</span><br><span class="line">  dependencies: <span class="built_in">Array</span>&lt;<span class="built_in">string</span>&gt;,</span><br><span class="line">  phasedRegistrationNames?: &#123;</span><br><span class="line">    bubbled: <span class="built_in">string</span>,</span><br><span class="line">    captured: <span class="built_in">string</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  registrationName?: <span class="built_in">string</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">type</span> EventTypes = &#123;[key: <span class="built_in">string</span>]: DispatchConfig&#125;;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> PluginModule&lt;NativeEvent&gt; = &#123;</span><br><span class="line">  eventTypes: EventTypes,</span><br><span class="line">  extractEvents: (</span><br><span class="line">    topLevelType: <span class="built_in">string</span>,</span><br><span class="line">    targetInst: ReactInstance,</span><br><span class="line">    nativeTarget: NativeEvent,</span><br><span class="line">    nativeEventTarget: EventTarget,</span><br><span class="line">  ) =&gt; <span class="literal">null</span> | ReactSyntheticEvent,</span><br><span class="line">  didPutListener?: (</span><br><span class="line">    inst: ReactInstance,</span><br><span class="line">    registrationName: <span class="built_in">string</span>,</span><br><span class="line">    listener: <span class="function">() =&gt;</span> <span class="built_in">void</span>,</span><br><span class="line">  ) =&gt; <span class="built_in">void</span>,</span><br><span class="line">  willDeleteListener?: <span class="function">(<span class="params">inst: ReactInstance, registrationName: <span class="built_in">string</span></span>) =&gt;</span> <span class="built_in">void</span>,</span><br><span class="line">  tapMoveThreshold?: <span class="built_in">number</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">type</span> Plugins &#123;</span><br><span class="line">    eventTypes: EventTypes;</span><br><span class="line">    extractEvents: (</span><br><span class="line">        topLevelType: TopLevelTypes,</span><br><span class="line">        targetInst: ReactInstance,</span><br><span class="line">        nativeEvent: MouseEvent,</span><br><span class="line">        nativeEventTarget: EventTarget,</span><br><span class="line">    ) =&gt; PluginModule&lt;NativeEvent&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>extractEvents</code>是一个重要API，它会返回一个合成事件实例。</p>
+<p>这里就<code>SimpleEventPlugin</code>讲一讲。这是一个非常重要的Plugin。</p>
+<p>它核心逻辑如下：</p>
+<ol>
+<li>判断<code>topLevelType</code>的值，根据这个值返回一个合成事件生产函数</li>
+</ol>
+<ul>
+<li><p>如果是<code>topAbort topCanPlay topCanPlayThrough topDurationChange topEmptied topEncrypted topEnded topError topInput topInvalid topLoad topLoadedData topLoadedMetadata topLoadStart topPause topPlay topPlaying topProgress topRateChange topReset topSeeked topSeeking topStalled topSubmit topSuspend topTimeUpdate topVolumeChange topWaiting</code>之一，返回SyntheticEvent。</p>
+</li>
+<li><p>如果是<code>topKeyPress topClick</code>返回null</p>
+</li>
+<li><p>如果是<code>topKeyUp</code>返回SyntheticKeyboardEvent</p>
+</li>
+<li><p>如果是<code>topKeyDown topKeyUp</code>返回SyntheticFocusEvent</p>
+</li>
+<li><p>如果是<code>topDoubleClick topMouseDown topMouseMove topMouseUp topMouseOut topMouseOver topContextMenu</code>返回SyntheticMouseEvent</p>
+</li>
+<li><p>如果是<code>topDra topDragEn topDragEnte topDragExi topDragLeav topDragOve topDragStar topDrop</code>返回SyntheticDragEvent</p>
+</li>
+<li><p>如果是<code>topTouchCancel topTouchEnd topTouchMove topTouchStart</code>返回SyntheticTouchEvent</p>
+</li>
+<li><p>如果是<code>topAnimationEnd topAnimationIteration topAnimationStart</code>返回SyntheticAnimationEvent</p>
+</li>
+<li><p>如果是<code>topTransitionEnd</code>返回SyntheticTransitionEvent</p>
+</li>
+<li><p>如果是<code>topScroll</code>返回SyntheticUIEvent</p>
+</li>
+<li><p>如果是<code>topWheel</code>返回SyntheticWheelEvent</p>
+</li>
+<li><p>如果是<code>topCopy topCut topPaste</code>返回SyntheticClipboardEvent</p>
+</li>
+</ul>
+<ol start="2">
+<li><p>使用这个函数传入目标参数返回合成事件实例</p>
+</li>
+<li><p>执行<code>EventPropagators.accumulateTwoPhaseDispatches(event)</code>。这个函数在虚拟DOM上模拟事件捕获和冒泡，并将所有的实际回调都缓存到数组保存好，具体可以参见<a href="/2018/06/10/react-event/#extractEvents">React Event#extractEvents</a>，这里不涉及这个细节。<strong>但是当你从这个链接调出再返回时，务必记得<code>event._dispatchListeners &amp;&amp; event._dispatchInstances</code>这两个变量从哪来。</strong></p>
+</li>
+</ol>
+<h1 id="EventPluginHub"><a href="#EventPluginHub" class="headerlink" title="EventPluginHub"></a>EventPluginHub</h1><p>在Plugin上一层，还有一个EventPluginHub的设计。</p>
+<p>如果说Plugin是对合成事件的调配，那么EventPluginHub就是对Plugin的调配。它的结构大致如下，细节代码这里不放了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> EventPluginHub = &#123;</span><br><span class="line">  <span class="comment">// 保存事件回调到`listenerBank[registrationName][key]`这个位置</span></span><br><span class="line">  putListener: <span class="function"><span class="keyword">function</span>(<span class="params">inst, registrationName, listener</span>) </span>&#123;&#125;,</span><br><span class="line">  <span class="comment">// putListener的反向操作 从listenerBank[registrationName][key]读取事件回调</span></span><br><span class="line">  <span class="comment">// 鼠标事件存在Prevent可能 如果被阻止了 那就返回null</span></span><br><span class="line">  getListener: <span class="function"><span class="keyword">function</span>(<span class="params">inst, registrationName</span>) </span>&#123; &#125;,</span><br><span class="line">  <span class="comment">// 从listenerBank[registrationName]移除对应实例的registrationName类型的回调</span></span><br><span class="line">  deleteListener: <span class="function"><span class="keyword">function</span>(<span class="params">inst, registrationName</span>) </span>&#123; &#125;,</span><br><span class="line">  <span class="comment">// 从listenerBank里面移除对应实例所有类型的回调</span></span><br><span class="line">  deleteAllListeners: <span class="function"><span class="keyword">function</span>(<span class="params">inst</span>) </span>&#123; &#125;,</span><br><span class="line">  <span class="comment">// 遍历所有的Plugins(EventPluginRegistry.plugins)，挨个执行每个Plugin上的extractEvents，如果有返回，进入模拟捕获和冒泡环节</span></span><br><span class="line">  extractEvents: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">    topLevelType,</span></span></span><br><span class="line"><span class="function"><span class="params">    targetInst,</span></span></span><br><span class="line"><span class="function"><span class="params">    nativeEvent,</span></span></span><br><span class="line"><span class="function"><span class="params">    nativeEventTarget,</span></span></span><br><span class="line"><span class="function"><span class="params">  </span>) </span>&#123; &#125;,</span><br><span class="line">  <span class="comment">// 将获取到的合成事件放到processEventQueue以待执行</span></span><br><span class="line">  enqueueEvents: <span class="function"><span class="keyword">function</span>(<span class="params">events</span>) </span>&#123; &#125;,</span><br><span class="line">  <span class="comment">// 调用processEventQueue里面所有的合成事件</span></span><br><span class="line">  processEventQueue: <span class="function"><span class="keyword">function</span>(<span class="params">simulated</span>) </span>&#123; &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="EventPluginRegistry"><a href="#EventPluginRegistry" class="headerlink" title="EventPluginRegistry"></a>EventPluginRegistry</h1><p>上一小结提到了<code>EventPluginRegistry.plugins</code>,这里对这个进行一下分析。其主要结构是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">type DispatchConfig = &#123;</span><br><span class="line">  dependencies: <span class="built_in">Array</span>&lt;string&gt;,</span><br><span class="line">  phasedRegistrationNames?: &#123;</span><br><span class="line">    bubbled: string,</span><br><span class="line">    captured: string,</span><br><span class="line">  &#125;,</span><br><span class="line">  registrationName?: string,</span><br><span class="line">&#125;;</span><br><span class="line">type EventTypes = &#123;[key: string]: DispatchConfig&#125;;</span><br><span class="line">type DomAttrEvent = Omit(DOMAttributes, <span class="string">&#x27;children&#x27;</span>, <span class="string">&#x27;dangerouslySetInnerHTML&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> EventPluginRegistry = &#123;</span><br><span class="line">  plugins: <span class="built_in">Array</span>&lt;Plugins&gt;;</span><br><span class="line">  eventNameDispatchConfigs: EventTypes;</span><br><span class="line">  <span class="comment">// DOMAttributes参见@types/react</span></span><br><span class="line">  <span class="comment">// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L1240</span></span><br><span class="line">  registrationNameModules: &#123;[key: keyof DomAttrEvent]: PluginModule&#125;;</span><br><span class="line">  registrationNameDependencies: &#123;[key: keyof DomAttrEvent]: <span class="built_in">Array</span>&lt;keyof topLevelTypes&gt;&#125;,</span><br><span class="line">  possibleRegistrationNames; <span class="comment">// &quot;onabort&quot;: &quot;onAbort&quot;|&quot;onclick&quot;: &quot;onClick&quot;这种键值对</span></span><br><span class="line">  <span class="comment">// 为eventPluginOrder赋值 这里值为固定值 以备后面为进行排序</span></span><br><span class="line">  <span class="comment">// [&quot;ResponderEventPlugin&quot;, &quot;SimpleEventPlugin&quot;, &quot;TapEventPlugin&quot;, &quot;EnterLeaveEventPlugin&quot;, &quot;ChangeEventPlugin&quot;, &quot;SelectEventPlugin&quot;, &quot;BeforeInputEventPlugin&quot;]</span></span><br><span class="line">  injectEventPluginOrder: <span class="function">(<span class="params">injectedEventPluginOrder: EventPluginOrder</span>) =&gt;</span> <span class="keyword">void</span>;</span><br><span class="line">  <span class="comment">// 为namesToPlugins，设定一个Map结构 可以通过PluginName获取Plugin，并根据eventPluginOrder排序</span></span><br><span class="line">  injectEventPluginsByName: <span class="function">(<span class="params">injectedNamesToPlugins: NamesToPlugins</span>) =&gt;</span> <span class="keyword">void</span>;</span><br><span class="line">  getPluginModuleForEvent: <span class="function">(<span class="params">event: ReactSyntheticEvent</span>) =&gt;</span> <span class="literal">null</span> | PluginModule&lt;AnyNativeEvent&gt;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>平心而论，这个EventPluginRegistry对象是一个极其庞大的对象。</strong>从运行栈里直接copy json(不含函数)，就有72000+行之巨，大多数的dom上的事件props名称的兼容相关，在这里都有体现。</p>
+<p>如此巨量的数据，配合Registry名称，这里是所有合成事件相关数据保存位置，以及各种原生事件和合成事件的对应映射、兼容映射。(但是这里不是事件回调保存位置所在)。</p>
+<p>关于这个EventPluginRegistry，不是特别容易读，虽然代码还是很简单，但是从代码推导其作用，有点折腾，推荐还是直接看EventPluginRegistry-test.js测试文件。</p>
+<p>这里<strong>核心API</strong>就两个<code>injectEventPluginsByName</code>, <code>injectEventPluginOrder</code>。其他的变量、函数要么是为了实现这个API，要么是为了测试这个API而声明的。<strong>这两个函数为EventPluginHub模块实现事件插件模块的加载。</strong></p>
+<p>这两个核心API使用时候是可以不在乎调用顺序的，只要调用时传入了有效参数，他们都会走一次排序流程，这个流程定义在recomputePluginOrdering，排序目标是EventPluginRegistry.plugins数组，排序依据是injectEventPluginOrder传入的参数。</p>
+<p>这个recomputePluginOrdering函数值得一看。因为有提到phasedRegistrationNames的处理。这个函数里面执行了publishEventForPlugin，这个函数会遍历phasedRegistrationNames里面的bubbled&amp;captured属性，然后调用publishRegistrationName。</p>
+<p>这个函数核心逻辑如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">EventPluginRegistry.registrationNameModules[registrationName] = pluginModule;</span><br><span class="line">EventPluginRegistry.registrationNameDependencies[registrationName] =</span><br><span class="line">  pluginModule.eventTypes[eventName].dependencies;</span><br></pre></td></tr></table></figure>
+
+<p>也就是在对应的registrationNameModules[registrationName] &amp;&amp; registrationNameDependencies[registrationName]赋值，改为对应Plugin的值和dependencies。</p>
+<p>这可以视为一个瞬时变量，因为每次遇到同名的registrationName会被覆盖，这实际上也是加载模块的意义所在。</p>
+<p><font color='red'>★</font>我们再看看当加载完毕后EventPluginHub，这个模块是如何用到的它们。</p>
+<ul>
+<li>putListener。这里主要是判断<code>EventPluginRegistry.registrationNameModules[registrationName]</code>值存在,执行换个EventPlugin上的<code>didPutListener</code>,这个函数一般是一些兼容hack处理。</li>
+<li>deleteListener。这是针对<code>didPutListener</code>的反向操作，执行的是这个EventPlugin上的<code>willDeleteListener</code>。</li>
+<li>deleteAllListeners，加强版的deleteListener，直接遍历执行全部EventPlugin的deleteListener。</li>
+<li>extractEvents。遍历plugin模拟冒泡并执行。</li>
+</ul>
+<p><font color='red'>★</font>这里还缺<code>registrationNameDependencies[registrationName]</code>的线索，再找找。在ReactBrowserEventEmitter.js#line254这里开始有引用。</p>
+<p>我们忽略特殊分支topWheel、topScroll、topFocus、topBlur。通用性做法是:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ReactBrowserEventEmitter.ReactEventListener.trapBubbledEvent(</span><br><span class="line">    dependency,</span><br><span class="line">    topEventMapping[dependency],</span><br><span class="line">    mountAt,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>这里有很多细节，不过我们在<a href="/2018/06/10/react-event/#ReactEventListener">ReactEvent Part1</a>里面有很详细的说明。这里可以移步过去看看再回来看继续的。</p>
+<p>看过Part1,思路就可以更加清晰了，因为这部分是事件触发过后，往后继续执行的过程。在Part1里面我们深入这个过程将他们串联起来，但是并没有架构起合成事件实现的宏观架构。</p>
+<p>首先是<code>ReactBrowserEventEmitter.ReactEventListener.trapBubbledEvent</code>指向<code>ReactEventListener.trapBubbledEvent</code>。进而调用了<code>EventListener.listen</code>-&gt;<code>target.addEventListener</code>。</p>
+<p>也就是说，<strong>在这个链条中dependency进入了真实的DOM事件绑定环节</strong>。维系这个环节关键是addEventListener使用的click这样的事件名，而dependency是topClick这样的字符串数组。这里转换的Map结构是topEventMapping。</p>
+<p>关于EventPluginRegistry我们到这一环大概可以结束了，我们带着疑问进入下一环节(后面会继续这块)。</p>
+<h1 id="关联"><a href="#关联" class="headerlink" title="关联"></a>关联</h1><p>这里的关联是，指的是SyntheticEvent、EventPlugin、EventPluginHub、EventPluginRegistry、DispatchConfig之间的关联、定义、相互作用这些。</p>
+<p>这里画个图看看整体关联。</p>
+<p><img src="/images/react-event-design.png" alt="image-20190712081047028"></p>
+<p>仔细观察这个图里面的脉络，可以看到<strong>DispatchConfig是一个核心环节，它构成了不同模块之间相互调用的基础</strong>。</p>
+<p>在EventPluginRegistry.getPluginModuleForEvent函数中有这样的细节:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">getPluginModuleForEvent: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">    event: ReactSyntheticEvent,</span></span></span><br><span class="line"><span class="function"><span class="params">  </span>): <span class="title">null</span> | <span class="title">PluginModule</span>&lt;<span class="title">AnyNativeEvent</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> dispatchConfig = event.dispatchConfig;</span><br><span class="line">    <span class="keyword">if</span> (dispatchConfig.registrationName) &#123;</span><br><span class="line">      <span class="keyword">return</span> (</span><br><span class="line">        EventPluginRegistry.registrationNameModules[</span><br><span class="line">          dispatchConfig.registrationName</span><br><span class="line">        ] || <span class="literal">null</span></span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (dispatchConfig.phasedRegistrationNames !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> &#123;phasedRegistrationNames&#125; = dispatchConfig;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> phase <span class="keyword">in</span> phasedRegistrationNames) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!phasedRegistrationNames.hasOwnProperty(phase)) &#123;</span><br><span class="line">          <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> pluginModule =</span><br><span class="line">          EventPluginRegistry.registrationNameModules[</span><br><span class="line">            phasedRegistrationNames[phase]</span><br><span class="line">          ];</span><br><span class="line">        <span class="keyword">if</span> (pluginModule) &#123;</span><br><span class="line">          <span class="keyword">return</span> pluginModule;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>配合以下测试代码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">&#x27;should be able to get the plugin from synthetic events&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">var</span> clickDispatchConfig = &#123;</span><br><span class="line">    registrationName: <span class="string">&#x27;onClick&#x27;</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">var</span> magicDispatchConfig = &#123;</span><br><span class="line">    phasedRegistrationNames: &#123;</span><br><span class="line">      bubbled: <span class="string">&#x27;onMagicBubble&#x27;</span>,</span><br><span class="line">      captured: <span class="string">&#x27;onMagicCapture&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">var</span> OnePlugin = createPlugin(&#123;</span><br><span class="line">    eventTypes: &#123;</span><br><span class="line">      click: clickDispatchConfig,</span><br><span class="line">      magic: magicDispatchConfig,</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> clickEvent = &#123;<span class="attr">dispatchConfig</span>: clickDispatchConfig&#125;;</span><br><span class="line">  <span class="keyword">var</span> magicEvent = &#123;<span class="attr">dispatchConfig</span>: magicDispatchConfig&#125;;</span><br><span class="line"></span><br><span class="line">  expect(EventPluginRegistry.getPluginModuleForEvent(clickEvent)).toBe(<span class="literal">null</span>);</span><br><span class="line">  expect(EventPluginRegistry.getPluginModuleForEvent(magicEvent)).toBe(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">  EventPluginRegistry.injectEventPluginsByName(&#123;<span class="attr">one</span>: OnePlugin&#125;);</span><br><span class="line">  EventPluginRegistry.injectEventPluginOrder([<span class="string">&#x27;one&#x27;</span>]);</span><br><span class="line"></span><br><span class="line">  expect(EventPluginRegistry.getPluginModuleForEvent(clickEvent)).toBe(</span><br><span class="line">    OnePlugin,</span><br><span class="line">  );</span><br><span class="line">  expect(EventPluginRegistry.getPluginModuleForEvent(magicEvent)).toBe(</span><br><span class="line">    OnePlugin,</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>虽然这个函数没有被源码正式引用过(仅在EventPluginRegistry-test.js使用)，但是依然不妨碍我们去理解DispatchConfig。结合这个测试文件里面的内容，也可以对DispatchConfig做一些推论。</p>
+<h2 id="核心-DispatchConfig"><a href="#核心-DispatchConfig" class="headerlink" title="核心:DispatchConfig"></a>核心:DispatchConfig</h2><p>然而你要懂DispatchConfig，就必须回过头重新看看它的定义:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">type DispatchConfig = &#123;</span><br><span class="line">  dependencies: <span class="built_in">Array</span>&lt;string&gt;,</span><br><span class="line">  phasedRegistrationNames?: &#123;</span><br><span class="line">    bubbled: string,</span><br><span class="line">    captured: string,</span><br><span class="line">  &#125;,</span><br><span class="line">  registrationName?: string,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>然而光看定义还是不够，这里还有问题</p>
+<ul>
+<li>registrationName，phasedRegistrationNames究竟长什么样呢？</li>
+<li>根据getPluginModuleForEvent函数有一个很明确的推导，这两个属性基本是二选一的，它们又有什么区别呢？</li>
+<li>dependencies又是从哪来，有什么用？</li>
+</ul>
+<p>首先registrationName是onChange|onClick这种形式的string，我们写jsx时候很常用。接着就是phasedRegistrationNames，它一般是这样的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">phasedRegistrationNames: &#123;</span><br><span class="line">    bubbled: <span class="string">&#x27;onClickBubble&#x27;</span>,</span><br><span class="line">    captured: <span class="string">&#x27;onClickCapture&#x27;</span>,</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>其次，他们是什么关系呢? 实际上phasedRegistrationNames里面定义的是冒泡和捕获阶段的事件注册名称，dependencies这相对简单，就是依赖事件名的数组，比如这里就是[topClick], 而registrationName这是topClick。</p>
+<p>这里再看看其他的一些例子:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// EnterLeaveEventPlugin</span></span><br><span class="line"><span class="keyword">var</span> eventTypes = &#123;</span><br><span class="line">  mouseEnter: &#123;</span><br><span class="line">    registrationName: <span class="string">&#x27;onMouseEnter&#x27;</span>,</span><br><span class="line">    dependencies: [<span class="string">&#x27;topMouseOut&#x27;</span>, <span class="string">&#x27;topMouseOver&#x27;</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">  mouseLeave: &#123;</span><br><span class="line">    registrationName: <span class="string">&#x27;onMouseLeave&#x27;</span>,</span><br><span class="line">    dependencies: [<span class="string">&#x27;topMouseOut&#x27;</span>, <span class="string">&#x27;topMouseOver&#x27;</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// ChangeEventPlugin</span></span><br><span class="line"><span class="keyword">var</span> eventTypes = &#123;</span><br><span class="line">  change: &#123;</span><br><span class="line">    phasedRegistrationNames: &#123;</span><br><span class="line">      bubbled: <span class="string">&#x27;onChange&#x27;</span>,</span><br><span class="line">      captured: <span class="string">&#x27;onChangeCapture&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    dependencies: [</span><br><span class="line">      <span class="string">&#x27;topBlur&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topChange&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topClick&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topFocus&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topInput&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topKeyDown&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topKeyUp&#x27;</span>,</span><br><span class="line">      <span class="string">&#x27;topSelectionChange&#x27;</span>,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>dependencies是都有的，通过topEventMapping[dependencie]获取事件名，它们参与了实际的事件绑定环节。</p>
+<p>而通过phasedRegistrationNames || registrationName获取了对应EventPlugin。不过这里我们通过测试文件推论这个虽然不可能不准。但是最好还是找出真实的代码所在(虽然近乎前面已经提到了)。</p>
+<p>这里核心代码就是publishEventForPlugin+publishRegistrationName。publishRegistrationName这里就不再提，上一小节已经给做了完善等解析。我们这里来讲讲之前被跳过的publishEventForPlugin。</p>
+<p>在这个函数里面针对phasedRegistrationNames || registrationName做了分支处理。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">publishEventForPlugin</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  dispatchConfig: DispatchConfig,</span></span></span><br><span class="line"><span class="function"><span class="params">  pluginModule: PluginModule&lt;AnyNativeEvent&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  eventName: string,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  EventPluginRegistry.eventNameDispatchConfigs[eventName] = dispatchConfig;</span><br><span class="line">  <span class="keyword">var</span> phasedRegistrationNames = dispatchConfig.phasedRegistrationNames;</span><br><span class="line">  <span class="keyword">if</span> (phasedRegistrationNames) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> phaseName <span class="keyword">in</span> phasedRegistrationNames) &#123;</span><br><span class="line">      <span class="keyword">if</span> (phasedRegistrationNames.hasOwnProperty(phaseName)) &#123;</span><br><span class="line">        <span class="keyword">var</span> phasedRegistrationName = phasedRegistrationNames[phaseName];</span><br><span class="line">        publishRegistrationName(</span><br><span class="line">          phasedRegistrationName,</span><br><span class="line">          pluginModule,</span><br><span class="line">          eventName,</span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dispatchConfig.registrationName) &#123;</span><br><span class="line">    publishRegistrationName(</span><br><span class="line">      dispatchConfig.registrationName,</span><br><span class="line">      pluginModule,</span><br><span class="line">      eventName,</span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，核心他们最后都是直接执行了publishRegistrationName函数，这个函数之前有说，这也反应了，其实</p>
+<p>registrationName &amp; phasedRegistrationName是同一层面的东西。通过这两个变量，可以确定对应EventPlugin。这里测试文件里面有很明显的指向: <code>EventPluginRegistry.registrationNameModules</code> &amp;&amp; <code>EventPluginRegistry.registrationNameModules[phasedRegistrationNames[phase]]</code></p>
+<p>然后的逻辑里面，这里可以确认dependencies是这里的核心。让我们继续刚才的疑问，当dependencies介入到了真实DOM的事件绑定这里，后面发生什么。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">trapBubbledEvent: <span class="function"><span class="keyword">function</span>(<span class="params">topLevelType, handlerBaseName, element</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!element) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> EventListener.listen(</span><br><span class="line">    element,</span><br><span class="line">    handlerBaseName,</span><br><span class="line">    ReactEventListener.dispatchEvent.bind(<span class="literal">null</span>, topLevelType),</span><br><span class="line">  );</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>关于<code>EventListener.listen</code>这段，我们无妨把它理解成:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.addEventListener(</span><br><span class="line">	handlerBaseName,</span><br><span class="line">    ReactEventListener.dispatchEvent.bind(<span class="literal">null</span>, topLevelType),</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">dispatchEvent: <span class="function"><span class="keyword">function</span>(<span class="params">topLevelType, nativeEvent</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!ReactEventListener._enabled) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> bookKeeping = TopLevelCallbackBookKeeping.getPooled(</span><br><span class="line">    topLevelType,</span><br><span class="line">    nativeEvent,</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    ReactUpdates.batchedUpdates(handleTopLevelImpl, bookKeeping);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    TopLevelCallbackBookKeeping.release(bookKeeping);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>这里显然可以看看了<code>ReactEventListener.dispatchEvent.bind(null, topLevelType)</code>。这里还是重申一次(Part1里面提到过)，这里只是提前给topLevelType赋了值，后面一旦作为EventHandle引用，必定还会传入一个NativeEvent对象。所以两个参数最后都不会缺。</p>
+<p>我们这里关注点放在<code>bookKeeping</code>上。它实质上是一个对象:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    topLevelType,</span><br><span class="line">    nativeEvent,</span><br><span class="line">    ancestors = []</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>ReactUpdates.batchedUpdates(handleTopLevelImpl, bookKeeping)</code>这个调用我们不管其细节了，如果想要了解这个细节，这里有两个地方可以做参考<a target="_blank" rel="noopener" href="http://que01.top/2019/06/15/react-ReactUpdates/">React ReactUpdates</a>、<a target="_blank" rel="noopener" href="http://que01.top/2018/04/20/react-render/">react render环节分析</a>。</p>
+<p>这里只针对关键说明，它最终进行了<code>handleTopLevelImpl(bookKeeping)</code>调用。这个函数分析可以参见<a target="_blank" rel="noopener" href="http://que01.top/2018/06/10/react-event/">React-Event#handleTopLevelImpl</a>。</p>
+<p>我们可以从这个分析里面看到。它调用了</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">handleTopLevel: <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  topLevelType,</span></span></span><br><span class="line"><span class="function"><span class="params">  targetInst,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEvent,</span></span></span><br><span class="line"><span class="function"><span class="params">  nativeEventTarget,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 这里对event是一个合成事件对象，因为extractEvents可能返回null，数组里面也可能有null成员</span></span><br><span class="line">  <span class="keyword">var</span> events = EventPluginHub.extractEvents(</span><br><span class="line">    topLevelType,</span><br><span class="line">    targetInst,</span><br><span class="line">    nativeEvent,</span><br><span class="line">    nativeEventTarget,</span><br><span class="line">  );</span><br><span class="line">  runEventQueueInBatch(events);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来还是基于之前的分析来分析这里的重点(如果你逻辑接不上，那么一定需要重新读Part1那些…)。</p>
+<p>接下来是executeDispatchesAndRelease函数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> executeDispatchesAndRelease = <span class="function"><span class="keyword">function</span>(<span class="params">event, simulated</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (event) &#123;</span><br><span class="line">    EventPluginUtils.executeDispatchesInOrder(event, simulated);</span><br><span class="line">    <span class="comment">// 持久化处理 如果不做特别处理 会被释放 后面就无法访问原生NativeEvent了。</span></span><br><span class="line">    <span class="keyword">if</span> (!event.isPersistent()) &#123;</span><br><span class="line">      event.constructor.release(event);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>executeDispatchesInOrder函数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">executeDispatchesInOrder</span>(<span class="params">event, simulated</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 如果不知道这两个变量，EventPlugin小节可以重新看看</span></span><br><span class="line">  <span class="keyword">var</span> dispatchListeners = event._dispatchListeners;</span><br><span class="line">  <span class="keyword">var</span> dispatchInstances = event._dispatchInstances;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(dispatchListeners)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; dispatchListeners.length; i++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (event.isPropagationStopped()) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      executeDispatch(</span><br><span class="line">        event,</span><br><span class="line">        simulated,</span><br><span class="line">        dispatchListeners[i],</span><br><span class="line">        dispatchInstances[i],</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dispatchListeners) &#123;</span><br><span class="line">    executeDispatch(event, simulated, dispatchListeners, dispatchInstances);</span><br><span class="line">  &#125;</span><br><span class="line">  event._dispatchListeners = <span class="literal">null</span>;</span><br><span class="line">  event._dispatchInstances = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>executeDispatch函数:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">executeDispatch</span>(<span class="params">event, simulated, listener, inst</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> type = event.type || <span class="string">&#x27;unknown-event&#x27;</span>;</span><br><span class="line">  event.currentTarget = EventPluginUtils.getNodeFromInstance(inst);</span><br><span class="line">  <span class="keyword">if</span> (simulated) &#123;</span><br><span class="line">    ReactErrorUtils.invokeGuardedCallbackWithCatch(type, listener, event);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    ReactErrorUtils.invokeGuardedCallback(type, listener, event);</span><br><span class="line">  &#125;</span><br><span class="line">  event.currentTarget = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>invokeGuardedCallback函数:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">invokeGuardedCallback</span>&lt;<span class="title">A</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  name: string,</span></span></span><br><span class="line"><span class="function"><span class="params">  func: (a: A) =&gt; <span class="keyword">void</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">  a: A,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    func(a);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (x) &#123;</span><br><span class="line">    <span class="keyword">if</span> (caughtError === <span class="literal">null</span>) &#123;</span><br><span class="line">      caughtError = x;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>到了最后，整体的逻辑大致如此:</p>
+<ul>
+<li>executeDispatchesInOrder函数从合成事件上获取_dispatchListeners回调函数</li>
+<li>executeDispatch从合成事件上获取type，获取实质事件名称如click、change、error(获取的事件名称在开发环境下会被用到，生产没有，所以不做分析了)</li>
+<li>invokeGuardedCallback则是直接调用上面获取的的回调，第一个参数传入合成事件(类似常规的EventHandle)。</li>
+</ul>
+<h1 id="Part1-amp-amp-Part2的融合"><a href="#Part1-amp-amp-Part2的融合" class="headerlink" title="Part1 &amp;&amp; Part2的融合"></a>Part1 &amp;&amp; Part2的融合</h1><p>Part1着重讲了绑定了触发，Part2则着重讲了体系。</p>
+<p>现在这里需要一个最后的融合，将他们融汇贯通(当然这里还是需要先对Render&amp;Update有印象)。</p>
+<p>这里来个简单例子。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span></span>&#123;</span><br><span class="line">  render () &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;()</span> =&gt;</span> console.log(&#x27;click test button&#x27;)&#125;&gt;test<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">ReactDOM.render(<span class="built_in">document</span>, Bar)</span><br></pre></td></tr></table></figure>
+
+<h2 id="绑定路径"><a href="#绑定路径" class="headerlink" title="绑定路径"></a>绑定路径</h2><h3 id="初始化绑定"><a href="#初始化绑定" class="headerlink" title="初始化绑定"></a>初始化绑定</h3><p>这里对绑定从ReactDom.render开始算起。这一块详细细节都在<a href="/2018/04/20/react-render/">React Render</a>里面。</p>
+<p>不过这里在mountComponentIntoNode这一小节有一个细节因为和纯粹的Render联系不大被略过了。</p>
+<p>那就是这个函数里面的</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> markup = ReactReconciler.mountComponent(</span><br><span class="line">  wrapperInstance,</span><br><span class="line">  transaction,</span><br><span class="line">  <span class="literal">null</span>,</span><br><span class="line">  ReactDOMContainerInfo(wrapperInstance, container),</span><br><span class="line">  context,</span><br><span class="line">  <span class="number">0</span> <span class="comment">/* parentDebugID */</span>,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>这个mountComponent会一路从自定义组件到ReactDom组件的同名方法，最终会调动<code>this._updateDOMProperties</code>。这个函数事件绑定的关键。</p>
+<h3 id="更新逻辑绑定"><a href="#更新逻辑绑定" class="headerlink" title="更新逻辑绑定"></a>更新逻辑绑定</h3><p>更新逻辑可以看<a href="/2018/04/26/react-lifecycle/">react生命周期分析</a>。</p>
+<p>更新会从ReactReconciler.receiveComponent会一路从自定义组件到ReactDom组件的同名方法，然后走receiveComponent-&gt;updateComponent-&gt;_updateDOMProperties的路径回到和初始化render相同的逻辑上来。</p>
+<h2 id="绑定细节"><a href="#绑定细节" class="headerlink" title="绑定细节"></a>绑定细节</h2><p>这里需要看看<code>_updateDOMProperties</code>源码。这里遴选了事件部分的核心代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> registrationNameModules = EventPluginRegistry.registrationNameModules;</span><br><span class="line">_updateDOMProperties: <span class="function"><span class="keyword">function</span>(<span class="params">lastProps, nextProps, transaction</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> propKey;</span><br><span class="line">  <span class="keyword">var</span> styleName;</span><br><span class="line">  <span class="keyword">var</span> styleUpdates;</span><br><span class="line">  <span class="keyword">for</span> (propKey <span class="keyword">in</span> lastProps) &#123;</span><br><span class="line">    <span class="keyword">if</span> (registrationNameModules.hasOwnProperty(propKey)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (lastProps[propKey]) &#123; <span class="comment">// 更新过程中移除旧的事件回调</span></span><br><span class="line">        deleteListener(<span class="built_in">this</span>, propKey);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (propKey <span class="keyword">in</span> nextProps) &#123;</span><br><span class="line">    <span class="keyword">var</span> nextProp = nextProps[propKey];</span><br><span class="line">    <span class="keyword">var</span> lastProp = lastProps != <span class="literal">null</span> ? lastProps[propKey] : <span class="literal">undefined</span>; <span class="comment">// 方便理解有改动</span></span><br><span class="line">    <span class="keyword">if</span> (registrationNameModules.hasOwnProperty(propKey)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (nextProp) &#123;</span><br><span class="line">        <span class="comment">// EventPluginHub.putListener函数的事务包装 所有操作结束后重新绑定事件</span></span><br><span class="line">        enqueuePutListener(<span class="built_in">this</span>, propKey, nextProp, transaction);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (lastProp) &#123;</span><br><span class="line">        <span class="comment">// 移除对应propKey的旧元素事件 这里应该是为了确保不会被旧元素事件污染</span></span><br><span class="line">        deleteListener(<span class="built_in">this</span>, propKey);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueuePutListener</span>(<span class="params">inst, registrationName, listener, transaction</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (transaction <span class="keyword">instanceof</span> ReactServerRenderingTransaction) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> containerInfo = inst._hostContainerInfo;</span><br><span class="line">  <span class="keyword">var</span> isDocumentFragment =</span><br><span class="line">    containerInfo._node &amp;&amp; containerInfo._node.nodeType === DOC_FRAGMENT_TYPE;</span><br><span class="line">  <span class="keyword">var</span> doc = isDocumentFragment</span><br><span class="line">    ? containerInfo._node</span><br><span class="line">    : containerInfo._ownerDocument;</span><br><span class="line">  listenTo(registrationName, doc);</span><br><span class="line">  transaction.getReactMountReady().enqueue(putListener, &#123;</span><br><span class="line">    inst: inst,</span><br><span class="line">    registrationName: registrationName,</span><br><span class="line">    listener: listener,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>★所以来说，这里可以看出<code>EventPluginRegistry.registrationNameModules</code>是onClick这些的一个Map数据，我们此时可以明白，为什么key是onClick、onChange这些。</p>
+<p><strong>这里对事件绑定的两个环节要有概念</strong>，它们都在enqueuePutListener函数里面:</p>
+<ul>
+<li>listenTo调用了addEventListener绑定了事件到了document，这里绑定的回调函数是ReactEventListener.dispatchEvent.bind(null, topLevelType)</li>
+<li>putListener把回调保存到了EventPluginHub.listenerBank</li>
+</ul>
+<p>这个listenTo里面有些细节必须扯出来说说。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">listenTo: <span class="function"><span class="keyword">function</span>(<span class="params">registrationName, contentDocumentHandle</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> mountAt = contentDocumentHandle;</span><br><span class="line">  <span class="keyword">var</span> isListening = getListeningForDocument(mountAt);</span><br><span class="line">  <span class="keyword">var</span> dependencies =</span><br><span class="line">    EventPluginRegistry.registrationNameDependencies[registrationName];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; dependencies.length; i++) &#123;</span><br><span class="line">    <span class="keyword">var</span> dependency = dependencies[i];</span><br><span class="line">    <span class="keyword">if</span> (</span><br><span class="line">      !(isListening.hasOwnProperty(dependency) &amp;&amp; isListening[dependency])</span><br><span class="line">    ) &#123;</span><br><span class="line">      <span class="keyword">if</span> (dependency === <span class="string">&#x27;topWheel&#x27;</span>) &#123;</span><br><span class="line"><span class="comment">// 略</span></span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dependency === <span class="string">&#x27;topScroll&#x27;</span>) &#123;</span><br><span class="line"><span class="comment">// 略</span></span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dependency === <span class="string">&#x27;topFocus&#x27;</span> || dependency === <span class="string">&#x27;topBlur&#x27;</span>) &#123;</span><br><span class="line"><span class="comment">// 略</span></span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (topEventMapping.hasOwnProperty(dependency)) &#123;</span><br><span class="line">        ReactBrowserEventEmitter.ReactEventListener.trapBubbledEvent(</span><br><span class="line">          dependency, <span class="comment">// 可能会取值onClick, onChange</span></span><br><span class="line">          topEventMapping[dependency], <span class="comment">// 可能会取值click, change</span></span><br><span class="line">          mountAt, <span class="comment">// 大概率取值document</span></span><br><span class="line">        );</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      isListening[dependency] = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>trapBubbledEvent实际上我们之前说到过。这里核心是会调用到</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.addEventLinstener(</span><br><span class="line">  topEventMapping[dependency],</span><br><span class="line">  ReactEventListener.dispatchEvent.bind(<span class="literal">null</span>, topLevelType), <span class="comment">// 这里是事件分发的核心</span></span><br><span class="line">  <span class="literal">false</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="事件触发、分发"><a href="#事件触发、分发" class="headerlink" title="事件触发、分发"></a>事件触发、分发</h2><p>事件的触发、分发实际上在<a href="/2018/06/10/react-event/#ReactEventListener">Part1</a>里面已经有了很详细的解析。</p>
+<p>这部分分析里面提到了handleTopLevelImpl，它在里面进行模拟冒泡。然后针对每个冒泡环节执行<code>handleTopLevel</code>函数。这个函数通过EventPluginHub.extractEvents获取events数组，然后对数组执行批量执行runEventQueueInBatch。</p>
+<p>这里需要着重提events数组里面的event合成事件。遍历执行合成事件的本质是遍历<code>event._dispatchListeners</code>进行执行(参考:<a href="/2018/06/10/react-event/#extractEvents">React Event#extractEvents</a>)。</p>
+<p>这里容易疏漏的(可能就我自己容易疏漏😂)是: EventPluginHub.extractEvents获取events数组过程中，会对所有的冒泡元素进行双向的冒泡、捕获模拟(实现的只有冒泡部分)，然后将同一种合成事件涉及的所有回调都放在对应合成事件的<code>event._dispatchListeners</code>属性上，最后顺序批量执行。</p>
+<h2 id="事件绑定、分发-amp-amp-事件体系的融合"><a href="#事件绑定、分发-amp-amp-事件体系的融合" class="headerlink" title="事件绑定、分发 &amp;&amp; 事件体系的融合"></a>事件绑定、分发 &amp;&amp; 事件体系的融合</h2><h3 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h3><p>首先是事件绑定的前置条件<code>registrationNameModules</code>。这个Map数据参见之前提到的publishRegistrationName。</p>
+<p>在这之前，EventPluginRegistry要先注入eventPluginOrder，并注册好EventPlugins。这之后执行<code>recomputePluginOrdering</code>。这个函数会对plugins数组进行排序。</p>
+<p>进一步会将<code>EventPluginRegistry.registrationNameModules &amp;&amp; EventPluginRegistry.registrationNameDependencies</code>初始化完毕。</p>
+<p>这是两个Map结构的数据，里面键名都是onClick|onChange这些。但是registrationNameModules注册的是EventPlugin，而registrationNameDependencies注册的是EventPlugin对应的dependencies数组。</p>
+<p>关于registrationNameDependencies，通俗点讲，针对特定EventPlugin，缓存eventTypes里面的dependencies。以实现指定Plugin，给出registrationName值或者phasedRegistrationNames.bubbled|phasedRegistrationNames.captured值时候，能直接快递查出对应eventName(pluginModule.eventTypes键名)依赖的dependencies数组。</p>
+<p><strong>考虑到每个合成事件里面的核心DispatchConfig数据结构，大家可以猜测到它意义是什么——给出一个合成事件，就能查出对应的依赖dependencies数组。</strong></p>
+<p><strong>根据这个结论进一步推算，其实registrationNameModules也是走的这个思路。给出一个合成事件，逆向查出其对应EventPlugin。</strong></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a><strong>总结</strong></h4><p>前置处理，定义好SyntheticEvent核心, 然后在SyntheticEvent上构建EventPlugin。</p>
+<p>所有的EventPlugin要注册到EventPluginRegistry。</p>
+<p>这个注册目前来说，满足了两个快速:</p>
+<ol>
+<li>要求能通过合成事件或特定属性值能快速逆向查询对应EventPlugin。</li>
+<li>给出合成事件或特定属性值要能快速查出对应dependencies数组。</li>
+<li>根据给定的顺序将EventPlugin放到对应plugins数组里面去。</li>
+</ol>
+<h3 id="第二步"><a href="#第二步" class="headerlink" title="第二步"></a>第二步</h3><p>然后是事件的分发。这里提到过分发的核心的起始调用<code>ReactEventListener.dispatchEvent.bind(null, topLevelType)</code>。</p>
+<p>而这里有个topLevelType变量，哪儿来呢？从之前的dependencies数组里面来。我们从这个调用栈分析一下参数的来源(必须自行看下源码才好理解)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ReactBrowserEventEmitter.listenTo</span><br><span class="line">-&gt;ReactBrowserEventEmitter.ReactEventListener.trapBubbledEvent(dependency)</span><br><span class="line">--&gt;ReactEventListener.dispatchEvent.bind(<span class="literal">null</span>, topLevelType)</span><br></pre></td></tr></table></figure>
+
+<p>认真看看，就会发现EventPluginRegistry.registrationNameDependencies[registrationName]被遍历然后作为topLevelType被传入了dispatchEvent。</p>
+<p>而这个listenTo的registrationName来自于ReactDomComponent的enqueuePutListener函数。那enqueuePutListener呢？来自_updateDOMProperties执行过程对props值的遍历。</p>
+<p>如此 上面这一块就完美闭环了。</p>
+<p>不过这之前再细细品味一下这其中体系上的设计。</p>
+<p>首先是_updateDOMProperties遍历时要求<code>propsKey in registrationNameModules</code>。其次是后面propsKey后面作为registrationName传递后面，然后又作为topLevelType给了ReactEventListener.dispatchEvent。</p>
+<p>这个逻辑开始从dispatchEvent往下走。就会执行到(ReactEventListener#line165):</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">handleTopLevelImpl(&#123;</span><br><span class="line">    topLevelType, nativeEvent</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>此时可以进行冒泡模拟了。得模拟冒泡行为把所有需要执行的回调从listenerBank里面捞出来，以备后面顺序批量执行完成最后环节。</p>
+<p>回想一下回调在这个地方的保存方式: <code>listenerBank[registrationName][InstanceKey]</code>。此时呢，我们registrationName有了，InstanceKey通过nativeEvent也能拿到。思路是：nativeEvent里面可以获取target,通过<code>ReactDOMComponentTree.getClosestInstanceFromNode</code>可以拿到实例，拿到了实例，也就获取到了InstanceKey。这样我们就可以针对每个冒泡环节拿到对应listener了。</p>
+<p>这样整体的逻辑就算通了，React在这里的操作思路是将listener拿到之后，放到对应合成事件的某个属性中，然后批量执行。</p>
+<p>具体点说，EventPluginHub,遍历<code>EventPluginRegistry.plugins</code>中的EventPlugins，执行每个EventPlugin上的extractEvents，将返回的合成事件全部返回合并到一个扁平数组中。</p>
+<p>这个过程extractEvents返回event过程中，会对<code>event._dispatchListeners &amp; event._dispatchInstances</code>进行赋值，实际就是对上面冒泡模拟提到的listener&amp;实例进行了缓存。</p>
+<p>当所有的events数组就位之后(此时listener和实例也就是函数上下文都就位了)，然后进入批量执行阶段。走<code>EventPluginHub.processEventQueue</code>。具体实现前面有提到，这里不再赘述。</p>
+<h1 id="React事件体系设计"><a href="#React事件体系设计" class="headerlink" title="React事件体系设计"></a>React事件体系设计</h1><p>当我们把这些整体都串联完毕，整个React设计体系也就不再神秘。</p>
+<p><strong>合成事件部分:</strong></p>
+<p>合成事件部分实质上的设计其实很少。在合成事件这里只是设计了统一的接口然后对她进行实现。不通的合成事件的区别大部分都只是对nativeEvent上变量的择选和computed。</p>
+<p><strong>合成事件Plugins:</strong></p>
+<p>个人认为，这里其实算是整个事件体系的核心中核心。</p>
+<p>前面说过，合成事件实质上都紧紧是统一接口的实现，它们本身没有在构造器实现里面核心的<code>dispatchConfig &amp; _targetInst &amp; nativeEvent </code>变量。这些东西都是在Plugin里面进行的定义。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// jsx</span></span><br><span class="line">&lt;div onClick=&#123;<span class="function">() =&gt;</span> <span class="built_in">console</span>.log(<span class="number">1234</span>)&#125; /&gt;</span><br><span class="line"><span class="comment">// onClick(内部称为:registrationName)对应的DispatchConfig;</span></span><br><span class="line">&#123;</span><br><span class="line">    phasedRegistrationNames: &#123;</span><br><span class="line">      bubbled: <span class="string">&#x27;onClick&#x27;</span>,</span><br><span class="line">      captured: <span class="string">&#x27;onClickCapture&#x27;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    dependencies: [<span class="string">&#x27;topClick&#x27;</span>], <span class="comment">// &#x27;topClick&#x27;内部称为topLevelType</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// step 1:</span></span><br><span class="line"><span class="comment">// &#x27;onClick&#x27; 直接直接props获得，可以用来直接</span></span><br><span class="line"><span class="comment">// 从registrationNameDependencies获取dependencies数组</span></span><br><span class="line"><span class="comment">// 也就是[&#x27;topClick&#x27;, &#x27;topChange&#x27;]之类，内部的Map&lt;DispatchConfig&gt;以它做键名</span></span><br><span class="line"><span class="comment">// 换句话说知道了&#x27;topClick&#x27;才能生成对应的合成事件</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// step 2:</span></span><br><span class="line"><span class="comment">// &#x27;topClick&#x27;作为快速从Plugin获取这个DispatchConfig的键名使用</span></span><br><span class="line"><span class="comment">// &#x27;topClick&#x27;作为快速从Plugin获取需要调用的合成事件类型</span></span><br><span class="line">    </span><br><span class="line"><span class="comment">// step3:</span></span><br><span class="line"><span class="comment">// 综合step1 + step2,可以知道Plugin可以根据onClick获取特定的合成事件类型(瓶子)</span></span><br><span class="line"><span class="comment">// 也能获取DispatchConfig(酒)</span></span><br></pre></td></tr></table></figure>
+
+<p>通过Plugin的extractEvents方法，会对模拟冒泡在虚拟DOM进行模拟，把所有回调放到合成事件私有变量中去。</p>
+<p><strong>PS: 这种做法会导致如果回调过多，耗时过长，浏览器会卡在微任务无法进行浏览器刷新，也就是常见卡顿说法。</strong></p>
+<p><strong>EventPluginRegistry:</strong></p>
+<p>遍历所有被inject的Plugin的eventType。除了按顺序保存plugins。还有做两个Map数据结构。</p>
+<ul>
+<li>Plugin相关的</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    [key: registrationName]: EventPlugin</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>知道registrationName可以获得对应EventPlugin。</p>
+<ul>
+<li>dependencies相关的</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    [key: registrationName: <span class="built_in">Array</span>&lt;topLevelType&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里注意phasedRegistrationNames里面的两个值，其实和registrationName一致。</p>
+<p>接下来，有registrationName和phasedRegistrationNames其中一个就能获取topLevelType。有了topLevelType，我们就可以获取DispatchConfig，可以获取合成事件类型。</p>
+<p>而有了这两样，就可以实例化好一个详细的合成事件。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/07/04/react-Reconciler/" rel="prev" title="React核心:Reconciler调度模块">
+      <i class="fa fa-chevron-left"></i> React核心:Reconciler调度模块
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/15/react-Fiber/" rel="next" title="v16的开始 || react-Fiber">
+      v16的开始 || react-Fiber <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">源码结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">合成事件设计</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6-%E5%92%8C-%E5%8E%9F%E7%94%9F%E4%BA%8B%E4%BB%B6-%E5%8C%BA%E5%88%AB"><span class="nav-number">2.1.</span> <span class="nav-text">合成事件 和 原生事件 区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%88%E6%88%90%E4%BA%8B%E4%BB%B6%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB"><span class="nav-number">2.2.</span> <span class="nav-text">合成事件的继承关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SyntheticEvent"><span class="nav-number">2.2.1.</span> <span class="nav-text">SyntheticEvent</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SyntheticAnimationEvent"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">SyntheticAnimationEvent</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ClipboardEventInterface"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">ClipboardEventInterface</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SyntheticCompositionEvent"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">SyntheticCompositionEvent</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SyntheticInputEvent"><span class="nav-number">2.2.1.4.</span> <span class="nav-text">SyntheticInputEvent</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SyntheticTransitionEvent"><span class="nav-number">2.2.1.5.</span> <span class="nav-text">SyntheticTransitionEvent</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ResponderSyntheticEvent"><span class="nav-number">2.2.1.6.</span> <span class="nav-text">ResponderSyntheticEvent</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SyntheticUIEvent"><span class="nav-number">2.2.1.7.</span> <span class="nav-text">SyntheticUIEvent</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#SyntheticTouchEvent"><span class="nav-number">2.2.1.7.1.</span> <span class="nav-text">SyntheticTouchEvent</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#SyntheticFocusEvent"><span class="nav-number">2.2.1.7.2.</span> <span class="nav-text">SyntheticFocusEvent</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#SyntheticKeyboardEvent"><span class="nav-number">2.2.1.7.3.</span> <span class="nav-text">SyntheticKeyboardEvent</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#SyntheticMouseEvent"><span class="nav-number">2.2.1.7.4.</span> <span class="nav-text">SyntheticMouseEvent</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#SyntheticDragEvent"><span class="nav-number">2.2.1.7.4.1.</span> <span class="nav-text">SyntheticDragEvent</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#SyntheticWheelEvent"><span class="nav-number">2.2.1.7.4.2.</span> <span class="nav-text">SyntheticWheelEvent</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#EventPlugin"><span class="nav-number">3.</span> <span class="nav-text">EventPlugin</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#EventPluginHub"><span class="nav-number">4.</span> <span class="nav-text">EventPluginHub</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#EventPluginRegistry"><span class="nav-number">5.</span> <span class="nav-text">EventPluginRegistry</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E8%81%94"><span class="nav-number">6.</span> <span class="nav-text">关联</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83-DispatchConfig"><span class="nav-number">6.1.</span> <span class="nav-text">核心:DispatchConfig</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Part1-amp-amp-Part2%E7%9A%84%E8%9E%8D%E5%90%88"><span class="nav-number">7.</span> <span class="nav-text">Part1 &amp;&amp; Part2的融合</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%91%E5%AE%9A%E8%B7%AF%E5%BE%84"><span class="nav-number">7.1.</span> <span class="nav-text">绑定路径</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E7%BB%91%E5%AE%9A"><span class="nav-number">7.1.1.</span> <span class="nav-text">初始化绑定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E9%80%BB%E8%BE%91%E7%BB%91%E5%AE%9A"><span class="nav-number">7.1.2.</span> <span class="nav-text">更新逻辑绑定</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%91%E5%AE%9A%E7%BB%86%E8%8A%82"><span class="nav-number">7.2.</span> <span class="nav-text">绑定细节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E8%A7%A6%E5%8F%91%E3%80%81%E5%88%86%E5%8F%91"><span class="nav-number">7.3.</span> <span class="nav-text">事件触发、分发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A%E3%80%81%E5%88%86%E5%8F%91-amp-amp-%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB%E7%9A%84%E8%9E%8D%E5%90%88"><span class="nav-number">7.4.</span> <span class="nav-text">事件绑定、分发 &amp;&amp; 事件体系的融合</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5"><span class="nav-number">7.4.1.</span> <span class="nav-text">第一步</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.4.1.1.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5"><span class="nav-number">7.4.2.</span> <span class="nav-text">第二步</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#React%E4%BA%8B%E4%BB%B6%E4%BD%93%E7%B3%BB%E8%AE%BE%E8%AE%A1"><span class="nav-number">8.</span> <span class="nav-text">React事件体系设计</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

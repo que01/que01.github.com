@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="I dreamed a dream in time gone by, When hope was high. And life worth living,I dreamed that love would never die. 我相信程序员都会有一个框架的梦, 这个梦无论出于怎样原因最终搁浅也好，放弃也好, 半途而废也罢。但是便入歌词里面的那句:,I dreamed a dream in time">
+<meta property="og:type" content="article">
+<meta property="og:title" content="js框架读书笔记和思考(一)">
+<meta property="og:url" content="http://www.que01.top/2017/02/20/framework1/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="I dreamed a dream in time gone by, When hope was high. And life worth living,I dreamed that love would never die. 我相信程序员都会有一个框架的梦, 这个梦无论出于怎样原因最终搁浅也好，放弃也好, 半途而废也罢。但是便入歌词里面的那句:,I dreamed a dream in time">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-02-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.624Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="framework">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2017/02/20/framework1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>js框架读书笔记和思考(一) | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2017/02/20/framework1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          js框架读书笔记和思考(一)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-02-20 00:00:00" itemprop="dateCreated datePublished" datetime="2017-02-20T00:00:00+08:00">2017-02-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2017/02/20/framework1/" class="post-meta-item leancloud_visitors" data-flag-title="js框架读书笔记和思考(一)" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">I dreamed a dream in time gone by, When hope was high. And life worth living,I dreamed that love would never die. 我相信程序员都会有一个框架的梦, 这个梦无论出于怎样原因最终搁浅也好，放弃也好, 半途而废也罢。但是便入歌词里面的那句:,I dreamed a dream in time gone by.此刻迷梦正甜，起码要些许努力。这是一堆读书笔记里面的第一篇。to:《Javascript框架设计·司徒正美》</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="在最前"><a href="#在最前" class="headerlink" title="在最前"></a>在最前</h1><br>
+I dreamed a dream in time gone by,
+When hope was high.
+And life worth living,
+I dreamed that love would never die.
+...
+
+<p>我相信程序员都会有一个框架的梦, 这个梦无论出于怎样原因最终搁浅也好，放弃也好, 半途而废也罢。但是便如歌词里面的那句: I dreamed a dream in time gone by.此刻迷梦正甜，起码要些许努力。这是一堆读书笔记里面的第一篇。to:《Javascript框架设计·司徒正美》</p>
+<p>我曾错过那些刀耕火种的年代，错过了亲手去抚摸体会那些浏览器兼容的痛苦的年代，但是，这也是最好的年代, 入行时候有jQuery带路跳过那些坑逼兼容, 想学MVC时候有架构清晰的backbone，想做工程化时候有gulp，想玩模块化的时候webpack横空出世，想数据驱动UI时候angularJS风靡，想组件化时候vue、react生态渐丰。</p>
+<p>但是还是错过了很多的感觉，所以有了这些文章，司徒正美的这本书早些时候买的时候没有过重视，因为老是觉得不够清晰，那时候痴迷于猫头鹰那本动物书，大抵有种迷信的感觉。回过头来看看，内容其实真没有辜负书名。</p>
+<h1 id="章节目录"><a href="#章节目录" class="headerlink" title="章节目录"></a>章节目录</h1><ul>
+<li>种子模块</li>
+<li>模块加载系统</li>
+<li>语言模块</li>
+<li>浏览器探嗅与特征侦测</li>
+<li>类工厂</li>
+<li>选择器引擎</li>
+<li>节点模块</li>
+<li>数据缓存系统</li>
+<li>样式模块</li>
+<li>属性模块</li>
+<li>事件系统</li>
+<li>异步处理</li>
+<li>数据交互模块</li>
+<li>动画引擎</li>
+<li>插件化</li>
+<li>MVVM</li>
+</ul>
+<h1 id="种子模块"><a href="#种子模块" class="headerlink" title="种子模块"></a>种子模块</h1><h2 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h2><p>  《Javascript框架设计》中提到了很多库,Prototype,mootools,Base2,YUI,dojo,Mochikit,jQuery等，不过大抵由于年代久远，个人听过的仅限Prototype,mootools,YUI和dojo——并且一个都没有用过(当然,不算jQuery)。</p>
+<h3 id="选择"><a href="#选择" class="headerlink" title="选择"></a>选择</h3><p>命名空间的选择大致上存在两种选择:</p>
+<ul>
+<li>一种是直接扩展(污染或者覆写)全局变量或者方法,</li>
+<li>而另外一种是使用定义一个全局变量(类型多是对象),以它为根逐步拓展为整个框架或者库。</li>
+</ul>
+<p>文中提到一个之前没有考虑过的说法是jQuery另辟蹊径,使用了函数作为命名空间，这点就突然让我有点惊讶，因为突然想起基本从业以来似乎读过源码的框架比如jQuery,backbone似乎都是构造函数作为命名空间。</p>
+<p>所以赶紧去看了看YUI的命名空间——记忆里YUI是<code>YUI()</code>开头的。<br>下面代码来自YUI的 <a target="_blank" rel="noopener" href="https://github.com/yui/yui3/wiki/Quick-Start">Quick Start</a></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">  <span class="comment">// Create a YUI sandbox on your page.</span></span><br><span class="line">  YUI().use(<span class="string">&#x27;node&#x27;</span>, <span class="string">&#x27;event&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">Y</span>) </span>&#123;</span><br><span class="line">      <span class="comment">// The Node and Event modules are loaded and ready to use.</span></span><br><span class="line">      <span class="comment">// Your code goes here!</span></span><br><span class="line">  &#125;);</span><br><span class="line">  &lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>——很显然YUI3已经和jQuery一个套路是函数了。<br>不甘心又跑去看YUI2的代码了。打开核心的js文件 <a target="_blank" rel="noopener" href="https://github.com/yui/yui2/blob/master/src/yahoo/js/YAHOO.js">YAHOO.js</a>,头部的注释似乎像我说了很多事:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The YAHOO object is the single global object used by YUI Library.  It</span></span><br><span class="line"><span class="comment"> * contains utility function for setting up namespaces, inheritance, and</span></span><br><span class="line"><span class="comment"> * logging.  YAHOO.util, YAHOO.widget, and YAHOO.example are namespaces</span></span><br><span class="line"><span class="comment"> * created automatically for and used by the library.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@module <span class="variable">yahoo</span></span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@title  </span>YAHOO Global</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>看着YUI2文档上的那句:</p>
+<blockquote class="blockquote-center"><p>YUI 2 has been deprecated as of 2011. This site acts as an archive for files and documentation.</p>
+</blockquote>
+<p>它似乎在向我说那些错过的岁月。</p>
+<p>——所以说司徒正美到底没说错，YUI的命名空间确实是个对象,唯一错的,是这个这个时间。</p>
+<h3 id="冲突处理noConflict"><a href="#冲突处理noConflict" class="headerlink" title="冲突处理noConflict"></a>冲突处理noConflict</h3><p>大抵是jQuery教会了我设计框架时候得有一个函数叫做noConflict。<br>跑去jquery代码里面扒出来这个。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Map over jQuery in case of overwrite</span></span><br><span class="line">_jQuery = <span class="built_in">window</span>.jQuery,</span><br><span class="line"><span class="comment">// Map over the $ in case of overwrite</span></span><br><span class="line">_$ = <span class="built_in">window</span>.$;</span><br><span class="line">jQuery.noConflict = <span class="function"><span class="keyword">function</span>(<span class="params"> deep </span>) </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="built_in">window</span>.$ === jQuery ) &#123;</span><br><span class="line">		<span class="built_in">window</span>.$ = _$;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> ( deep &amp;&amp; <span class="built_in">window</span>.jQuery === jQuery ) &#123;</span><br><span class="line">		<span class="built_in">window</span>.jQuery = _jQuery;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> jQuery;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>很显然,noConflict作用有三种:</p>
+<ul>
+<li>deep空着只清除$保留jQuery</li>
+<li>deep传true清除jQuery和$</li>
+<li>返回jQuery构造函数以便用户赋值给变量</li>
+</ul>
+<p>思路说出来其实就容易理解得多了。</p>
+<h2 id="对象扩展"><a href="#对象扩展" class="headerlink" title="对象扩展"></a>对象扩展</h2><p>对象扩展个人用过最常见的是$.extend();<br>如书上所说，最简单的extend代码是这样的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">extend</span>(<span class="params">dest,source</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">var</span> property <span class="keyword">in</span> source)&#123;</span><br><span class="line">    dest[property] = source[property]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dest</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但是文中也谈到了for…in遍历原型的兼容问题。这里也记录一下相关for…in遍历原型的原因。<br>for…in会遍历所有可枚举的属性(除非该属性名是一个 Symbol)。<br>|-&gt;可枚举属性是指那些内部 “可枚举([[Enumerable]])” 标志设置为true的属性<br>|--&gt;对于通过直接的赋值和属性初始化的属性，该标识值默认为即为true，对于通过Object.defineProperty等定义的属性，该标识值默认为false。</p>
+<p>extend方法实现基础原理就是上面最简陋版本的加强版——允许合并、是否覆写同名属性&amp;深拷贝。</p>
+<h2 id="数组化"><a href="#数组化" class="headerlink" title="数组化"></a>数组化</h2><p>数组化函数存在的意义是存在很多类数组对象，它们很像是数组，但是却不能使用数组相对完善的api，这个是一个很大的遗憾。<br>常见的有:</p>
+<ul>
+<li>function内部的arguments</li>
+<li>document.forms</li>
+<li>from.elements</li>
+<li>document.links</li>
+<li>slect.options</li>
+<li>document.getElementByName</li>
+<li>docuemnt.getElementByTagName</li>
+<li>childNodes</li>
+<li>children</li>
+</ul>
+<p>最常见的转换方式是Array.prototype.slice.apply(obj)。不过书中提及这里存在的旧版IE的兼容问题是HTMLCollection、NodeList不是Object的子类所以就没法用Array.prototype.slice.apply(obj)了。</p>
+<p>作者举了很多例子展示诸多框架在这里的实现。核心的思想其实就一个: 创建类数组等长度的数组，递减类数组的length并赋值类数组值到真数组上，最后返回这个真实的数组。<br>根据这个思路我自己写个最简单的:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">makeArray</span>(<span class="params">array</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">var</span> length = array.length,arr = <span class="keyword">new</span> <span class="built_in">Array</span>(length);</span><br><span class="line">  <span class="keyword">while</span> (length--) &#123;</span><br><span class="line">    arr[length] = array[length];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="类型的判定"><a href="#类型的判定" class="headerlink" title="类型的判定"></a>类型的判定</h2><p>Javascript有7种数据类型:string,number,boolean,undefined,null,symbol,object;其中前面6中是简单类型,object是复杂类型。<br>简单类型是可以通过typeof来判断的。<br>书上说了很多typeof在低版本浏览器下的bug存在，但是个人认为这里需要注意暂时是两个：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typeof</span> <span class="literal">null</span> === <span class="string">&#x27;object&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="built_in">Symbol</span> === <span class="string">&#x27;function&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>然后是isNaN存在文中所说到的，字符串和ojbect它也会返回true。不过,在我使用的Chrome 55.0.2883.75 (64-bit)上,isNaN已经修复传入字符串返回true的问题。</p>
+<p>isXXX系列函数有太多奇技淫巧的感觉。个人觉得有必要了解熟记常用的，但是如果如果可以背下常见的isXXX函数其实会使代码更加健壮。<br>但是出于简单便于记忆来说，type函数是最简单可靠的——如果它不遇到旧浏览器各种历史bug的话。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">type</span>(<span class="params">obj</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Object</span>.prototype.toString.call(obj).slice(<span class="number">8</span>,-<span class="number">1</span>).toLowerCase()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="domReady"><a href="#domReady" class="headerlink" title="domReady"></a>domReady</h2><p><a target="_blank" rel="noopener" href="https://github.com/ded/domready">domready</a>,就这一个地址吧，domReady，简直就是一个代码的hack集合…</p>
+<h1 id="模块加载系统"><a href="#模块加载系统" class="headerlink" title="模块加载系统"></a>模块加载系统</h1><p>模块加载系统是一个成体系的库所必须要具备的。目前来说市面上常见的模块规范有AMD,CMD,CommonJS,UMD。其中,CMD是seaJs的模块规范，其作者玉伯也说是时候给他一个树墓碑了，而UMD其实就是AMD+CommonJS+Golbal全局的兼容方案。所以就目前来说，如果不是打算新建立一个自己的规范，那么只需要考虑AMD和CommonJS就够了。</p>
+<h2 id="AMD"><a href="#AMD" class="headerlink" title="AMD"></a>AMD</h2><p>AMD是异步加载模块的意思，最出名的实现就是requireJS。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 模块开发</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * id       模块id</span></span><br><span class="line"><span class="comment"> * deps     依赖模块数组</span></span><br><span class="line"><span class="comment"> * callback 模块定义它包含若干参数，和deps里面的顺序一致</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">define(id, deps, callback)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 模块引用</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * deps 依赖数组</span></span><br><span class="line"><span class="comment"> * callback 业务逻辑 它包含若干参数，依次对应deps中的依赖</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">require</span>(deps, callback)</span><br></pre></td></tr></table></figure>
+<p>上面那个只有用法也不太好理解，下面是在网上找到一个简单的例子</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">define(<span class="string">&#x27;myModule&#x27;</span>,</span><br><span class="line">    [<span class="string">&#x27;foo&#x27;</span>, <span class="string">&#x27;bar&#x27;</span>],</span><br><span class="line">    <span class="comment">// 模块定义函数</span></span><br><span class="line">    <span class="comment">// 依赖项（foo 和 bar）被映射为函数的参数</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> (<span class="params"> foo, bar </span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 返回一个定义了模块导出接口的值</span></span><br><span class="line">        <span class="comment">// （也就是我们想要导出后进行调用的功能）</span></span><br><span class="line">        <span class="comment">// 在这里创建模块</span></span><br><span class="line">        <span class="keyword">var</span> myModule = &#123;</span><br><span class="line">            doStuff:<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">&#x27;Yay! Stuff&#x27;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> myModule;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// 假设 &#x27;foo&#x27; 和 &#x27;bar&#x27; 是两个外部模块</span></span><br><span class="line"><span class="comment">// 在本例中，这两个模块被加载后的 &#x27;exports&#x27; 被当做两个参数传递到了回调函数中</span></span><br><span class="line"><span class="comment">// 所以可以像这样来访问他们</span></span><br><span class="line"><span class="built_in">require</span>([<span class="string">&#x27;foo&#x27;</span>, <span class="string">&#x27;bar&#x27;</span>], <span class="function"><span class="keyword">function</span> (<span class="params"> foo, bar </span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 这里写其余的代码</span></span><br><span class="line">        foo.doSomething();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>根据这里的初步使用和逻辑，我们尝试对AMD加载器做一些实现上的考虑。</p>
+<p>  <del>1. 模块加载器的目标是js，如果扩展一下还可以扩展到css,当异步获取资源时候必须考虑到js和css很有可能是它站资源，所以不能用ajax(这是书中观点，不过个人窃以为如果约定只能载入自己的资源或者兼容ajax和script标签也挺好)。</del><br>  <del>2. 以js为例，实现过程中应该使用动态插入script标签的办法来处理相关js资源</del><br>  <del>3. src要求获取资源的路径，所以需要一个获取实际路径的方法。</del></p>
+<p><span style="color: red">宏观方面：</span><br>  需要初步理清 require 和 define 到底是怎么里应外合的。如果这样说不够明晰那么先理出以下 API 思路上的东西再深入</p>
+<ol>
+<li><p>首先使用define写一个模块，如上文的那个简单的myModule模块依赖了foo、bar，然后是模块的主体函数(函数是最重要的场景因此这里姑且认为一定是函数)。</p>
+</li>
+<li><p>然后是require, 它接受deps数组，然后执行调用。它是 AMD 加载器的核心——模块的载入的各种细节都是在这里处理，载入成功后的操作也是在这里执行。</p>
+</li>
+<li><p>那么现在可以思考: 当 require 载入了 js 模块文件(define包裹的)，并开始执行define函数(这个函数不管怎样一定是挂在 window 下的全局函数)，内部会怎样处理这些参数呢？</p>
+<p>反复看require 和 define 的API 设计，是否可以看到它们惊人的相像？是的，其实它们就是这样设计起来的: require是核心，它处理了90%的模块加载细节和一堆乱糟糟的东西——<strong>总之，你只需要知道它能把依赖处理好并执行你的后续代码即可</strong>。而define则是助攻，它接受的参数核心里面包括 deps依赖和模块主体，实际上它基本上最核心的只是把自己接受的参数根据情况略作修改传给了 require 而已——干活的还是 require。<strong>一句话说明define和require的关系: define其实是个光杆司令，require是那个唯一的小兵, 活儿来了之后define略作批示然后活儿还是派require去干去了。</strong>(当然，如果不使用匿名模块，而是定义了模块id的话，实际上 require 也调用到了 define)</p>
+</li>
+</ol>
+<p><span style="color: red">微观方面：</span></p>
+<ol>
+<li>模块加载器的目标是js，如果扩展一下还可以扩展到css,当异步获取资源时候必须考虑到js和css很有可能是它站资源，所以不能用ajax(这是书中观点，不过个人窃以为如果约定只能载入自己的资源或者兼容ajax和script标签也挺好)。</li>
+<li>以js为例，实现过程中应该使用动态插入script标签的办法来处理相关js资源</li>
+<li>src要求获取资源的路径，所以需要一个获取实际路径的方法。</li>
+</ol>
+<p>等等这些，暂时就按书中思路来吧。</p>
+<h2 id="实现一个加载器的技术细节"><a href="#实现一个加载器的技术细节" class="headerlink" title="实现一个加载器的技术细节"></a>实现一个加载器的技术细节</h2><h3 id="获取basePath"><a href="#获取basePath" class="headerlink" title="获取basePath"></a>获取basePath</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getBasePath</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="keyword">var</span> nodes = <span class="built_in">document</span>.getElementsByTagName(<span class="string">&quot;script&quot;</span>)</span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">window</span>.VBArray)&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">var</span> i = <span class="number">0</span>,node;node=nodes[i++];)&#123;</span><br><span class="line">      <span class="keyword">if</span>(node.readyState === <span class="string">&#x27;interactive&#x27;</span>)&#123; <span class="keyword">break</span> &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    node = nodes[nodes.length - <span class="number">1</span>]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> src = <span class="built_in">document</span>.querySelector ? node.src : node.getAttribute(<span class="string">&quot;src&quot;</span>, <span class="number">4</span>)</span><br><span class="line">  <span class="keyword">return</span> src.replace(<span class="regexp">/[?#].*/</span>, <span class="string">&quot;&quot;</span>).slice(<span class="number">0</span>,src.lastIndexOf(<span class="string">&#x27;/&#x27;</span>) + <span class="number">1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要思路:</p>
+<ul>
+<li>加载器应该是最后一个script标签所在的文件,所以获取nodes[nodes.length - 1]</li>
+<li>如果是现代浏览器返回node.src,否则使用node.getAttribute(“src”, 4)获取src</li>
+</ul>
+<p>这段代码主要是兼容上不太好理解。诸如VBArray、readyState、getAttribute第二个参数个人从没用过。。。这里记录一下相关知识点</p>
+<ol>
+<li><p>VBArray用来判断IE可以理解</p>
+</li>
+<li><p>readyState:<a target="_blank" rel="noopener" href="https://social.msdn.microsoft.com/Search/en-US?query=readyState&pgArea=header&emptyWatermark=true&ac=4">微软私有属性</a>可以查看资源加载情况(document.image,xhr,script等有这个属性)。</p>
+<p>它有五种取值:<br> uninitialized 默认状态<br> loading 下载开始<br> loaded 下载完成<br> interactive 下载完成但尚不可用<br> complete 所有数据已经准备好</p>
+</li>
+<li><p>getAttribute在ie里面有些棘手，IE7以及之前的版本版本接受两个参数。下面是第二个参数:</p>
+</li>
+</ol>
+<ul>
+<li>0，默认值，特性名称大小写不敏感，并根据需要转化特性值（例如把href转成完整的URL）。</li>
+<li>1，特性名称大小写敏感。</li>
+<li>2，返回特性值的字符串值，即不做任何转换。</li>
+<li>4，返回完整的URL对象，仅针对返回URL的特性，如href、background等。</li>
+</ul>
+<h3 id="require函数细节"><a href="#require函数细节" class="headerlink" title="require函数细节"></a>require函数细节</h3><p>首先需要明确require作用: 它的作用最直接点说，是<b>载入模块并执行指定回调</b>。<br>看书之前个人想的require在使用用法上的主要是3块：</p>
+<ul>
+<li>获取每个模块的src路径</li>
+<li>插入script标签并监控加载状况+缓存js+使用闭包将每个js隔离</li>
+<li>执行callback回调<br>不过看完相关总结，发现自己漏掉了重要的一环就是require需要分析依赖文件队列，然后判断是不是要script引入。进一步说，require函数会分析整个模块的依赖树。</li>
+</ul>
+<p>现在构建一下require函数的实现需求,无非4点:</p>
+<blockquote>
+<p>获得文件路径 -&gt; 分析依赖&amp;判断是否载入 -&gt; 载入 -&gt; 执行回调</p>
+</blockquote>
+<p>当然，如果真的去实现一个可用的加载器不是一件简单的事情。依赖树的处理，js的加载，以及各种牵一发动全身的东西，关于实践我将会在后面补上。但是从整体上思考全局，这就是require的要点了。</p>
+<h3 id="define函数细节"><a href="#define函数细节" class="headerlink" title="define函数细节"></a>define函数细节</h3><p><del>如果说require是调用模块用的，那么define就是响应这个调用的「内鬼」。<br>关于这个函数的调用个人从书籍上看了好一会细节，不过所获不多。个人考虑到的是这个函数和对应的require其实是钥匙与锁的关系，大抵只有深入去了解require函数的细节后，才会对define的细节有深入的理解。<br>这里等待补充作业&amp;细节。</del></p>
+<p>看了下 define 的源码，理清了它和 require 的关系，在宏观分析上做了分析，所以这里就主要说细节上的东西。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/framework/" rel="tag"># framework</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/31/bye-bye-2016/" rel="prev" title="bye-bye-2016">
+      <i class="fa fa-chevron-left"></i> bye-bye-2016
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/13/ignite-note/" rel="next" title="ignite-note">
+      ignite-note <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9C%A8%E6%9C%80%E5%89%8D"><span class="nav-number">1.</span> <span class="nav-text">在最前</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AB%A0%E8%8A%82%E7%9B%AE%E5%BD%95"><span class="nav-number">2.</span> <span class="nav-text">章节目录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A7%8D%E5%AD%90%E6%A8%A1%E5%9D%97"><span class="nav-number">3.</span> <span class="nav-text">种子模块</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="nav-number">3.1.</span> <span class="nav-text">命名空间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E6%8B%A9"><span class="nav-number">3.1.1.</span> <span class="nav-text">选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%B2%E7%AA%81%E5%A4%84%E7%90%86noConflict"><span class="nav-number">3.1.2.</span> <span class="nav-text">冲突处理noConflict</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E6%89%A9%E5%B1%95"><span class="nav-number">3.2.</span> <span class="nav-text">对象扩展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E7%BB%84%E5%8C%96"><span class="nav-number">3.3.</span> <span class="nav-text">数组化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%88%A4%E5%AE%9A"><span class="nav-number">3.4.</span> <span class="nav-text">类型的判定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#domReady"><span class="nav-number">3.5.</span> <span class="nav-text">domReady</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97%E5%8A%A0%E8%BD%BD%E7%B3%BB%E7%BB%9F"><span class="nav-number">4.</span> <span class="nav-text">模块加载系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AMD"><span class="nav-number">4.1.</span> <span class="nav-text">AMD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E6%8A%80%E6%9C%AF%E7%BB%86%E8%8A%82"><span class="nav-number">4.2.</span> <span class="nav-text">实现一个加载器的技术细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96basePath"><span class="nav-number">4.2.1.</span> <span class="nav-text">获取basePath</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#require%E5%87%BD%E6%95%B0%E7%BB%86%E8%8A%82"><span class="nav-number">4.2.2.</span> <span class="nav-text">require函数细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#define%E5%87%BD%E6%95%B0%E7%BB%86%E8%8A%82"><span class="nav-number">4.2.3.</span> <span class="nav-text">define函数细节</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

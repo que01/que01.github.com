@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="上上月因为团队开发需要，所以个人折腾了一下服务器。主要是GitLab,Mysql,Rap,还有一些java的项目部署这一块的东西。docker-compse这个东西不是很熟，不过简单了解了一下，还是用起来了，这里聊做记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker-compose实战笔记">
+<meta property="og:url" content="http://www.que01.top/2016/11/15/docker-compose/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="上上月因为团队开发需要，所以个人折腾了一下服务器。主要是GitLab,Mysql,Rap,还有一些java的项目部署这一块的东西。docker-compse这个东西不是很熟，不过简单了解了一下，还是用起来了，这里聊做记录。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-11-14T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.618Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="docker-compse">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/11/15/docker-compose/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>docker-compose实战笔记 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/11/15/docker-compose/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          docker-compose实战笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-11-15 00:00:00" itemprop="dateCreated datePublished" datetime="2016-11-15T00:00:00+08:00">2016-11-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/11/15/docker-compose/" class="post-meta-item leancloud_visitors" data-flag-title="docker-compose实战笔记" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">上上月因为团队开发需要，所以个人折腾了一下服务器。主要是GitLab,Mysql,Rap,还有一些java的项目部署这一块的东西。docker-compse这个东西不是很熟，不过简单了解了一下，还是用起来了，这里聊做记录。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="docker-compose概念"><a href="#docker-compose概念" class="headerlink" title="docker-compose概念"></a>docker-compose概念</h1><p>Docker Compose 是 Docker 官方编排（Orchestration）项目之一，负责快速在集群中部署分布式应用。</p>
+<h1 id="教程"><a href="#教程" class="headerlink" title="教程"></a>教程</h1><p>本文算不上教程，主要是记录一下个人在这块的实践，防止哪天忘了，翻翻博客还能找的回。不过不排除有人需要详细的成体系的教程，这个放个地址 。</p>
+<h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><h2 id="Gitlab"><a href="#Gitlab" class="headerlink" title="Gitlab"></a>Gitlab</h2><p>svn在阿里云,而且磁盘满了有时候都没法提交，备份也没法备份，最后决定把版本控制迁回来，使用git-svn转换以后，最终把svn替换为git。所以要搭建一个gitlab服务器。前任团队的坑。。。<br>docker-compose.yml:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;2&#39;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  redis:</span><br><span class="line">    restart: always</span><br><span class="line">    image: sameersbn&#x2F;redis:latest</span><br><span class="line">    command:</span><br><span class="line">    - --loglevel warning</span><br><span class="line">    volumes:</span><br><span class="line">    - &#x2F;srv&#x2F;docker&#x2F;gitlab&#x2F;redis:&#x2F;var&#x2F;lib&#x2F;redis:Z</span><br><span class="line"></span><br><span class="line">  postgresql:</span><br><span class="line">    restart: always</span><br><span class="line">    image: sameersbn&#x2F;postgresql:9.5-1</span><br><span class="line">    volumes:</span><br><span class="line">    - &#x2F;srv&#x2F;docker&#x2F;gitlab&#x2F;postgresql:&#x2F;var&#x2F;lib&#x2F;postgresql:Z</span><br><span class="line">    environment:</span><br><span class="line">    - DB_USER&#x3D;gitlab</span><br><span class="line">    - DB_PASS&#x3D;password</span><br><span class="line">    - DB_NAME&#x3D;gitlabhq_production</span><br><span class="line">    - DB_EXTENSION&#x3D;pg_trgm</span><br><span class="line"></span><br><span class="line">  gitlab:</span><br><span class="line">    restart: always</span><br><span class="line">    image: sameersbn&#x2F;gitlab:8.11.5</span><br><span class="line">    depends_on:</span><br><span class="line">    - redis</span><br><span class="line">    - postgresql</span><br><span class="line">    ports:</span><br><span class="line">    - &quot;10080:80&quot;</span><br><span class="line">    - &quot;10022:22&quot;</span><br><span class="line">    volumes:</span><br><span class="line">    - &#x2F;srv&#x2F;docker&#x2F;gitlab&#x2F;gitlab:&#x2F;home&#x2F;git&#x2F;data:Z</span><br><span class="line">    environment:</span><br><span class="line">    - DEBUG&#x3D;false</span><br><span class="line"></span><br><span class="line">    - DB_ADAPTER&#x3D;postgresql</span><br><span class="line">    - DB_HOST&#x3D;postgresql</span><br><span class="line">    - DB_PORT&#x3D;5432</span><br><span class="line">    - DB_USER&#x3D;gitlab</span><br><span class="line">    - DB_PASS&#x3D;password</span><br><span class="line">    - DB_NAME&#x3D;gitlabhq_production</span><br><span class="line"></span><br><span class="line">    - REDIS_HOST&#x3D;redis</span><br><span class="line">    - REDIS_PORT&#x3D;6379</span><br><span class="line"></span><br><span class="line">    - TZ&#x3D;Asia&#x2F;Shanghai</span><br><span class="line">    - GITLAB_TIMEZONE&#x3D;Kolkata</span><br><span class="line"></span><br><span class="line">    - GITLAB_HTTPS&#x3D;false</span><br><span class="line">    - SSL_SELF_SIGNED&#x3D;false</span><br><span class="line"></span><br><span class="line">    - GITLAB_HOST&#x3D;116.7.245.195</span><br><span class="line">    - GITLAB_PORT&#x3D;10080</span><br><span class="line">    - GITLAB_SSH_PORT&#x3D;10022</span><br><span class="line">    - GITLAB_RELATIVE_URL_ROOT&#x3D;</span><br><span class="line">    - GITLAB_SECRETS_DB_KEY_BASE&#x3D;safausdlfjkj23k4jkljslkdfjlkjasdlkfu8u234ioj23krjlsdfjasdfjkasdfk</span><br><span class="line">    - GITLAB_SECRETS_SECRET_KEY_BASE&#x3D;sadfkljiwfjsnscjksdhfuwehnfnsaldfjh3rhljsdkfjlksajdf</span><br><span class="line">    - GITLAB_SECRETS_OTP_KEY_BASE&#x3D;asfdlaxzcvnhwefhweoicnmcsflncnzmxbvsdajkfasdsdnfkjhsadfj</span><br><span class="line"></span><br><span class="line">    - GITLAB_ROOT_PASSWORD&#x3D;edeh123456</span><br><span class="line">    - GITLAB_ROOT_EMAIL&#x3D;que01@foxmail.com</span><br><span class="line"></span><br><span class="line">    - GITLAB_NOTIFY_ON_BROKEN_BUILDS&#x3D;true</span><br><span class="line">    - GITLAB_NOTIFY_PUSHER&#x3D;false</span><br><span class="line"></span><br><span class="line">    - GITLAB_EMAIL&#x3D;notifications@example.com</span><br><span class="line">    - GITLAB_EMAIL_REPLY_TO&#x3D;noreply@example.com</span><br><span class="line">    - GITLAB_INCOMING_EMAIL_ADDRESS&#x3D;reply@example.com</span><br><span class="line"></span><br><span class="line">    - GITLAB_BACKUP_SCHEDULE&#x3D;daily</span><br><span class="line">    - GITLAB_BACKUP_TIME&#x3D;01:00</span><br><span class="line"></span><br><span class="line">    - SMTP_ENABLED&#x3D;false</span><br><span class="line">    - SMTP_DOMAIN&#x3D;www.example.com</span><br><span class="line">    - SMTP_HOST&#x3D;smtp.gmail.com</span><br><span class="line">    - SMTP_PORT&#x3D;587</span><br><span class="line">    - SMTP_USER&#x3D;mailer@example.com</span><br><span class="line">    - SMTP_PASS&#x3D;password</span><br><span class="line">    - SMTP_STARTTLS&#x3D;true</span><br><span class="line">    - SMTP_AUTHENTICATION&#x3D;login</span><br><span class="line"></span><br><span class="line">    - IMAP_ENABLED&#x3D;false</span><br><span class="line">    - IMAP_HOST&#x3D;imap.gmail.com</span><br><span class="line">    - IMAP_PORT&#x3D;993</span><br><span class="line">    - IMAP_USER&#x3D;mailer@example.com</span><br><span class="line">    - IMAP_PASS&#x3D;password</span><br><span class="line">    - IMAP_SSL&#x3D;true</span><br><span class="line">    - IMAP_STARTTLS&#x3D;false</span><br><span class="line"></span><br><span class="line">    - OAUTH_ENABLED&#x3D;false</span><br><span class="line">    - OAUTH_AUTO_SIGN_IN_WITH_PROVIDER&#x3D;</span><br><span class="line">    - OAUTH_ALLOW_SSO&#x3D;</span><br><span class="line">    - OAUTH_BLOCK_AUTO_CREATED_USERS&#x3D;true</span><br><span class="line">    - OAUTH_AUTO_LINK_LDAP_USER&#x3D;false</span><br><span class="line">    - OAUTH_AUTO_LINK_SAML_USER&#x3D;false</span><br><span class="line">    - OAUTH_EXTERNAL_PROVIDERS&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_CAS3_LABEL&#x3D;cas3</span><br><span class="line">    - OAUTH_CAS3_SERVER&#x3D;</span><br><span class="line">    - OAUTH_CAS3_DISABLE_SSL_VERIFICATION&#x3D;false</span><br><span class="line">    - OAUTH_CAS3_LOGIN_URL&#x3D;&#x2F;cas&#x2F;login</span><br><span class="line">    - OAUTH_CAS3_VALIDATE_URL&#x3D;&#x2F;cas&#x2F;p3&#x2F;serviceValidate</span><br><span class="line">    - OAUTH_CAS3_LOGOUT_URL&#x3D;&#x2F;cas&#x2F;logout</span><br><span class="line"></span><br><span class="line">    - OAUTH_GOOGLE_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_GOOGLE_APP_SECRET&#x3D;</span><br><span class="line">    - OAUTH_GOOGLE_RESTRICT_DOMAIN&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_FACEBOOK_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_FACEBOOK_APP_SECRET&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_TWITTER_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_TWITTER_APP_SECRET&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_GITHUB_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_GITHUB_APP_SECRET&#x3D;</span><br><span class="line">    - OAUTH_GITHUB_URL&#x3D;</span><br><span class="line">    - OAUTH_GITHUB_VERIFY_SSL&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_GITLAB_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_GITLAB_APP_SECRET&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_BITBUCKET_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_BITBUCKET_APP_SECRET&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_SAML_ASSERTION_CONSUMER_SERVICE_URL&#x3D;</span><br><span class="line">    - OAUTH_SAML_IDP_CERT_FINGERPRINT&#x3D;</span><br><span class="line">    - OAUTH_SAML_IDP_SSO_TARGET_URL&#x3D;</span><br><span class="line">    - OAUTH_SAML_ISSUER&#x3D;</span><br><span class="line">    - OAUTH_SAML_LABEL&#x3D;&quot;Our SAML Provider&quot;</span><br><span class="line">    - OAUTH_SAML_NAME_IDENTIFIER_FORMAT&#x3D;urn:oasis:names:tc:SAML:2.0:nameid-format:transient</span><br><span class="line">    - OAUTH_SAML_GROUPS_ATTRIBUTE&#x3D;</span><br><span class="line">    - OAUTH_SAML_EXTERNAL_GROUPS&#x3D;</span><br><span class="line">    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_EMAIL&#x3D;</span><br><span class="line">    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_NAME&#x3D;</span><br><span class="line">    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_FIRST_NAME&#x3D;</span><br><span class="line">    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_LAST_NAME&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_CROWD_SERVER_URL&#x3D;</span><br><span class="line">    - OAUTH_CROWD_APP_NAME&#x3D;</span><br><span class="line">    - OAUTH_CROWD_APP_PASSWORD&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_AUTH0_CLIENT_ID&#x3D;</span><br><span class="line">    - OAUTH_AUTH0_CLIENT_SECRET&#x3D;</span><br><span class="line">    - OAUTH_AUTH0_DOMAIN&#x3D;</span><br><span class="line"></span><br><span class="line">    - OAUTH_AZURE_API_KEY&#x3D;</span><br><span class="line">    - OAUTH_AZURE_API_SECRET&#x3D;</span><br><span class="line">    - OAUTH_AZURE_TENANT_ID&#x3D;</span><br></pre></td></tr></table></figure>
+<p>gitlab的docker-compose配置文件其实直接从官方拿过来用的。虽然没什么太大参考价值。不过这里用到了常用的选项，比如restart,image,command,volumes,environment,depends_on。</p>
+<p>各个配置项的作用:</p>
+<ul>
+<li>restart 当容器意外退出后是否自动再次重新启动</li>
+<li>image 容器镜像</li>
+<li>command 容器启动后执行的命令</li>
+<li>volumes 挂载卷，将本地的磁盘目录挂在到容器内 主要做数据备份用</li>
+<li>environment 环境变量配置</li>
+<li>depends_on 依赖项，这个配置可以确保依赖服务被配置，但是并不能保证启动顺序</li>
+</ul>
+<h2 id="Rap"><a href="#Rap" class="headerlink" title="Rap"></a>Rap</h2><p>淘宝的rap是个很不错的东西。前后端分离时候最麻烦的东西就是文档&amp;&amp;文档维护。加上rap本身的数据mock功能，这是一个杀手锏。<br>rap的docker-compose配置在github上找到一个不错的。<a target="_blank" rel="noopener" href="https://github.com/srzyhead/rap">srzyhead/rap</a>,不过mysql的配置有点问题导致数据统计没法用，跑过去提了一下pull request。现在没啥问题了，直接git clone回来，按照readme操作即可。</p>
+<h2 id="mysql"><a href="#mysql" class="headerlink" title="mysql"></a>mysql</h2><p>这个没用到docker-compose，简单的运行了</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir data</span><br><span class="line">docker run --name mysql -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_USER=lyshow -e MYSQL_PASSWORD=123456 -p 3306:3306 -v $(pwd)/data:/var/lib/mysql -d mysql:5.6 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci</span><br></pre></td></tr></table></figure>
+
+<h2 id="java项目部署"><a href="#java项目部署" class="headerlink" title="java项目部署"></a>java项目部署</h2><p>主要是两个类型的历史项目，一个基于ant打包的，一个是基于maven打包的项目。</p>
+<h3 id="ant项目"><a href="#ant项目" class="headerlink" title="ant项目"></a>ant项目</h3><p>配置目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── docker-compose.yml</span><br><span class="line">├── server.xml</span><br><span class="line">├── tomcat7</span><br><span class="line">└── wait-for-file.sh</span><br></pre></td></tr></table></figure>
+<p>docker-compose.yml:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;2&#39;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  ant-test:</span><br><span class="line">    image: frekele&#x2F;ant:1.9.7-jdk7</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;tomcat7&#x2F;:&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;:Z</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;pc&#x2F;test&#x2F;:&#x2F;data&#x2F;:Z</span><br><span class="line">    entrypoint: |</span><br><span class="line">     bash -c &quot;rm -f &#x2F;data&#x2F;done &amp;&amp; rm -rf &#x2F;data&#x2F;WebRoot&#x2F;WEB-INF&#x2F;classes &amp;&amp; mkdir -p &#x2F;data&#x2F;WebRoot&#x2F;WEB-INF&#x2F;classes &amp;&amp; ant -f &#x2F;data&#x2F;build.xml &amp;&amp; touch &#x2F;data&#x2F;done&quot;</span><br><span class="line"></span><br><span class="line">  tomcat-test:</span><br><span class="line">    image: openweb&#x2F;oracle-tomcat:7-jre7</span><br><span class="line">    command: [&quot;bin&#x2F;catalina.sh&quot;, &quot;run&quot;]</span><br><span class="line">    depends_on:</span><br><span class="line">    - ant-test-test</span><br><span class="line">    entrypoint: &#x2F;tool&#x2F;wait-for-file.sh &#x2F;data&#x2F;done</span><br><span class="line">    ports:</span><br><span class="line">    - &quot;9088:800&quot;</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;wait-for-file.sh:&#x2F;tool&#x2F;wait-for-file.sh</span><br><span class="line">    - .&#x2F;server.xml:&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;conf&#x2F;server.xml</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;pc&#x2F;test&#x2F;:&#x2F;data&#x2F;:Z</span><br></pre></td></tr></table></figure>
+<p>主要是用到了两个服务,一个编译服务,一个tomcat。</p>
+<p>server.xml和tomcat7就不说了，主要是项目依赖。主要需要注意的是wait-for-file.sh这个,前面已经说到了，depends_on可以配置依赖项，但是并没有办法确保依赖服务器在主服务就绪前就绪,所以就有了wait-for-file.sh这个东西。<br>wait-for-file.sh里面东西很简单:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line"></span><br><span class="line">set -e</span><br><span class="line"></span><br><span class="line">waitFile&#x3D;&quot;$1&quot;</span><br><span class="line">shift</span><br><span class="line">cmd&#x3D;&quot;$@&quot;</span><br><span class="line"></span><br><span class="line">until test -e $waitFile</span><br><span class="line">do</span><br><span class="line">  &gt;&amp;2 echo &quot;Waiting for file [$waitFile].&quot;</span><br><span class="line">  sleep 1</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">&gt;&amp;2 echo &quot;Found file [$waitFile].&quot;</span><br><span class="line">exec $cmd</span><br></pre></td></tr></table></figure>
+<p>主要逻辑就是利用文件的存在来判断是否执行一个操作。这个东西似乎从stackoverflow找到的，非专业只管用就是了。<br>例子在上面已经有了,entrypoint里面进行wait,然后command里面执行最终要执行的命令。编译服务在启动之前要记住需要删除这个作为flag的done文件。</p>
+<h3 id="mvn项目"><a href="#mvn项目" class="headerlink" title="mvn项目"></a>mvn项目</h3><p>mvn的项目和ant的是一个思路，一个编译服务，一个tomcat<br>配置结构:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── docker-compose.yml</span><br><span class="line">├── server.xml</span><br><span class="line">└── wait-for-file.sh</span><br></pre></td></tr></table></figure>
+
+<p>docker-compose.yml:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;2&#39;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  mvn-test-ios:</span><br><span class="line">    image: maven:3.2.3-jdk-7u65</span><br><span class="line">    volumes:</span><br><span class="line">    - ..&#x2F;..&#x2F;..&#x2F;hotdoc&#x2F;mobile&#x2F;test_ios:&#x2F;data&#x2F;:Z</span><br><span class="line">    - ~&#x2F;.m2&#x2F;:&#x2F;root&#x2F;.m2&#x2F;</span><br><span class="line">    entrypoint: |</span><br><span class="line">     bash -c &quot;rm -rf &#x2F;data&#x2F;done &amp;&amp; cd &#x2F;data &amp;&amp; mvn clean install -Dmaven.test.skip&#x3D;true &amp;&amp; echo &#39;############test_ios  mvn clean install is ok  ##############&#39; &amp;&amp; touch &#x2F;data&#x2F;done&quot;</span><br><span class="line"></span><br><span class="line">  tomcat-test-ios:</span><br><span class="line">    image: openweb&#x2F;oracle-tomcat:7-jre7</span><br><span class="line">    command: [&quot;bin&#x2F;catalina.sh&quot;, &quot;run&quot;]</span><br><span class="line">    depends_on:</span><br><span class="line">    - mvn-test-ios</span><br><span class="line">    entrypoint: &#x2F;tool&#x2F;wait-for-file.sh &#x2F;data&#x2F;done</span><br><span class="line">    environment:</span><br><span class="line">    - LANG&#x3D;zh_CN.UTF-8</span><br><span class="line">    - TZ&#x3D;Asia&#x2F;Shanghai</span><br><span class="line">    ports:</span><br><span class="line">    - &quot;9001:800&quot;</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;wait-for-file.sh:&#x2F;tool&#x2F;wait-for-file.sh</span><br><span class="line">    - .&#x2F;server.xml:&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;conf&#x2F;server.xml</span><br><span class="line">    - ..&#x2F;..&#x2F;..&#x2F;hotdoc&#x2F;mobile&#x2F;test_ios:&#x2F;data&#x2F;:Z</span><br></pre></td></tr></table></figure>
+
+<p>思路和ant的一模一样,只不过编译服务器换成了mvn的，mvn编译时候需要下载过多的依赖，为了省事省时，做了个磁盘映射: ~/.m2/:/root/.m2/ 这样可以高效利用缓存，重启服务器也不会又要再次下载依赖了。</p>
+<h3 id="react的项目"><a href="#react的项目" class="headerlink" title="react的项目"></a>react的项目</h3><p>以上项目是历史项目，不过最近做了一个完全前后端分离的的react为基础的项目。因为用到了react-router,所以需要对nginx做一些配置才能正常运行。后端的代码依然是基于java的,构建工具是maven。</p>
+<p>配置结构：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── docker-compose.yml</span><br><span class="line">├── nginx.conf</span><br><span class="line">├── server.xml</span><br><span class="line">└── wait-for-file.sh</span><br></pre></td></tr></table></figure>
+
+<p>docker-compose.yml:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;2&#39;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  mvn-opeartion:</span><br><span class="line">    image: maven:3.2.3-jdk-7u65</span><br><span class="line">    volumes:</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;operation&#x2F;lyshows:&#x2F;data&#x2F;:Z</span><br><span class="line">    - ~&#x2F;.m2&#x2F;:&#x2F;root&#x2F;.m2&#x2F;</span><br><span class="line">    entrypoint: |</span><br><span class="line">     bash -c &quot;rm -rf &#x2F;data&#x2F;done &amp;&amp; cd &#x2F;data &amp;&amp; mvn clean install -Dmaven.test.skip&#x3D;true &amp;&amp; echo &#39;############test_opeartion  mvn clean install is ok  ##############&#39; &amp;&amp; touch &#x2F;data&#x2F;done&quot;</span><br><span class="line"></span><br><span class="line">  tomcat-operation:</span><br><span class="line">    image: openweb&#x2F;oracle-tomcat:7-jre7</span><br><span class="line">    command: [&quot;bin&#x2F;catalina.sh&quot;, &quot;run&quot;]</span><br><span class="line">    entrypoint: &#x2F;tool&#x2F;wait-for-file.sh &#x2F;data&#x2F;done</span><br><span class="line">    environment:</span><br><span class="line">    - LANG&#x3D;zh_CN.UTF-8</span><br><span class="line">    - TZ&#x3D;Asia&#x2F;Shanghai</span><br><span class="line">    ports:</span><br><span class="line">    - &quot;9003:800&quot;</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;wait-for-file.sh:&#x2F;tool&#x2F;wait-for-file.sh</span><br><span class="line">    - .&#x2F;server.xml:&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;conf&#x2F;server.xml</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;operation&#x2F;lyshows:&#x2F;data&#x2F;:Z</span><br><span class="line"></span><br><span class="line">  nginx:</span><br><span class="line">    image: nginx:stable-alpine</span><br><span class="line">    restart: always</span><br><span class="line">    ports:</span><br><span class="line">    - 7776:8888</span><br><span class="line">    - 443:443</span><br><span class="line">    links:</span><br><span class="line">    - tomcat-operation:backend</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;nginx.conf:&#x2F;etc&#x2F;nginx&#x2F;nginx.conf:ro</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;operation&#x2F;frontEnd&#x2F;dist:&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;dist</span><br></pre></td></tr></table></figure>
+
+<p>nginx.conf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">worker_processes 1;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">error_log   &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log warn;</span><br><span class="line">pid         &#x2F;var&#x2F;run&#x2F;nginx.pid;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include &#x2F;etc&#x2F;nginx&#x2F;mime.types;</span><br><span class="line">    default_type application&#x2F;octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format main &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;</span><br><span class="line">    &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;</span><br><span class="line">    &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;</span><br><span class="line"></span><br><span class="line">    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log main;</span><br><span class="line"></span><br><span class="line">    sendfile on;</span><br><span class="line">    #tcp_nopush on;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout 65;</span><br><span class="line"></span><br><span class="line">    # 开启gzip</span><br><span class="line">    gzip on;</span><br><span class="line"></span><br><span class="line">    # 启用gzip压缩的最小文件，小于设置值的文件将不会压缩</span><br><span class="line">    gzip_min_length 1k;</span><br><span class="line"></span><br><span class="line">    # gzip 压缩级别，1-10，数字越大压缩的越好，也越占用CPU时间，后面会有详细说明</span><br><span class="line">    gzip_comp_level 6;</span><br><span class="line"></span><br><span class="line">    # 进行压缩的文件类型。javascript有多种形式。其中的值可以在 mime.types 文件中找到。</span><br><span class="line">    gzip_types text&#x2F;plain application&#x2F;javascript application&#x2F;x-javascript text&#x2F;css application&#x2F;xml text&#x2F;javascript application&#x2F;x-httpd-php image&#x2F;jpeg image&#x2F;gif image&#x2F;png;</span><br><span class="line"></span><br><span class="line">    # 是否在http header中添加Vary: Accept-Encoding，建议开启</span><br><span class="line">    gzip_vary on;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 8888;</span><br><span class="line">        server_name &quot;&quot;;</span><br><span class="line">        root &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;dist;</span><br><span class="line"></span><br><span class="line">        gzip_static on;</span><br><span class="line"></span><br><span class="line">        location &#x2F; &#123;</span><br><span class="line">          try_files $uri $uri&#x2F; &#x2F;index.html;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">       location &#x2F;api &#123;</span><br><span class="line">            proxy_set_header  X-Real-IP  $remote_addr;</span><br><span class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">            proxy_pass http:&#x2F;&#x2F;backend:800&#x2F;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>server.xml是tomcat的配置，这里主要依托后端项目,但是这也不是重点，所以也不贴了。</p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>目前docker和docker-compose主要是用在了公司的开发服务上面，3个月来主要是刚开始gitlab宕机了一次，重启之后数据毫无影响，整体体验还是非常不错的。<br>而且依托docker，这一套环境在几天之内就完全搭建起来，而且没有污染宿主机器环境，个人感觉非常不错。</p>
+<h1 id="遗留问题"><a href="#遗留问题" class="headerlink" title="遗留问题"></a>遗留问题</h1><p>docker-compose内部容器访问宿主机器端口尚未找到办法。<br>PS: 在此文正式发布之前，已经找到了解决方案:那就是external_links选项;但是external_links存在的问题是两个容器之间必须有共通的网络才行，而默认使用docker启动的docker容器似乎是bridge，所以这里需要设置network选项为bridge才行。<br>当然，说了这么多，如果没有代码其实还是很不好理解。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">tomcat-operation:</span><br><span class="line">    image: openweb&#x2F;oracle-tomcat:7-jre7</span><br><span class="line">    command: [&quot;bin&#x2F;catalina.sh&quot;, &quot;run&quot;]</span><br><span class="line">    entrypoint: &#x2F;tool&#x2F;wait-for-file.sh &#x2F;data&#x2F;done</span><br><span class="line">    network_mode: &quot;bridge&quot;</span><br><span class="line">    environment:</span><br><span class="line">    - LANG&#x3D;zh_CN.UTF-8</span><br><span class="line">    - TZ&#x3D;Asia&#x2F;Shanghai</span><br><span class="line">    ports:</span><br><span class="line">    - &quot;9003:800&quot;</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;wait-for-file.sh:&#x2F;tool&#x2F;wait-for-file.sh</span><br><span class="line">    - .&#x2F;server.xml:&#x2F;usr&#x2F;local&#x2F;tomcat&#x2F;conf&#x2F;server.xml</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;operation&#x2F;lyshows:&#x2F;data&#x2F;:Z</span><br><span class="line">    external_links:</span><br><span class="line">    - mysql:mysql</span><br><span class="line"></span><br><span class="line">  nginx:</span><br><span class="line">    image: nginx:stable-alpine</span><br><span class="line">    restart: always</span><br><span class="line">    network_mode: &quot;bridge&quot;</span><br><span class="line">    ports:</span><br><span class="line">    - 7776:8888</span><br><span class="line">    - 443:443</span><br><span class="line">    links:</span><br><span class="line">    - tomcat-operation:backend</span><br><span class="line">    volumes:</span><br><span class="line">    - .&#x2F;nginx.conf:&#x2F;etc&#x2F;nginx&#x2F;nginx.conf:ro</span><br><span class="line">    - ..&#x2F;..&#x2F;hotdoc&#x2F;operation&#x2F;frontEnd&#x2F;dist:&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;dist</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/docker-compse/" rel="tag"># docker-compse</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/11/06/node-buffer/" rel="prev" title="node-buffer笔记">
+      <i class="fa fa-chevron-left"></i> node-buffer笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/11/20/dva-react/" rel="next" title="基于dva-cli&antd的react项目实战">
+      基于dva-cli&antd的react项目实战 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#docker-compose%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">docker-compose概念</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%99%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">教程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%94%E8%AE%B0"><span class="nav-number">3.</span> <span class="nav-text">笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Gitlab"><span class="nav-number">3.1.</span> <span class="nav-text">Gitlab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rap"><span class="nav-number">3.2.</span> <span class="nav-text">Rap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql"><span class="nav-number">3.3.</span> <span class="nav-text">mysql</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2"><span class="nav-number">3.4.</span> <span class="nav-text">java项目部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ant%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.4.1.</span> <span class="nav-text">ant项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mvn%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.4.2.</span> <span class="nav-text">mvn项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#react%E7%9A%84%E9%A1%B9%E7%9B%AE"><span class="nav-number">3.4.3.</span> <span class="nav-text">react的项目</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%97%E7%95%99%E9%97%AE%E9%A2%98"><span class="nav-number">5.</span> <span class="nav-text">遗留问题</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

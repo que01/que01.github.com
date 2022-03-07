@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Microsoft YaHei, Verdana, sans-serif:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.que01.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null},"algolia":{"appID":"AL4M83H31B","apiKey":"d30226bc78f2b15b834d9fc9993e3c42","indexName":"hexo","hits":{"per_page":10}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"bounceDownIn","post_body":"bounceDownIn","coll_header":"slideLeftIn","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="上一篇写完也是好多天前的事情了。一直是觉得有些东西还需要记录下来。但是说到底程序跑通以后就不是很有耐心写blog，不过慢慢随着时间推移记忆会慢慢褪色，所以完善一下系列三。这里主要记录一下GraphQL。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React全家桶:react-starter-kit之三">
+<meta property="og:url" content="http://www.que01.top/2016/07/01/react-starter-kit-3/index.html">
+<meta property="og:site_name" content="Que&#39;s Blog">
+<meta property="og:description" content="上一篇写完也是好多天前的事情了。一直是觉得有些东西还需要记录下来。但是说到底程序跑通以后就不是很有耐心写blog，不过慢慢随着时间推移记忆会慢慢褪色，所以完善一下系列三。这里主要记录一下GraphQL。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-06-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-12-17T13:21:55.598Z">
+<meta property="article:author" content="que01">
+<meta property="article:tag" content="react">
+<meta property="article:tag" content="express">
+<meta property="article:tag" content="react同构应用">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.que01.top/2016/07/01/react-starter-kit-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>React全家桶:react-starter-kit之三 | Que's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Que's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">WebFrontEnd Development</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.que01.top/2016/07/01/react-starter-kit-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="que01">
+      <meta itemprop="description" content="自己的学习记录">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Que's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          React全家桶:react-starter-kit之三
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-01 00:00:00" itemprop="dateCreated datePublished" datetime="2016-07-01T00:00:00+08:00">2016-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-17 21:21:55" itemprop="dateModified" datetime="2020-12-17T21:21:55+08:00">2020-12-17</time>
+              </span>
+
+          
+            <span id="/2016/07/01/react-starter-kit-3/" class="post-meta-item leancloud_visitors" data-flag-title="React全家桶:react-starter-kit之三" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <div class="post-description">上一篇写完也是好多天前的事情了。一直是觉得有些东西还需要记录下来。但是说到底程序跑通以后就不是很有耐心写blog，不过慢慢随着时间推移记忆会慢慢褪色，所以完善一下系列三。这里主要记录一下GraphQL。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="之前"><a href="#之前" class="headerlink" title="之前"></a>之前</h1><p>在之前写分页功能时候，曾经添加过一个count的小接口，可以通过GraphQL来查询news的条目数。这里我们就以此来实例说明如何使用GraphQL来做一个接受一个查询。</p>
+<p>这个接口具备两种逻辑处理。</p>
+<ol>
+<li>当没有传递指定标签id时候返回全部条目</li>
+<li>指定标签id时候返回指定id的条目数</li>
+</ol>
+<h1 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h1><h2 id="类型系统"><a href="#类型系统" class="headerlink" title="类型系统"></a>类型系统</h2><p>在进行查询之前我们需要对字段类型进行约束。<br>文件: <code>data/types/NewsCountType.js</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">  GraphQLObjectType <span class="keyword">as</span> ObjectType,</span><br><span class="line">  GraphQLInt <span class="keyword">as</span> IntType,</span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">&#x27;graphql&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> NewsCountType = <span class="keyword">new</span> ObjectType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;NewsCount&#x27;</span>,</span><br><span class="line">  fields: &#123;</span><br><span class="line">    count:&#123;<span class="attr">type</span>:IntType&#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> NewsCountType;</span><br></pre></td></tr></table></figure>
+
+<p>这里使用GraphQLObjectType来定义了返回的是一个对象，GraphQLInt则定义了返回的count属性是一个数字。<br>当然，这里只是非常的简单了使用了一个小案例。这里列举一下更多的类型定义。</p>
+<ul>
+<li><strong>GraphQLScalarType</strong>:Scalar Types，标量类型。最细粒度的类型<ul>
+<li>GraphQLInt:Int</li>
+<li>GraphQLFloat:Float</li>
+<li>GraphQLString:String</li>
+<li>GraphQLBoolean:Boolean</li>
+<li>GraphQLID:ID</li>
+</ul>
+</li>
+<li><strong>GraphQLObjectType</strong>:对象</li>
+<li><strong>GraphQLInterfaceType</strong>:接口</li>
+<li><strong>GraphQLUnionType</strong>:联合</li>
+<li><strong>GraphQLEnumType</strong>:枚举</li>
+<li><strong>GraphQLInputObjectType</strong>:输入对象</li>
+<li><strong>GraphQLList</strong>:列表</li>
+<li><strong>GraphQLNonNull</strong>:NonNull</li>
+</ul>
+<h3 id="GraphQLObjectType"><a href="#GraphQLObjectType" class="headerlink" title="GraphQLObjectType"></a>GraphQLObjectType</h3><p>几乎所有的GraphQL都是Object对象。它具有一个name属性和一个非常重要的fields属性，这里定义了它的数据结构。就像之前，贴出的代码。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> AddressType = <span class="keyword">new</span> GraphQLObjectType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;Address&#x27;</span>,</span><br><span class="line">  fields: &#123;</span><br><span class="line">    street: &#123; <span class="attr">type</span>: GraphQLString &#125;,</span><br><span class="line">    number: &#123; <span class="attr">type</span>: GraphQLInt &#125;,</span><br><span class="line">    formatted: &#123;</span><br><span class="line">      type: GraphQLString,</span><br><span class="line">      <span class="function"><span class="title">resolve</span>(<span class="params">obj</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> obj.number + <span class="string">&#x27; &#x27;</span> + obj.street</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> PersonType = <span class="keyword">new</span> GraphQLObjectType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;Person&#x27;</span>,</span><br><span class="line">  fields: <span class="function">() =&gt;</span> (&#123;</span><br><span class="line">    name: &#123; <span class="attr">type</span>: GraphQLString &#125;,</span><br><span class="line">    bestFriend: &#123; <span class="attr">type</span>: PersonType &#125;,</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GraphQLInterfaceType"><a href="#GraphQLInterfaceType" class="headerlink" title="GraphQLInterfaceType"></a>GraphQLInterfaceType</h3><p>(这块暂时不是太理解,见谅)<br>When a field can return one of a heterogeneous set of types, a Interface type is used to describe what types are possible, what fields are in common across all types, as well as a function to determine which type is actually used when the field is resolved.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> EntityType = <span class="keyword">new</span> GraphQLInterfaceType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;Entity&#x27;</span>,</span><br><span class="line">  fields: &#123;</span><br><span class="line">    name: &#123; <span class="attr">type</span>: GraphQLString &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GraphQLUnionType"><a href="#GraphQLUnionType" class="headerlink" title="GraphQLUnionType"></a>GraphQLUnionType</h3><p>当一个字段可以返回一个异构集合的类型中的一种，一个Union类型用于描述什么类型是可能的，以及提供一个函数，以确定哪些类型时该字段被解析实际使用。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> PetType = <span class="keyword">new</span> GraphQLUnionType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;Pet&#x27;</span>,</span><br><span class="line">  types: [ DogType, CatType ],</span><br><span class="line">  <span class="function"><span class="title">resolveType</span>(<span class="params">value</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (value <span class="keyword">instanceof</span> Dog) &#123;</span><br><span class="line">      <span class="keyword">return</span> DogType;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (value <span class="keyword">instanceof</span> Cat) &#123;</span><br><span class="line">      <span class="keyword">return</span> CatType;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GraphQLEnumType"><a href="#GraphQLEnumType" class="headerlink" title="GraphQLEnumType"></a>GraphQLEnumType</h3><p>可枚举的数据类型</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> RGBType = <span class="keyword">new</span> GraphQLEnumType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;RGB&#x27;</span>,</span><br><span class="line">  values: &#123;</span><br><span class="line">    RED: &#123; <span class="attr">value</span>: <span class="number">0</span> &#125;,</span><br><span class="line">    GREEN: &#123; <span class="attr">value</span>: <span class="number">1</span> &#125;,</span><br><span class="line">    BLUE: &#123; <span class="attr">value</span>: <span class="number">2</span> &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GraphQLInputObjectType"><a href="#GraphQLInputObjectType" class="headerlink" title="GraphQLInputObjectType"></a>GraphQLInputObjectType</h3><p>为了查询对象定义的数据类型.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> GeoPoint = <span class="keyword">new</span> GraphQLInputObjectType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;GeoPoint&#x27;</span>,</span><br><span class="line">  fields: &#123;</span><br><span class="line">    lat: &#123; <span class="attr">type</span>: <span class="keyword">new</span> GraphQLNonNull(GraphQLFloat) &#125;,</span><br><span class="line">    lon: &#123; <span class="attr">type</span>: <span class="keyword">new</span> GraphQLNonNull(GraphQLFloat) &#125;,</span><br><span class="line">    alt: &#123; <span class="attr">type</span>: GraphQLFloat, <span class="attr">defaultValue</span>: <span class="number">0</span> &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GraphQLList"><a href="#GraphQLList" class="headerlink" title="GraphQLList"></a>GraphQLList</h3><p>列表是其他类型的封装，通常用于对象字段的描述。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> PersonType = <span class="keyword">new</span> GraphQLObjectType(&#123;</span><br><span class="line">  name: <span class="string">&#x27;Person&#x27;</span>,</span><br><span class="line">  fields: <span class="function">() =&gt;</span> (&#123;</span><br><span class="line">    parents: &#123; <span class="attr">type</span>: <span class="keyword">new</span> GraphQLList(Person) &#125;,</span><br><span class="line">    children: &#123; <span class="attr">type</span>: <span class="keyword">new</span> GraphQLList(Person) &#125;,</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GraphQLNonNull"><a href="#GraphQLNonNull" class="headerlink" title="GraphQLNonNull"></a>GraphQLNonNull</h3><p>Non-Null 强制类型的值不能为 null.在请求出错时会报错。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>类型系统是GraphQL重要的组成部分之一，它规定了数据的类型。如果数据不符合指定的类型，GraphQL将会自动进行报错。这对调试接口非常重要。同时可以强制接口符合约定，保证代码的健壮性。</p>
+<h2 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h2><p>GraphQL的查询语句相信是GraphQL最吸引人的地方，我个人认为，没有之一。<br>这里简单记录一下自己近段时间做的东西。主要包含前端和后端的实现，没有用到的地方就暂时不记录了。<br>这是获取数据的代码部分：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">resetNewsState:<span class="function"><span class="keyword">function</span> (<span class="params">context,currentPage,pageSize,hotTag</span>) </span>&#123;</span><br><span class="line">	 <span class="keyword">const</span> self = <span class="built_in">this</span>;</span><br><span class="line">	 <span class="comment">//获取新的数据</span></span><br><span class="line">	 fetch(<span class="string">&#x27;/graphql&#x27;</span>, &#123;</span><br><span class="line">		 method: <span class="string">&#x27;post&#x27;</span>,</span><br><span class="line">		 headers: &#123;</span><br><span class="line">			 Accept: <span class="string">&#x27;application/json&#x27;</span>,</span><br><span class="line">			 <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span></span><br><span class="line">		 &#125;,</span><br><span class="line">		 body: <span class="built_in">JSON</span>.stringify(&#123;</span><br><span class="line">		 query: <span class="string">`&#123;news( currentPage:<span class="subst">$&#123;currentPage||<span class="built_in">this</span>.props.currentPage&#125;</span>, pageSize:<span class="subst">$&#123;pageSize||<span class="built_in">this</span>.props.pageSize&#125;</span>, hotTag:<span class="subst">$&#123;hotTag||<span class="number">9999</span>&#125;</span> )&#123;title,link,contentSnippet&#125;, tags&#123;name,id&#125;, count( hotTag:<span class="subst">$&#123;hotTag||<span class="number">9999</span>&#125;</span> )&#123;count&#125;&#125;`</span></span><br><span class="line">		 &#125;),</span><br><span class="line">		 credentials: <span class="string">&#x27;include&#x27;</span></span><br><span class="line">	 &#125;).then(<span class="keyword">async</span> <span class="function"><span class="keyword">function</span> (<span class="params">resp</span>) </span>&#123;</span><br><span class="line">		 <span class="keyword">let</span> &#123; data &#125; = <span class="keyword">await</span> resp.json();</span><br><span class="line">		 <span class="comment">//设置全局store提供给页码组件</span></span><br><span class="line">		 <span class="comment">//总条目数</span></span><br><span class="line">		 self.props.setRuntime(&#123;</span><br><span class="line">			 name:<span class="string">&quot;newsTotalItem&quot;</span>,</span><br><span class="line">			 value:data.count.count</span><br><span class="line">		 &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		 <span class="comment">//内部状态</span></span><br><span class="line">		 (context||<span class="built_in">this</span>).setState(&#123;</span><br><span class="line">			 news:data.news,</span><br><span class="line">			 tags:data.tags,</span><br><span class="line">			 newsLoading:<span class="literal">false</span></span><br><span class="line">		 &#125;);</span><br><span class="line">	 &#125;);</span><br><span class="line"> &#125;,</span><br></pre></td></tr></table></figure>
+<p>其中 <code>query</code>就是其中关键的查询代码。GraphQL的查询代码个人认为如果做好了配置，那么几乎是所见即所得的。如果这样还不太好理解。那么我就贴一下请求参数的反悔响应：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;request</span><br><span class="line">&quot;&#123;</span><br><span class="line">  news(</span><br><span class="line">    currentPage:1,</span><br><span class="line">    pageSize:10,</span><br><span class="line">    hotTag:9999</span><br><span class="line">)&#123;title,link,contentSnippet&#125;,</span><br><span class="line">tags&#123;name,id&#125;,</span><br><span class="line">count(</span><br><span class="line">  hotTag:9999</span><br><span class="line">)&#123;count&#125;&#125;&quot;</span><br><span class="line">&#x2F;&#x2F;response</span><br><span class="line">&#123;</span><br><span class="line">  &quot;data&quot;: &#123;</span><br><span class="line">    &quot;news&quot;: [</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;title&quot;: &quot;测试标题1&quot;,</span><br><span class="line">        &quot;link&quot;: &quot;http:&#x2F;&#x2F;www.baidu.com&quot;,</span><br><span class="line">        &quot;contentSnippet&quot;: &quot;测试摘要测试摘要&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;title&quot;: &quot;测试标题2&quot;,</span><br><span class="line">        &quot;link&quot;: &quot;http:&#x2F;&#x2F;www.baidu.com&quot;,</span><br><span class="line">        &quot;contentSnippet&quot;: &quot;测试摘要测试摘要&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">    &quot;tags&quot;: [</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;name&quot;: &quot;javascript&quot;,</span><br><span class="line">        &quot;id&quot;: &quot;1&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;name&quot;: &quot;css&quot;,</span><br><span class="line">        &quot;id&quot;: &quot;2&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    ],</span><br><span class="line">    &quot;count&quot;: &#123;</span><br><span class="line">      &quot;count&quot;: 17</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>是不是很容易理解呢？通过编写查询语句，几乎就可以前端自己设计好需要的需要的json数据，从而优化请求。当然，这紧紧是前端部分。当我们使用以下代码查询条目数的时候，指定了hotTag的id为9999(这里是一个特殊标志符，代表查询全部hotTag)。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">count(</span><br><span class="line">  hotTag:<span class="number">9999</span></span><br><span class="line">)&#123;count&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>其中， <code>count:&#123;type:IntType&#125;</code>规定了hotTag参数必须为数字。这个在第一个代码片段有写。但是这紧紧是前端的查询，为了获取到想要的数据，我们还需要后端也做好相应的查询操作。</p>
+<p>以下贴出查询的完整查询代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=============================</span></span><br><span class="line"><span class="comment">//src/data/queries/newsCount.js</span></span><br><span class="line"><span class="comment">//=============================</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123; GraphQLInt &#125; <span class="keyword">from</span> <span class="string">&#x27;graphql&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> fetch <span class="keyword">from</span> <span class="string">&#x27;../../core/fetch&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> NewsCountType <span class="keyword">from</span> <span class="string">&#x27;../types/NewsCountType&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// React.js News Feed (RSS)</span></span><br><span class="line"><span class="keyword">const</span> url = <span class="string">&#x27;/api/news&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> count = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">let</span> lastFetchTask;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> newsCount = &#123;</span><br><span class="line">  type: NewsCountType,</span><br><span class="line">  args: &#123;</span><br><span class="line">    hotTag:&#123; <span class="attr">type</span>: GraphQLInt&#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="keyword">async</span> <span class="function"><span class="title">resolve</span>(<span class="params">reqObj,&#123;hotTag&#125;</span>)</span> &#123;</span><br><span class="line">      lastFetchTask = <span class="keyword">await</span> fetch(url,&#123;</span><br><span class="line">          method: <span class="string">&#x27;post&#x27;</span>,</span><br><span class="line">          headers: &#123;</span><br><span class="line">            Accept: <span class="string">&#x27;application/json&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span>,</span><br><span class="line">          &#125;,</span><br><span class="line">          body: <span class="built_in">JSON</span>.stringify(&#123;hotTag&#125;),</span><br><span class="line">          credentials: <span class="string">&#x27;include&#x27;</span>,</span><br><span class="line">        &#125;)</span><br><span class="line">        .then(<span class="function"><span class="params">response</span> =&gt;</span> response.json())</span><br><span class="line">        .then(<span class="function"><span class="params">data</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (data.code === <span class="number">200</span>) &#123;</span><br><span class="line">            count = data.count;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          <span class="keyword">return</span> &#123;count&#125;;</span><br><span class="line">        &#125;)</span><br><span class="line">        .finally(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">          lastFetchTask = <span class="literal">null</span>;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (count.length) &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123;count&#125;;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> lastFetchTask;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> newsCount;</span><br><span class="line"></span><br><span class="line"><span class="comment">//===================</span></span><br><span class="line"><span class="comment">//src/data/schema.js</span></span><br><span class="line"><span class="comment">//===================</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> &#123;</span><br><span class="line">  GraphQLSchema <span class="keyword">as</span> Schema,</span><br><span class="line">  GraphQLObjectType <span class="keyword">as</span> ObjectType,</span><br><span class="line">&#125; <span class="keyword">from</span> <span class="string">&#x27;graphql&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> tags <span class="keyword">from</span> <span class="string">&#x27;./queries/tags&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> content <span class="keyword">from</span> <span class="string">&#x27;./queries/content&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> news <span class="keyword">from</span> <span class="string">&#x27;./queries/news&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> count <span class="keyword">from</span> <span class="string">&#x27;./queries/newsCount&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> schema = <span class="keyword">new</span> Schema(&#123;</span><br><span class="line">  query: <span class="keyword">new</span> ObjectType(&#123;</span><br><span class="line">    name: <span class="string">&#x27;Query&#x27;</span>,</span><br><span class="line">    fields: &#123;</span><br><span class="line">      tags,</span><br><span class="line">      content,</span><br><span class="line">      news,</span><br><span class="line">      count</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;),</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> schema;</span><br></pre></td></tr></table></figure>
+<p>src/data/queries/newsCount.js文件是对数据进行具体查询和定义参数的文件，而src/data/schema.js则导出了一个Schema。</p>
+<p>在这里我们可以发散一下，当我们要使用和定义后端的GraphQL相关，那么该怎么做呢：<br>我们需要一个GraphGL的Schema。它有以下结构。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> schema = <span class="keyword">new</span> Schema(&#123;</span><br><span class="line">  query: <span class="keyword">new</span> ObjectType(&#123;</span><br><span class="line">    name: <span class="string">&#x27;Query&#x27;</span>,</span><br><span class="line">    fields: &#123;</span><br><span class="line">	count:&#123;</span><br><span class="line">		type: NewsCountType,</span><br><span class="line">		args: &#123;</span><br><span class="line">			hotTag:&#123; <span class="attr">type</span>: GraphQLInt&#125;</span><br><span class="line">		&#125;,</span><br><span class="line">		resolve:<span class="function"><span class="keyword">function</span>(<span class="params">reqObj,paramObj</span>)</span>&#123;</span><br><span class="line"></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;),</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>结合我们的类型系统，是不是很有感觉了呢？是的，当我们反复循环嵌套相关的数据类型，然后使用Schema返回。那么就可以配合前两篇文章写到的。从前端后端两个方面来实现GraphQL的对接。</p>
+<h1 id="收个尾"><a href="#收个尾" class="headerlink" title="收个尾"></a>收个尾</h1><p>写到这里心里其实有些索然。因为感觉没有说到很深入的境地。但是怎么说呢，通过这篇文章好好体会一下，应该也可以在react-starter-kit里面使用GraphQL了，毕竟正常使用应该也用不到太过复杂的功能。</p>
+<p>然而毕竟事情未能尽善，从第一篇到这一篇，期间磨磨蹭蹭一个月也过去了，新东西太多太快但是时间精力有限。限于个人水平文章也无法写的很通俗，但是确实是用心去做了。</p>
+<p>有时间把源代码整理完毕一起放出来供参考。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/react/" rel="tag"># react</a>
+              <a href="/tags/express/" rel="tag"># express</a>
+              <a href="/tags/react%E5%90%8C%E6%9E%84%E5%BA%94%E7%94%A8/" rel="tag"># react同构应用</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/06/16/react-starter-kit-2/" rel="prev" title="React全家桶:react-starter-kit之二">
+      <i class="fa fa-chevron-left"></i> React全家桶:react-starter-kit之二
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/07/08/docker-note/" rel="next" title="Docker构建前端开发环境">
+      Docker构建前端开发环境 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B9%8B%E5%89%8D"><span class="nav-number">1.</span> <span class="nav-text">之前</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.</span> <span class="nav-text">类型系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLObjectType"><span class="nav-number">2.1.1.</span> <span class="nav-text">GraphQLObjectType</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLInterfaceType"><span class="nav-number">2.1.2.</span> <span class="nav-text">GraphQLInterfaceType</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLUnionType"><span class="nav-number">2.1.3.</span> <span class="nav-text">GraphQLUnionType</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLEnumType"><span class="nav-number">2.1.4.</span> <span class="nav-text">GraphQLEnumType</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLInputObjectType"><span class="nav-number">2.1.5.</span> <span class="nav-text">GraphQLInputObjectType</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLList"><span class="nav-number">2.1.6.</span> <span class="nav-text">GraphQLList</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GraphQLNonNull"><span class="nav-number">2.1.7.</span> <span class="nav-text">GraphQLNonNull</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">2.1.7.1.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2"><span class="nav-number">2.2.</span> <span class="nav-text">查询</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%B6%E4%B8%AA%E5%B0%BE"><span class="nav-number">3.</span> <span class="nav-text">收个尾</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">que01</p>
+  <div class="site-description" itemprop="description">自己的学习记录</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">77</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">29</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">que01</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              Counter('post', '/classes/Counter', { title, url, time: 1 })
+                .then(response => response.json())
+                .then(() => {
+                  leancloudSelector(url).innerText = 1;
+                })
+                .catch(error => {
+                  console.error('Failed to create', error);
+                });
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"TXWIywcTsrMfVKtclog3CxDl-gzGzoHsz","app_key":"987dqIR4vvX2mQJjmAV86Qp0","server_url":null,"security":false};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
